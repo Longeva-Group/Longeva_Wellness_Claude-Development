@@ -1,0 +1,120 @@
+{%- comment -%}
+  Longeva travel vaccination pricing table (Alicia clinical sign-off,
+  June 2026: transparent pricing across relevant pages).
+
+  Prices are held in admin block settings (price_row blocks), not
+  hardcoded in Liquid, so the pharmacy can update them against the
+  current schedule without a code change (PROJECT_RULES.md section 3.4). Prices
+  are shown as ranges because the exact figure depends on the brand and
+  the number of doses; the consultation confirms the final price.
+
+  Renders nothing for the table if no rows are set, so it is safe before
+  the schedule is populated.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-pricing-table.css' | asset_url | stylesheet_tag }}
+{% render 'longeva-schema-page-breadcrumb' %}
+
+{%- liquid
+  assign rows = section.blocks | where: 'type', 'price_row'
+  assign h1 = section.settings.heading | default: page.title
+  assign intro = section.settings.intro
+  assign price_caption = section.settings.price_caption | default: 'Vaccine prices from'
+  assign consultation_note = section.settings.consultation_note
+  assign included_note = section.settings.included_note
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign book_url = section.settings.book_url | default: '/pages/travel-health-consultation-manchester'
+-%}
+
+<article class="longeva-pricing longeva-page longeva-page--light" aria-labelledby="longeva-pricing-heading">
+
+  <header class="longeva-pricing__hero longeva-container longeva-section">
+    <p class="longeva-eyebrow longeva-pricing__eyebrow">Travel vaccinations</p>
+    <h1 id="longeva-pricing-heading" class="longeva-display longeva-pricing__h1">{{ h1 | escape }}</h1>
+    {%- if intro != blank -%}
+      <div class="longeva-pricing__intro longeva-prose">{{ intro }}</div>
+    {%- else -%}
+      <p class="longeva-pricing__intro">Clear, up-front pricing for our travel vaccinations and services in Rochdale, Greater Manchester. Prices vary by brand and the number of doses you need. Your exact price is confirmed at your consultation.</p>
+    {%- endif -%}
+  </header>
+
+  {%- if rows.size > 0 -%}
+    <section class="longeva-pricing__table-wrap longeva-container longeva-section" aria-label="Vaccine prices">
+      <table class="longeva-pricing__table">
+        <caption class="longeva-sr-only">{{ price_caption | escape }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Vaccine or service</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for row in rows -%}
+            {%- if row.settings.vaccine != blank and row.settings.price != blank -%}
+              <tr {{ row.shopify_attributes }}>
+                <th scope="row" class="longeva-pricing__vaccine">{{ row.settings.vaccine | escape }}</th>
+                <td class="longeva-pricing__price">{{ row.settings.price | escape }}</td>
+              </tr>
+            {%- endif -%}
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </section>
+  {%- endif -%}
+
+  {%- if consultation_note != blank or included_note != blank -%}
+    <section class="longeva-pricing__notes longeva-container longeva-section" aria-label="What is included">
+      {%- if consultation_note != blank -%}
+        <div class="longeva-pricing__note">
+          <h2 class="longeva-display longeva-pricing__h2">Consultation fees</h2>
+          <div class="longeva-prose">{{ consultation_note }}</div>
+        </div>
+      {%- endif -%}
+      {%- if included_note != blank -%}
+        <div class="longeva-pricing__note">
+          <h2 class="longeva-display longeva-pricing__h2">What is included</h2>
+          <div class="longeva-prose">{{ included_note }}</div>
+        </div>
+      {%- endif -%}
+    </section>
+  {%- endif -%}
+
+  <section class="longeva-destination__cta-band longeva-container longeva-section" aria-labelledby="longeva-pricing-cta">
+    <div class="longeva-destination__cta-inner">
+      <h2 id="longeva-pricing-cta" class="longeva-display longeva-destination__cta-heading">Plan your travel vaccinations</h2>
+      <p class="longeva-destination__cta-sub">Book a pharmacist consultation. We confirm exactly what you need and the price before anything is given.</p>
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </section>
+
+</article>
+
+{% schema %}
+{
+  "name": "Pricing table",
+  "tag": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading (falls back to page title)" },
+    { "type": "richtext", "id": "intro", "label": "Intro" },
+    { "type": "text", "id": "price_caption", "label": "Table caption", "default": "Vaccine prices from" },
+    { "type": "richtext", "id": "consultation_note", "label": "Consultation fees note" },
+    { "type": "richtext", "id": "included_note", "label": "What is included note" },
+    { "type": "text", "id": "book_label", "label": "Book button label" },
+    { "type": "url", "id": "book_url", "label": "Book link" }
+  ],
+  "blocks": [
+    {
+      "type": "price_row",
+      "name": "Price row",
+      "settings": [
+        { "type": "text", "id": "vaccine", "label": "Vaccine or service" },
+        { "type": "text", "id": "price", "label": "Price", "info": "e.g. £30 to £45. Editable by the pharmacy against the current schedule." }
+      ]
+    }
+  ],
+  "max_blocks": 40,
+  "enabled_on": { "templates": ["page"] },
+  "presets": [{ "name": "Pricing table" }]
+}
+{% endschema %}

@@ -1,0 +1,254 @@
+{% comment %}
+  Longeva treatment journey. 3-step flow with numbered badges, display
+  serif step titles, Poppins body copy, single CTA at the bottom.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign heading = section.settings.heading
+  assign cta_label = section.settings.cta_label
+  assign cta_link = section.settings.cta_link
+-%}
+
+<section class="longeva-journey longeva-page longeva-page--light" aria-label="How it works">
+  <div class="longeva-container">
+    {% if heading != blank %}
+      <h2 class="longeva-display longeva-journey__heading">{{ heading | escape }}</h2>
+    {% endif %}
+
+    <ol
+      class="longeva-journey__grid"
+      data-longeva-stagger="90"
+      data-longeva-auto-carousel
+      data-interval="5000"
+    >
+      {% for block in section.blocks %}
+        <li class="longeva-journey__step" data-longeva-reveal {{ block.shopify_attributes }}>
+          <span class="longeva-journey__icon" aria-hidden="true">
+            {%- case forloop.index -%}
+              {%- when 1 -%}
+                {%- comment -%} Calendar: book or walk in. {%- endcomment -%}
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              {%- when 2 -%}
+                {%- comment -%} Stethoscope: clinical consultation. {%- endcomment -%}
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7a5 5 0 0 0 10 0V3"/><path d="M4 3h4M14 3h4"/><path d="M11 15a5 5 0 0 0 5 5h2a3 3 0 0 0 3-3v-1"/><circle cx="20" cy="11" r="2"/></svg>
+              {%- when 3 -%}
+                {%- comment -%} Pill + check: treatment + aftercare. {%- endcomment -%}
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="11" height="6" rx="3"/><path d="M8.5 9v6"/><path d="M15 17l2 2 4-4"/></svg>
+            {%- endcase -%}
+          </span>
+          <span class="longeva-journey__badge" aria-hidden="true">
+            <span class="longeva-journey__badge-num">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+            <span class="longeva-journey__badge-rule"></span>
+            <span class="longeva-journey__badge-label">Step</span>
+          </span>
+          {% if block.settings.title != blank %}
+            <h3 class="longeva-journey__title longeva-display">{{ block.settings.title | escape }}</h3>
+          {% endif %}
+          {% if block.settings.body != blank %}
+            <p class="longeva-journey__body">{{ block.settings.body | escape }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+
+    {%- comment -%}
+      PR #130: terminal CTA suppressed on homepage to drop the
+      Book-CTA count from 4 to 2 on the homepage scroll. Hero +
+      footer trust strip cell remain. Other templates that include
+      the journey section still get the CTA.
+    {%- endcomment -%}
+    {% if cta_label != blank and template.name != 'index' %}
+      <div class="longeva-journey__cta-wrap">
+        <a class="longeva-btn longeva-btn--primary-on-light" href="{{ cta_link | default: '/pages/book' }}">{{ cta_label | escape }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% render 'longeva-auto-carousel' %}
+
+{% stylesheet %}
+  .longeva-journey {
+    background: #FAFAF7;
+    padding-block: var(--longeva-section-pad-default);
+  }
+  .longeva-journey__heading {
+    font-size: var(--longeva-h2-desktop);
+    margin: 0;
+    color: #1A1A1A;
+  }
+  .longeva-journey__grid {
+    list-style: none;
+    padding: 0;
+    margin: var(--longeva-heading-drop) 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--longeva-grid-gap);
+  }
+  .longeva-journey__step {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .longeva-journey__step + .longeva-journey__step::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    inset-inline-start: -16px;
+    width: 16px;
+    height: 1px;
+    background: rgba(185, 145, 87, 0.40);
+  }
+  .longeva-journey__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(185, 145, 87, 0.14);
+    border: 1px solid rgba(185, 145, 87, 0.30);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #2D190E;
+    margin-block-end: 14px;
+  }
+  /* Index numeral row mirrors aesthetics-grid: "01: Step". Magazine
+     wayfinding, hairline rule, brass + neutral split. */
+  .longeva-journey__badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--longeva-font-body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.95);
+    margin-block-end: 12px;
+  }
+  .longeva-journey__badge-num { font-weight: 600; }
+  .longeva-journey__badge-rule {
+    flex: 1 0 24px;
+    max-width: 60px;
+    height: 1px;
+    background: rgba(185, 145, 87, 0.45);
+  }
+  .longeva-journey__badge-label { color: rgba(26, 26, 26, 0.45); }
+  .longeva-journey__title {
+    font-size: var(--longeva-h3-desktop);
+    line-height: 1.2;
+    margin: 0 0 16px;
+    color: #1A1A1A;
+  }
+  .longeva-journey__body {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-small);
+    line-height: 1.6;
+    color: rgba(26, 26, 26, 0.70);
+    margin: 0;
+  }
+  .longeva-journey__cta-wrap {
+    margin-block-start: var(--longeva-heading-drop);
+    text-align: center;
+  }
+
+  @media (max-width: 749px) {
+    /* Horizontal swipe carousel, auto-advanced via longeva-auto-carousel */
+    .longeva-journey__grid {
+      display: flex;
+      grid-template-columns: none;
+      flex-wrap: nowrap;
+      gap: var(--longeva-grid-gap);
+      margin-block-start: var(--longeva-heading-drop-mobile);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 16px;
+      padding-inline: 16px;
+      margin-inline: -16px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .longeva-journey__grid::-webkit-scrollbar { display: none; }
+    .longeva-journey__step {
+      flex: 0 0 80%;
+      min-width: 80%;
+      scroll-snap-align: start;
+      padding: var(--longeva-card-pad-mobile);
+      background: #fff;
+      border: 1px solid rgba(45, 25, 14, 0.08);
+      border-radius: var(--longeva-radius-card, 12px);
+    }
+    /* Hide the vertical dotted connector since cards are now side-by-side */
+    .longeva-journey__step + .longeva-journey__step::before { display: none; }
+    .longeva-journey__badge { margin-block-end: 8px; }
+    .longeva-journey__cta-wrap { margin-block-start: var(--longeva-heading-drop-mobile); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva journey",
+  "tag": "section",
+  "class": "longeva-journey-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "How it works"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Book a consultation"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    }
+  ],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title" },
+        { "type": "textarea", "id": "body", "label": "Body" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva journey",
+      "blocks": [
+        {
+          "type": "step",
+          "settings": {
+            "title": "Book online or walk in",
+            "body": "Choose your service, pick a time, or visit our Rochdale clinic for same-day appointments where clinically appropriate."
+          }
+        },
+        {
+          "type": "step",
+          "settings": {
+            "title": "Clinical consultation",
+            "body": "A GPhC-registered pharmacist reviews your history, assesses suitability, and explains options before any treatment begins."
+          }
+        },
+        {
+          "type": "step",
+          "settings": {
+            "title": "Treatment and follow-up",
+            "body": "Treatment delivered by trained clinicians with clear aftercare guidance and ongoing support where needed."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,150 @@
+/* ===================================================================
+   Vaccine Finder, Phase 1. Scoped to .longeva-vfinder. Reuses brand
+   tokens and the shared .longeva-btn primitives. No priority overrides;
+   specificity by the .longeva-vfinder scope, per PROJECT_RULES.md section 3.4.
+   =================================================================== */
+
+.longeva-vfinder { color: #2D190E; }
+
+.longeva-vfinder__intro { max-width: 60ch; }
+.longeva-vfinder__heading {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.longeva-vfinder__lead {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  margin: 0;
+}
+
+/* Control */
+.longeva-vfinder__control { margin: 24px 0 0; max-width: 520px; }
+.longeva-vfinder__label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.longeva-vfinder__select {
+  width: 100%;
+  padding: 12px 40px 12px 14px;
+  font-size: 16px;
+  color: #2D190E;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath fill='none' stroke='%238a5f2a' stroke-width='2' d='M1 1l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  border: 1px solid rgba(45, 25, 14, 0.45);
+  border-radius: 10px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.longeva-vfinder__select:focus-visible {
+  outline: 2px solid #8a5f2a;
+  outline-offset: 2px;
+  border-color: #8a5f2a;
+}
+
+/* Result panel */
+.longeva-vfinder__results { margin: 24px 0 0; }
+.longeva-vfinder__card {
+  border: 1px solid rgba(45, 25, 14, 0.14);
+  border-radius: 14px;
+  padding: clamp(18px, 3vw, 28px);
+  background: #fff;
+}
+.longeva-vfinder__card-title {
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.2;
+  margin: 0 0 16px;
+}
+.longeva-vfinder__card-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a5f2a;
+  margin: 0 0 10px;
+}
+.longeva-vfinder__vaccines { margin: 0 0 20px; }
+.longeva-vfinder__vaccine-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.longeva-vfinder__vaccine-link,
+.longeva-vfinder__vaccine span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: #F4ECDE;
+  border: 1px solid rgba(45, 25, 14, 0.12);
+  border-radius: 999px;
+  color: #2D190E;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+.longeva-vfinder__vaccine-link:hover {
+  border-color: #A6783C;
+  background: #efe2cd;
+}
+.longeva-vfinder__vaccine-link:focus-visible {
+  background: #efe2cd;
+  outline: 2px solid #8a5f2a;
+  outline-offset: 2px;
+}
+.longeva-vfinder__note,
+.longeva-vfinder__risk-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  margin: 0;
+  max-width: 64ch;
+}
+.longeva-vfinder__empty {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  margin: 0;
+}
+.longeva-vfinder__risk { margin: 0 0 20px; }
+.longeva-vfinder__yf {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #2D190E;
+  background: #F4ECDE;
+  border-left: 3px solid #A6783C;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  margin: 0 0 20px;
+  max-width: 64ch;
+}
+.longeva-vfinder__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 4px 0 0;
+}
+
+/* No-JavaScript fallback list */
+.longeva-vfinder__nojs { margin: 24px 0 0; }
+.longeva-vfinder__nojs-lead { font-weight: 600; margin: 0 0 10px; }
+.longeva-vfinder__nojs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px 24px;
+}
+@media (min-width: 600px) { .longeva-vfinder__nojs-list { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .longeva-vfinder__nojs-list { grid-template-columns: repeat(3, 1fr); } }
+.longeva-vfinder__nojs-list a { color: #8a5f2a; text-decoration: none; }
+.longeva-vfinder__nojs-list a:hover,
+.longeva-vfinder__nojs-list a:focus-visible { text-decoration: underline; }

@@ -1,0 +1,166 @@
+{% comment %}
+  Longeva service breadcrumb, PRODUCT variant.
+
+  Fork of longeva-service-breadcrumb.liquid for the product.vaccine template
+  (the deposit-model vaccine products). Identical behaviour, but reads from
+  the product instead of the page so it renders on a /products/ URL:
+    Home / <Category hub link> / <Current product title>
+
+  Category resolves from product.metafields.custom.category, else is inferred
+  from the product handle (the 4 vaccine handles end in "-vaccination", so
+  they self-heal to Vaccinations even with the metafield blank).
+
+  Separators use "/" wrapped in aria-hidden; no em or en dashes.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign category = product.metafields.custom.category
+  assign show_home = section.settings.show_home
+  assign home_label = section.settings.home_label | default: 'Home'
+
+  assign inferred_category = blank
+  assign inferred_hub_handle = blank
+  if category == blank
+    if product.handle contains 'vaccination' or product.handle contains 'vaccine'
+      assign inferred_category = 'Vaccinations'
+      assign inferred_hub_handle = 'vaccinations-manchester'
+    elsif product.handle contains 'weight-management' or product.handle contains 'alcohol-reduction' or product.handle contains 'smoking-cessation'
+      assign inferred_category = 'Weight Management'
+      assign inferred_hub_handle = 'weight-management-manchester'
+    elsif product.handle contains 'anti-wrinkle' or product.handle contains 'dermal-filler' or product.handle contains 'chemical-peel' or product.handle contains 'microneedling' or product.handle contains 'thread-lift' or product.handle contains 'fat-dissolve' or product.handle contains 'skin-booster'
+      assign inferred_category = 'Aesthetics'
+      assign inferred_hub_handle = 'aesthetics-manchester'
+    elsif product.handle contains 'acne' or product.handle contains 'rosacea' or product.handle contains 'eczema' or product.handle contains 'dermatitis' or product.handle contains 'psoriasis' or product.handle contains 'cold-sore' or product.handle contains 'facial-hair' or product.handle contains 'hair-loss'
+      assign inferred_category = 'Skin Health'
+      assign inferred_hub_handle = 'skin-health-manchester'
+    endif
+  endif
+
+  assign effective_category = category | default: inferred_category
+  if category != blank
+    assign hub_handle = category | downcase | replace: ' ', '-' | append: '-manchester'
+  else
+    assign hub_handle = inferred_hub_handle
+  endif
+  assign hub = pages[hub_handle]
+-%}
+
+<nav class="longeva-service-breadcrumb" aria-label="Breadcrumb">
+  <div class="longeva-container longeva-service-breadcrumb__inner">
+    <ol class="longeva-service-breadcrumb__list" role="list">
+      {% if show_home %}
+        <li class="longeva-service-breadcrumb__item">
+          <a class="longeva-service-breadcrumb__link" href="{{ routes.root_url }}">{{ home_label | escape }}</a>
+          <span class="longeva-service-breadcrumb__sep" aria-hidden="true">/</span>
+        </li>
+      {% endif %}
+      {% if effective_category != blank %}
+        <li class="longeva-service-breadcrumb__item">
+          {% if hub %}
+            <a class="longeva-service-breadcrumb__link" href="{{ hub.url }}">{{ effective_category | escape }}</a>
+          {% else %}
+            <span class="longeva-service-breadcrumb__plain">{{ effective_category | escape }}</span>
+          {% endif %}
+          <span class="longeva-service-breadcrumb__sep" aria-hidden="true">/</span>
+        </li>
+      {% endif %}
+      <li class="longeva-service-breadcrumb__item longeva-service-breadcrumb__item--current" aria-current="page">
+        <span class="longeva-service-breadcrumb__current">{{ product.title | remove: ' Manchester' | escape }}</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+{% stylesheet %}
+  .longeva-service-breadcrumb {
+    background: var(--longeva-bg);
+    border-block-end: 1px solid var(--longeva-border);
+  }
+  .longeva-service-breadcrumb__inner {
+    padding-block: 14px;
+  }
+  .longeva-service-breadcrumb__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-service-breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .longeva-service-breadcrumb__link {
+    color: var(--longeva-text-subdued);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .longeva-service-breadcrumb__link:hover,
+  .longeva-service-breadcrumb__link:focus-visible {
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    outline: none;
+  }
+  .longeva-service-breadcrumb__link:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  .longeva-service-breadcrumb__plain {
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-service-breadcrumb__current {
+    color: var(--longeva-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 52ch;
+  }
+  .longeva-service-breadcrumb__sep {
+    color: var(--longeva-text-quiet);
+    padding-inline: 8px;
+    user-select: none;
+  }
+  @media (max-width: 749px) {
+    .longeva-service-breadcrumb__list { font-size: 12px; }
+    .longeva-service-breadcrumb__sep { padding-inline: 6px; }
+    .longeva-service-breadcrumb__current { max-width: 24ch; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Breadcrumb (product)",
+  "tag": "section",
+  "class": "longeva-service-breadcrumb-section",
+  "enabled_on": { "templates": ["product"] },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_home",
+      "label": "Show home link",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Home link label",
+      "default": "Home"
+    }
+  ],
+  "presets": [
+    { "name": "Breadcrumb (product)" }
+  ]
+}
+{% endschema %}

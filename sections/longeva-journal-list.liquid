@@ -1,0 +1,233 @@
+{%- comment -%}
+  Longeva journal list. Renders the current blog as a grid of brand
+  monogram panels so the index matches the homepage preview (PR 47)
+  and never leaks stock imagery before brand-compliant photography
+  lands.
+
+  Use templates/blog.json referencing { "type": "longeva-journal-list" }.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign heading = section.settings.heading | default: blog.title
+  assign lede = section.settings.lede
+  assign use_article_image = section.settings.use_article_image
+-%}
+
+<section class="longeva-journal-list longeva-page longeva-page--light longeva-section" aria-labelledby="longeva-journal-list-heading">
+  <div class="longeva-container">
+    <header class="longeva-journal-list__header">
+      <h1 id="longeva-journal-list-heading" class="longeva-display longeva-journal-list__heading">{{ heading | escape }}</h1>
+      {% if lede != blank %}
+        <p class="longeva-journal-list__lede">{{ lede | escape }}</p>
+      {% endif %}
+    </header>
+
+    {% paginate blog.articles by 12 %}
+      {% if blog.articles.size > 0 %}
+        <ul class="longeva-journal-list__grid" role="list" data-longeva-stagger="60">
+          {% for article in blog.articles %}
+            <li class="longeva-journal-list__card" data-longeva-reveal>
+              <a class="longeva-journal-list__card-link" href="{{ article.url }}">
+                {% if use_article_image and article.image %}
+                  <span class="longeva-journal-list__image">
+                    <img
+                      src="{{ article.image | image_url: width: 640 }}"
+                      srcset="{{ article.image | image_url: width: 640 }} 640w, {{ article.image | image_url: width: 960 }} 960w"
+                      sizes="(max-width: 749px) 90vw, 33vw"
+                      alt="{{ article.image.alt | default: article.title | escape }}"
+                      loading="lazy"
+                      width="{{ article.image.width }}"
+                      height="{{ article.image.height }}"
+                    >
+                  </span>
+                {% else %}
+                  <span class="longeva-journal-list__image longeva-journal-list__image--panel" aria-hidden="true">
+                    <span class="longeva-journal-list__monogram">{{ article.title | strip | slice: 0, 1 | upcase }}</span>
+                    {% if article.tags.size > 0 %}
+                      <span class="longeva-journal-list__panel-tag">{{ article.tags.first | escape }}</span>
+                    {% endif %}
+                  </span>
+                {% endif %}
+                <h2 class="longeva-display longeva-journal-list__title">{{ article.title | escape }}</h2>
+                {% if article.excerpt_or_content != blank %}
+                  <p class="longeva-journal-list__excerpt">{{ article.excerpt_or_content | strip_html | truncatewords: 28 }}</p>
+                {% endif %}
+                <p class="longeva-journal-list__meta">
+                  {%- if article.metafields.custom.reviewed_by.value -%}
+                    Reviewed by {{ article.metafields.custom.reviewed_by.value.name | escape }} &middot; {{ article.published_at | date: '%-d %B %Y' }}
+                  {%- else -%}
+                    {{ article.published_at | date: '%-d %B %Y' }}
+                  {%- endif -%}
+                </p>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if paginate.pages > 1 %}
+          <nav class="longeva-journal-list__pagination" aria-label="Pagination">
+            {% if paginate.previous %}
+              <a class="longeva-btn longeva-btn--ghost" href="{{ paginate.previous.url }}">{{ paginate.previous.title | escape }}</a>
+            {% endif %}
+            <span class="longeva-journal-list__page-count">Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+            {% if paginate.next %}
+              <a class="longeva-btn longeva-btn--primary-on-light" href="{{ paginate.next.url }}">{{ paginate.next.title | escape }}</a>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="longeva-journal-list__empty">Articles coming soon.</p>
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-journal-list { background: var(--longeva-bg); }
+  .longeva-journal-list__header {
+    max-width: 880px;
+    margin: 0 0 clamp(32px, 5vw, 56px);
+  }
+  .longeva-journal-list__heading {
+    font-size: clamp(36px, 5vw, 56px);
+    margin: 0;
+    color: var(--longeva-text);
+  }
+  .longeva-journal-list__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 16px 0 0;
+    max-width: 56ch;
+  }
+  .longeva-journal-list__grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .longeva-journal-list__card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+  .longeva-journal-list__image {
+    display: block;
+    aspect-ratio: 16 / 9;
+    border-radius: 2px;
+    overflow: hidden;
+    transition: box-shadow 0.2s var(--longeva-ease);
+  }
+  .longeva-journal-list__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .longeva-journal-list__image--panel {
+    background:
+      linear-gradient(135deg, rgba(45, 25, 14, 0.08) 0%, rgba(45, 25, 14, 0) 60%),
+      #B99157;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .longeva-journal-list__monogram {
+    font-family: var(--longeva-font-display);
+    font-size: clamp(64px, 8vw, 120px);
+    line-height: 1;
+    color: rgba(245, 241, 234, 0.90);
+    letter-spacing: -0.02em;
+  }
+  .longeva-journal-list__panel-tag {
+    position: absolute;
+    inset-inline-start: 20px;
+    inset-block-end: 16px;
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(45, 25, 14, 0.75);
+  }
+  .longeva-journal-list__card-link:hover .longeva-journal-list__image,
+  .longeva-journal-list__card-link:focus-visible .longeva-journal-list__image {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  }
+  .longeva-journal-list__title {
+    font-size: 22px;
+    line-height: 1.25;
+    margin: 16px 0 0;
+    color: var(--longeva-text);
+  }
+  .longeva-journal-list__excerpt {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--longeva-text-subdued);
+    margin: 12px 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .longeva-journal-list__meta {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: var(--longeva-text-quiet);
+    margin: 12px 0 0;
+  }
+  .longeva-journal-list__pagination {
+    margin-block-start: 48px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .longeva-journal-list__page-count {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-journal-list__empty {
+    font-family: var(--longeva-font-body);
+    color: var(--longeva-text-subdued);
+    margin: 48px 0 0;
+  }
+
+  @media (max-width: 1023px) {
+    .longeva-journal-list__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+  }
+  @media (max-width: 640px) {
+    .longeva-journal-list__grid { grid-template-columns: 1fr; gap: 24px; }
+    .longeva-journal-list__pagination { justify-content: stretch; }
+    .longeva-journal-list__pagination .longeva-btn { flex: 1; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva journal list",
+  "tag": "section",
+  "class": "longeva-journal-list-section",
+  "enabled_on": { "templates": ["blog"] },
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave blank to use the blog title." },
+    { "type": "textarea", "id": "lede", "label": "Lede" },
+    { "type": "checkbox", "id": "use_article_image", "label": "Use article image", "info": "Leave off until brand-compliant photography is uploaded per article.", "default": false }
+  ],
+  "presets": [
+    { "name": "Longeva journal list" }
+  ]
+}
+{% endschema %}

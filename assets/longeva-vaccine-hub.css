@@ -1,0 +1,201 @@
+/* ===================================================================
+   Longeva vaccine hub + traveller-type templates.
+   Scoped to .longeva-vhub. Reuses brand tokens and the shared
+   longeva-destination__* primitives (cta-band, sources, review,
+   sticky-cta) loaded via longeva-destinations.css. Specificity is
+   handled entirely by the .longeva-vhub scope, with no priority
+   overrides anywhere, per PROJECT_RULES.md section 3.4.
+   =================================================================== */
+
+.longeva-vhub { color: var(--longeva-ink, #2D190E); }
+
+/* Breadcrumb */
+.longeva-vhub__breadcrumb { padding-top: 20px; }
+.longeva-vhub__crumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: var(--longeva-muted, #6b5d52);
+}
+.longeva-vhub__crumbs li { display: flex; align-items: center; gap: 8px; }
+.longeva-vhub__crumbs li + li::before { content: "/"; color: var(--longeva-line, rgba(45, 25, 14, 0.4)); }
+.longeva-vhub__crumbs a { color: var(--longeva-muted, #6b5d52); text-decoration: none; }
+.longeva-vhub__crumbs a:hover,
+.longeva-vhub__crumbs a:focus-visible { color: #8a5f2a; }
+
+/* Hero */
+.longeva-vhub__hero { padding-top: clamp(16px, 3vw, 28px); }
+.longeva-vhub__eyebrow { margin: 0 0 12px; }
+.longeva-vhub__h1 {
+  font-size: clamp(30px, 4.5vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+  max-width: 24ch;
+}
+.longeva-vhub__reviewed {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6b5d52;
+  margin: 0 0 18px;
+}
+.longeva-vhub__lead {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 8px;
+}
+.longeva-vhub__hero-actions { margin: 24px 0 8px; }
+
+/* Content blocks */
+.longeva-vhub__block { border-top: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.1)); }
+.longeva-vhub__h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+  margin: 0 0 18px;
+}
+.longeva-vhub__h3 {
+  font-family: var(--longeva-font-display, Georgia, 'Times New Roman', serif);
+  font-weight: 600;
+  font-size: clamp(17px, 2vw, 20px);
+  line-height: 1.2;
+  margin: 0 0 6px;
+}
+
+/* Cost */
+.longeva-vhub__price {
+  font-family: var(--longeva-font-display, Georgia, serif);
+  font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.1;
+  margin: 0 0 6px;
+  color: var(--longeva-ink, #2D190E);
+}
+.longeva-vhub__price-caption {
+  font-size: 15px;
+  color: var(--longeva-muted, #6b5d52);
+  margin: 0 0 12px;
+}
+.longeva-vhub__price-link { margin: 0; }
+.longeva-vhub__price-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a5f2a;
+  font-weight: 600;
+  text-decoration: none;
+}
+.longeva-vhub__price-link a:hover,
+.longeva-vhub__price-link a:focus-visible { text-decoration: underline; }
+
+/* Objection handling */
+.longeva-vhub__objections { display: grid; gap: 16px; }
+.longeva-vhub__objection {
+  border-left: 3px solid #A6783C;
+  background: #FBF4E9;
+  border-radius: 0 10px 10px 0;
+  padding: 16px 18px;
+}
+.longeva-vhub__objection-point {
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0 0 6px;
+  color: var(--longeva-ink, #2D190E);
+}
+.longeva-vhub__objection-response { font-size: 15px; line-height: 1.6; color: rgba(45, 25, 14, 0.85); }
+.longeva-vhub__objection-response p { margin: 0; }
+
+/* Link grid (where-relevant, common vaccines) */
+.longeva-vhub__link-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 600px) { .longeva-vhub__link-grid { grid-template-columns: repeat(2, 1fr); gap: 10px 24px; } }
+@media (min-width: 980px) { .longeva-vhub__link-grid { grid-template-columns: repeat(3, 1fr); } }
+.longeva-vhub__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.14));
+  border-radius: 10px;
+  color: var(--longeva-ink, #2D190E);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.longeva-vhub__link:hover,
+.longeva-vhub__link:focus-visible { border-color: #A6783C; background: #F4ECDE; outline: none; }
+
+/* Consultation steps */
+.longeva-vhub__steps {
+  list-style: none;
+  counter-reset: vhub-step;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 720px) { .longeva-vhub__steps { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+.longeva-vhub__step { counter-increment: vhub-step; position: relative; padding-top: 38px; }
+.longeva-vhub__step::before {
+  content: counter(vhub-step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #8a5f2a;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.longeva-vhub__step-title {
+  font-family: var(--longeva-font-display, Georgia, 'Times New Roman', serif);
+  font-weight: 600;
+  font-size: clamp(17px, 2vw, 20px);
+  line-height: 1.2;
+  margin: 0 0 6px;
+}
+.longeva-vhub__step p { font-size: 15px; line-height: 1.55; color: rgba(45, 25, 14, 0.82); margin: 0; }
+
+/* FAQ */
+.longeva-vhub__faqs { display: grid; gap: 0; border-top: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.12)); }
+.longeva-vhub__faq { border-bottom: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.12)); }
+.longeva-vhub__faq-q {
+  cursor: pointer;
+  list-style: none;
+  padding: 18px 36px 18px 0;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.4;
+  position: relative;
+}
+.longeva-vhub__faq-q::-webkit-details-marker { display: none; }
+.longeva-vhub__faq-q::after {
+  content: "+";
+  position: absolute;
+  right: 4px;
+  top: 16px;
+  font-size: 22px;
+  font-weight: 400;
+  color: #8a5f2a;
+}
+.longeva-vhub__faq[open] .longeva-vhub__faq-q::after { content: "\2212"; }
+.longeva-vhub__faq-q:focus-visible { outline: 2px solid #A6783C; outline-offset: 2px; }
+.longeva-vhub__faq-a { padding: 0 0 18px; max-width: 70ch; }
+.longeva-vhub__faq-a p { margin: 0 0 10px; font-size: 16px; line-height: 1.6; color: rgba(45, 25, 14, 0.85); }

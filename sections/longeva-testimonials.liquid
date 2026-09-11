@@ -1,0 +1,91 @@
+{%- comment -%}
+  Testimonial display component (Brief v4 Section 17).
+
+  Admin-editable testimonial blocks for placement on Why Choose Longeva,
+  Travel Health Consultation, Hajj and Umrah, Yellow Fever Centre and the
+  homepage.
+
+  IMPORTANT: no placeholder testimonials. The section renders nothing
+  until at least one testimonial block carries a quote, so an empty
+  component never ships fake social proof. Review and AggregateRating
+  structured data is deliberately NOT emitted here: the brief (Section 21)
+  says apply it only once genuine reviews are collected, never on
+  placeholder data. This component is presentational only.
+
+  Primary review collection is Google Business Profile (Section 17). These
+  on-site testimonials are curated quotes entered by the pharmacy.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-testimonials.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign blocks = section.blocks | where: 'type', 'testimonial'
+  assign valid_count = 0
+  for b in blocks
+    if b.settings.quote != blank
+      assign valid_count = valid_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if valid_count > 0 -%}
+  <section class="longeva-testimonials longeva-container longeva-section" aria-labelledby="longeva-testimonials-heading">
+    <header class="longeva-testimonials__head">
+      <h2 id="longeva-testimonials-heading" class="longeva-display longeva-testimonials__heading">
+        {{ section.settings.heading | default: 'What our patients say' | escape }}
+      </h2>
+      {%- if section.settings.intro != blank -%}
+        <p class="longeva-testimonials__intro">{{ section.settings.intro | escape }}</p>
+      {%- endif -%}
+    </header>
+
+    <ul class="longeva-testimonials__grid" role="list">
+      {%- for b in blocks -%}
+        {%- if b.settings.quote != blank -%}
+          <li class="longeva-testimonials__item" {{ b.shopify_attributes }}>
+            <figure class="longeva-testimonials__figure">
+              <blockquote class="longeva-testimonials__quote">{{ b.settings.quote | escape }}</blockquote>
+              {%- if b.settings.name != blank or b.settings.context != blank -%}
+                <figcaption class="longeva-testimonials__cite">
+                  {%- if b.settings.name != blank -%}
+                    <span class="longeva-testimonials__name">{{ b.settings.name | escape }}</span>
+                  {%- endif -%}
+                  {%- if b.settings.context != blank -%}
+                    <span class="longeva-testimonials__context">{{ b.settings.context | escape }}</span>
+                  {%- endif -%}
+                </figcaption>
+              {%- endif -%}
+            </figure>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "tag": "section",
+  "settings": [
+    { "type": "paragraph", "content": "Curated patient testimonials. The section is hidden until at least one block has a quote, so it never shows placeholder content. No star ratings or review schema are emitted (those need genuine collected reviews, per the build rules)." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What our patients say" },
+    { "type": "textarea", "id": "intro", "label": "Intro" }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        { "type": "textarea", "id": "quote", "label": "Quote", "info": "The testimonial text. Real patient words only." },
+        { "type": "text", "id": "name", "label": "Attribution", "info": "First name or initials. No full names or identifying detail without consent." },
+        { "type": "text", "id": "context", "label": "Context", "info": "Optional, e.g. Hajj traveller, or the service used." }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "enabled_on": { "templates": ["page", "index"] },
+  "presets": [{ "name": "Testimonials" }]
+}
+{% endschema %}

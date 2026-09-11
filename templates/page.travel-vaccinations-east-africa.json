@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-travel-hub",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "h1": "East Africa Travel Vaccinations",
+        "mode": "curated",
+        "curated_handles": "kenya"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

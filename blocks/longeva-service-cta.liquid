@@ -1,0 +1,112 @@
+{% comment %}
+  Longeva service final CTA block.
+
+  Closing "ready to book" panel. Duplicates the Sesami booking button
+  placement from the hero so the page ends with a clear call to action
+  after all the supporting content. Sesami's app block is added
+  adjacent via the theme customiser.
+{% endcomment %}
+
+{% liquid
+  assign service = product.metafields.custom.service_ref.value
+  assign service_name = product.title
+  if service and service.name != blank
+    assign service_name = service.name
+  endif
+  assign heading = block.settings.heading | default: "Ready to book?"
+  assign body = block.settings.body
+  comment
+    Closing CTA opens the Sesami slot picker inline for a travel vaccine
+    consultation (no page hop). Service and consultation variant fall
+    back to the site-wide travel health consultation; shop id resolves
+    from the global Sesami setting inside the snippet.
+  endcomment
+%}
+
+<section class="longeva-service-cta" {{ block.shopify_attributes }}>
+  <div class="longeva-service-cta__inner">
+    <h2 class="longeva-service-cta__heading">{{ heading | escape }}</h2>
+    {% if body != blank %}
+      <div class="longeva-service-cta__body">{{ body }}</div>
+    {% else %}
+      <p class="longeva-service-cta__body">Book your {{ service_name | downcase }} at our Rochdale pharmacy. If you're not sure which service suits you best, the <a href="/pages/travel-health-consultation">travel health consultation</a> covers most travel questions in 30 minutes.</p>
+    {% endif %}
+    <div class="longeva-service-cta__actions">
+      {%- comment -%}
+        Filters are not evaluated inside render arguments, so service id,
+        consultation variant and fallback are passed as literals (same
+        pattern as the destination CTA). cta_label carries its schema
+        default.
+      {%- endcomment -%}
+      {% render 'longeva-sesami-button',
+         service_id: '15419482145145',
+         variant_id: '56910652342649',
+         label: block.settings.cta_label,
+         variant: 'primary',
+         fallback_url: '/pages/travel-health-consultation' %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-service-cta {
+    padding-block: 2rem;
+  }
+  .longeva-service-cta__inner {
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    text-align: center;
+  }
+  .longeva-service-cta__heading {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .longeva-service-cta__body {
+    margin: 0 auto 1rem;
+    max-width: 48ch;
+    line-height: 1.5;
+  }
+  .longeva-service-cta__actions {
+    display: flex;
+    justify-content: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva service CTA",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ready to book?"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body copy",
+      "info": "Shown above the Sesami booking button. Leave empty to use the default copy."
+    },
+    {
+      "type": "text",
+      "id": "sesami_service_id",
+      "label": "Sesami service ID",
+      "info": "Numeric ID from Sesami admin (same value as the hero block). Leave blank to fall back to the booking link below."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Book a travel vaccination consultation"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Fallback CTA URL"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-content-page",
+      "settings": {
+        "eyebrow": "",
+        "show_cta": false
+      }
+    }
+  },
+  "order": ["main"]
+}

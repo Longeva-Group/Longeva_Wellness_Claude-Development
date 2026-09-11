@@ -1,0 +1,240 @@
+{% doc %}
+  Renders all meta tags for the page including Open Graph, Twitter Cards, and SEO tags.
+
+  @param {object} [product] - The product object, available on product pages for price meta tags.
+{% enddoc %}
+
+<meta charset="utf-8">
+<meta
+  http-equiv="X-UA-Compatible"
+  content="IE=edge"
+>
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+<meta
+  name="view-transition"
+  content="same-origin"
+>
+{%- comment -%}
+  theme-color is set in layout/theme.liquid:19 with the brand value.
+  Removed Horizon's empty placeholder which would otherwise blank it.
+{%- endcomment -%}
+
+{%- liquid
+  # Longeva SEO cascade. Drives <title>, meta description and og:* from a
+  # consistent fallback chain so every page surfaces keyword-bearing,
+  # geo-anchored copy even when the admin SEO panel is blank. Source of
+  # truth: page_title / page_description (Shopify admin SEO fields) >
+  # page.metafields.custom.lede > sensible per-template default.
+
+  assign brand_suffix = ' | ' | append: shop.name
+
+  # 1. Description fallback chain.
+  assign cascade_description = page_description
+  if cascade_description == blank and request.page_type == 'page' and page
+    assign lede_text = page.metafields.custom.lede | strip | strip_newlines
+    if lede_text != blank
+      assign cascade_description = lede_text
+    endif
+  endif
+  if cascade_description == blank
+    assign cascade_description = shop.description
+  endif
+
+  # 2. Title with brand suffix and per-template defaults. Admin-set title
+  # always wins. The default for the homepage is anchored to Manchester +
+  # the pharmacist-led positioning so the head term is owned even before
+  # admin customises.
+
+  # 2a. Geo append. Service-page + hub-template pages SHOULD carry "in
+  # Manchester" in the SERP title for local-pack eligibility, but only
+  # when:
+  #   - admin has not set a custom title_tag (page_title == page.title)
+  #   - the page title does not already contain "Manchester"
+  # This keeps admin overrides authoritative and prevents accidental
+  # duplication like "Anti-wrinkle injections Manchester in Manchester".
+  assign geo_append = false
+  if request.page_type == 'page' and page
+    assign tsuffix = page.template_suffix | default: ''
+    if page_title == page.title
+      if tsuffix == 'service-page' or tsuffix contains 'hub'
+        unless page.title contains 'Manchester' or page.title contains 'manchester'
+          assign geo_append = true
+        endunless
+      endif
+    endif
+  endif
+
+  # BK-02 (Varsha May 2026): match cart by ANY of three signals
+  # because request.page_type sometimes returns the templated string
+  # 'cart' but other Shopify routes may not. Also match request.path
+  # and template.name as belt-and-braces.
+  assign _is_cart_route = false
+  if request.page_type == 'cart' or template.name == 'cart' or request.path == '/cart' or request.path contains '/cart'
+    assign _is_cart_route = true
+  endif
+
+  if _is_cart_route
+    assign cascade_title = 'Bookings' | append: brand_suffix
+  elsif page_title contains shop.name
+    assign cascade_title = page_title
+  elsif page_title != blank
+    if geo_append
+      assign cascade_title = page_title | append: ' in Manchester' | append: brand_suffix
+    else
+      assign cascade_title = page_title | append: brand_suffix
+    endif
+  elsif request.page_type == 'index'
+    assign cascade_title = 'Pharmacist-led clinical services in Manchester' | append: brand_suffix
+  else
+    assign cascade_title = shop.name
+  endif
+
+  # BK-02 brute-force safety net (Varsha May 2026). If `request.page_type`
+  # and friends silently fail to match the cart route (Shopify oddly
+  # doesn't expose request inside some head-render contexts), catch
+  # whatever Shopify did pass through `page_title` and overwrite when it
+  # looks like the cart's default locale string.
+  if cascade_title contains 'Shopping' or cascade_title contains 'Cart' or cascade_title contains 'Basket' or cascade_title contains 'cart' or cascade_title contains 'basket'
+    assign cascade_title = 'Bookings' | append: brand_suffix
+  endif
+
+  # 3. Open Graph computed values.
+  assign og_title = cascade_title
+  assign og_url = canonical_url | default: request.origin
+  assign og_type = 'website'
+  assign og_description = cascade_description | default: shop.name
+
+  if request.page_type == 'product'
+    assign og_type = 'product'
+  elsif request.page_type == 'article'
+    assign og_type = 'article'
+  elsif request.page_type == 'password'
+    assign og_url = request.origin
+  endif
+%}
+
+<meta
+  property="og:site_name"
+  content="{{ shop.name }}"
+>
+<meta
+  property="og:locale"
+  content="en_GB"
+>
+<meta
+  property="og:url"
+  content="{{ og_url }}"
+>
+<meta
+  property="og:title"
+  content="{{ og_title | escape }}"
+>
+<meta
+  property="og:type"
+  content="{{ og_type }}"
+>
+<meta
+  property="og:description"
+  content="{{ og_description | escape }}"
+>
+
+{%- if page_image -%}
+  <meta
+    property="og:image"
+    content="http:{{ page_image | image_url }}"
+  >
+  <meta
+    property="og:image:secure_url"
+    content="https:{{ page_image | image_url }}"
+  >
+  <meta
+    property="og:image:width"
+    content="{{ page_image.width }}"
+  >
+  <meta
+    property="og:image:height"
+    content="{{ page_image.height }}"
+  >
+{%- endif -%}
+
+{%- if request.page_type == 'product' -%}
+  <meta
+    property="og:price:amount"
+    content="{{ product.price | money_without_currency | strip_html }}"
+  >
+  <meta
+    property="og:price:currency"
+    content="{{ cart.currency.iso_code }}"
+  >
+{%- endif -%}
+
+{%- if settings.social_twitter_link != blank -%}
+  <meta
+    name="twitter:site"
+    content="{{ settings.social_twitter_link | split: 'twitter.com/' | last | prepend: '@' }}"
+  >
+{%- endif -%}
+<meta
+  name="twitter:card"
+  content="summary_large_image"
+>
+<meta
+  name="twitter:title"
+  content="{{ og_title | escape }}"
+>
+<meta
+  name="twitter:description"
+  content="{{ og_description | escape }}"
+>
+
+{%- comment -%}
+  BK-02 (Varsha May 2026) — cart route gets a hardcoded "Bookings | shop"
+  title. Inline at the title emission point to bypass any cascade
+  evaluation oddity. The page is /cart; Shopify's `cart_title` locale
+  string is gitignored from theme pushes so we can't fix it there.
+{%- endcomment -%}
+{%- liquid
+  assign _route_url = canonical_url | default: request.origin | downcase
+  assign _is_cart = false
+  if request.page_type == 'cart'
+    assign _is_cart = true
+  endif
+  if template.name == 'cart'
+    assign _is_cart = true
+  endif
+  if _route_url contains '/cart'
+    assign _is_cart = true
+  endif
+  if cart and cart.token != blank and cascade_title contains 'Cart'
+    assign _is_cart = true
+  endif
+  if cascade_title contains 'Shopping' or cascade_title contains 'Basket'
+    assign _is_cart = true
+  endif
+-%}
+<meta name="longeva-debug" content="pt={{ request.page_type }}|tn={{ template.name }}|url={{ _route_url }}|ct={{ cascade_title }}|isc={{ _is_cart }}">
+
+{%- if _is_cart -%}
+<title>Bookings | {{ shop.name }}</title>
+{%- else -%}
+<title>
+  {{- cascade_title -}}
+  {%- if current_tags %} · tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+  {%- if current_page != 1 %} · Page {{ current_page }}{% endif -%}
+</title>
+{%- endif -%}
+
+<link
+  rel="canonical"
+  href="{{ canonical_url }}"
+>
+
+{% if cascade_description != blank %}
+  <meta
+    name="description"
+    content="{{ cascade_description | escape }}"
+  >
+{% endif %}

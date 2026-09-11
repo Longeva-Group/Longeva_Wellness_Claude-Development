@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-yellow-fever",
+      "settings": {
+        "last_reviewed": "30 May 2026",
+        "reviewed_by": "the Longeva pharmacy team"
+      }
+    }
+  },
+  "order": ["main"]
+}

@@ -1,0 +1,50 @@
+{% comment %} {% unless template == 'index' or template == 'cart' or template == 'password' or template == 'gift_card' %}
+<div style="padding: 12px 20px;">
+  <button onclick="history.back()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; color: #1a1a1a; font-family: inherit;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back
+  </button>
+</div>
+{% endunless %} {% endcomment %}
+
+
+{% comment %} {% unless template == 'index' or template == 'cart' or template == 'password' or template == 'gift_card' %}
+<div style="position: sticky; top: 0; z-index: 40; background: #FAFAF7; padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.06);">
+  <button onclick="history.back()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; color: #1a1a1a; font-family: inherit;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back
+  </button>
+</div>
+{% endunless %} {% endcomment %}
+
+
+{% comment %} {% unless template == 'index' or template == 'cart' or template == 'password' or template == 'gift_card' %}
+<div style="position: sticky; top: calc(var(--header-height, 80px) + var(--header-group-height, 0px)); z-index: 40; background: #FAFAF7; padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.06);">
+  <button onclick="history.back()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; color: #1a1a1a; font-family: inherit;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back
+  </button>
+</div>
+{% endunless %} {% endcomment %}
+
+
+
+{% unless template == 'index' or template == 'cart' or template == 'password' or template == 'gift_card' %}
+<div id="longeva-back-bar" style="position: sticky; z-index: 40; background: #FAFAF7; padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.06);">
+  <button onclick="history.back()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; color: #1a1a1a; font-family: inherit;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Back
+  </button>
+</div>
+<script>
+  (function() {
+    var bar = document.getElementById('longeva-back-bar');
+    var hg = document.getElementById('header-group');
+    function setTop() {
+      if (bar && hg) bar.style.top = hg.offsetHeight + 'px';
+    }
+    setTop();
+    window.addEventListener('resize', setTop);
+  })();
+</script>
+{% endunless %}

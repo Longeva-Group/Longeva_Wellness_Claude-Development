@@ -1,0 +1,44 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pricing": {
+      "type": "longeva-pricing-table",
+      "blocks": {
+        "chikungunya": { "type": "price_row", "settings": { "vaccine": "Chikungunya", "price": "£188 to £226" } },
+        "cholera": { "type": "price_row", "settings": { "vaccine": "Cholera", "price": "£50 to £60" } },
+        "dengue": { "type": "price_row", "settings": { "vaccine": "Dengue fever", "price": "£110 to £130" } },
+        "dtp": { "type": "price_row", "settings": { "vaccine": "Diphtheria, tetanus and polio (DTP)", "price": "£20 to £45" } },
+        "hepa": { "type": "price_row", "settings": { "vaccine": "Hepatitis A", "price": "£30 to £45" } },
+        "hepb": { "type": "price_row", "settings": { "vaccine": "Hepatitis B", "price": "£25 to £48" } },
+        "je": { "type": "price_row", "settings": { "vaccine": "Japanese encephalitis", "price": "£80 to £120" } },
+        "malaria": { "type": "price_row", "settings": { "vaccine": "Malaria tablets", "price": "£4 to £50" } },
+        "menacwy": { "type": "price_row", "settings": { "vaccine": "Meningitis ACWY", "price": "£35 to £60" } },
+        "menb": { "type": "price_row", "settings": { "vaccine": "Meningitis B", "price": "£105 to £120" } },
+        "mmr": { "type": "price_row", "settings": { "vaccine": "MMR", "price": "£30 to £45" } },
+        "rabies": { "type": "price_row", "settings": { "vaccine": "Rabies", "price": "£30 to £90" } },
+        "tbe": { "type": "price_row", "settings": { "vaccine": "Tick-borne encephalitis", "price": "£60 to £70" } },
+        "typhoid": { "type": "price_row", "settings": { "vaccine": "Typhoid", "price": "£22 to £50" } },
+        "yellowfever": { "type": "price_row", "settings": { "vaccine": "Yellow fever", "price": "£50 to £75" } }
+      },
+      "block_order": [
+        "chikungunya", "cholera", "dengue", "dtp", "hepa", "hepb", "je",
+        "malaria", "menacwy", "menb", "mmr", "rabies", "tbe", "typhoid", "yellowfever"
+      ],
+      "settings": {
+        "heading": "Travel vaccination pricing",
+        "price_caption": "Vaccine prices",
+        "consultation_note": "<p>The price shown covers the vaccine. A pharmacist consultation is part of your appointment, where we review your trip, confirm exactly what you need, and agree the final price before anything is given.</p>",
+        "included_note": "<p>Every appointment includes a travel risk assessment, the vaccination itself, and any record or certificate you need. Where more than one dose is required, we plan the course with the right timing before you travel.</p>"
+      }
+    }
+  },
+  "order": ["pricing"]
+}

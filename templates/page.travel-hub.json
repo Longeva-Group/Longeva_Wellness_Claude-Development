@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-travel-hub",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "mode": "region"
+      }
+    }
+  },
+  "order": ["main"]
+}

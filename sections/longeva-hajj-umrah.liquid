@@ -1,0 +1,285 @@
+{%- comment -%}
+  Longeva Hajj and Umrah Vaccinations page.
+
+  Clinical service page for /pages/hajj-and-umrah-vaccinations
+  (template suffix: hajj-umrah-vaccinations). Supports pilgrims
+  travelling from Greater Manchester for Hajj (the annual pilgrimage)
+  and Umrah (year-round) to the Kingdom of Saudi Arabia.
+
+  Structure keeps a clear split between MANDATORY entry requirements
+  (Meningococcal ACWY) and CONDITIONAL or RECOMMENDED vaccines, which
+  is the key compliance distinction for a pharmacy page.
+
+  Clinical claims sourced: Saudi Ministry of Health Hajj and Umrah
+  health conditions, WHO, NaTHNaC (TravelHealthPro Saudi Arabia), NHS.
+  ACWY is mandatory for Hajj and Umrah, quadrivalent conjugate, given
+  at least 10 days before arrival, certificate accepted up to five
+  years for the conjugate vaccine. Polio and yellow fever are
+  conditional on the countries travelled from or through. Everything
+  else is recommended on individual assessment.
+
+  Reuses brand primitives from longeva-destinations.css plus
+  longeva-hajj-umrah.css. The regulatory footer is global via
+  footer-group.json, so it is not repeated here.
+
+  Layout:
+    1. Breadcrumb
+    2. Hero (H1 + credentials + booking CTA)
+    3. Required vaccinations (ACWY mandatory; polio + yellow fever conditional)
+    4. Recommended vaccinations (product links)
+    5. Planning your pilgrimage
+    6. Booking CTA band (primary action)
+    7. FAQ
+    8. Further guidance (FCDO + NaTHNaC Saudi Arabia, quiet)
+    9. Clinical review footer
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-destinations.css' | asset_url | stylesheet_tag }}
+{{ 'longeva-hajj-umrah.css' | asset_url | stylesheet_tag }}
+{% render 'longeva-hajj-umrah-jsonld' %}
+
+{%- liquid
+  assign book_label = 'Book a consultation'
+  assign book_url = settings.longeva_book_cta_url | default: '/pages/book'
+  assign reviewed_human = section.settings.last_reviewed | default: '31 May 2026'
+  assign reviewer = section.settings.reviewed_by | default: 'the Longeva pharmacy team'
+-%}
+
+<article class="longeva-destination longeva-hajj">
+
+  <nav class="longeva-hajj__breadcrumb longeva-container" aria-label="Breadcrumb">
+    <ol class="longeva-hajj__crumbs">
+      <li><a href="/">Home</a></li>
+      <li><a href="/pages/travel-vaccinations">Travel vaccinations</a></li>
+      <li aria-current="page">Hajj and Umrah vaccinations</li>
+    </ol>
+  </nav>
+
+  <header class="longeva-hajj__hero longeva-container longeva-section">
+    <p class="longeva-eyebrow longeva-hajj__eyebrow">Travel vaccinations</p>
+    <h1 class="longeva-display longeva-hajj__h1" id="longeva-hajj-heading">
+      Hajj and Umrah Vaccinations in Greater Manchester
+    </h1>
+    <p class="longeva-hajj__lead">
+      We are a GPhC-registered pharmacy and travel vaccination centre in Rochdale, supporting Hajj and Umrah pilgrims across Greater Manchester, including Oldham, Bury, Bolton, Blackburn and Manchester. Preparing for the pilgrimage is a significant undertaking, and good health helps you focus on what matters most while you are away.
+    </p>
+    <p class="longeva-hajj__lead">
+      Our pharmacist-led team provides the required and recommended vaccinations for pilgrims, with certification where needed, in a calm and respectful setting. We are happy to see families together.
+    </p>
+    <div class="longeva-hajj__hero-actions">
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+    <ul class="longeva-hajj__credentials" aria-label="What we provide">
+      <li><span class="longeva-hajj__cred-key">Mandatory ACWY</span><span class="longeva-hajj__cred-val">Meningococcal ACWY vaccination and certificate</span></li>
+      <li><span class="longeva-hajj__cred-key">Pharmacist-led</span><span class="longeva-hajj__cred-val">Vaccines given by a registered healthcare professional</span></li>
+      <li><span class="longeva-hajj__cred-key">Certificate in clinic</span><span class="longeva-hajj__cred-val">Certification provided at your appointment</span></li>
+      <li><span class="longeva-hajj__cred-key">Near Manchester</span><span class="longeva-hajj__cred-val">Rochdale, serving the North West</span></li>
+    </ul>
+  </header>
+
+  <section class="longeva-hajj__block longeva-hajj__about longeva-container longeva-section" aria-labelledby="longeva-hajj-about">
+    <h2 id="longeva-hajj-about" class="longeva-display longeva-hajj__h2">Hajj and Umrah</h2>
+    <div class="longeva-prose">
+      <p>
+        Hajj is one of the five pillars of Islam. It is obligatory once in a lifetime for every Muslim who is physically and financially able to perform it, and it takes place each year during Dhul Hijjah.
+      </p>
+      <p>
+        Umrah is a recommended act of worship that can be performed at any time of year. It does not fulfil the obligation of Hajj. Many pilgrims perform Umrah more than once, while Hajj remains the once in a lifetime duty for those who are able.
+      </p>
+      <p>
+        Whichever you are preparing for, the vaccination requirements set by the Kingdom of Saudi Arabia are the same, and being in good health helps you focus on your worship while you are away.
+      </p>
+    </div>
+  </section>
+
+  <section class="longeva-hajj__block longeva-container longeva-section" aria-labelledby="longeva-hajj-required">
+    <h2 id="longeva-hajj-required" class="longeva-display longeva-hajj__h2">Required vaccinations for Hajj and Umrah</h2>
+    <p class="longeva-hajj__intro">
+      The Kingdom of Saudi Arabia sets the entry requirements for pilgrims. One vaccination is mandatory for all pilgrims, and proof must be presented on arrival. Two others may be required depending on the countries you have travelled from or through. Our pharmacists will confirm exactly what you need for your circumstances.
+    </p>
+
+    <div class="longeva-hajj__req longeva-hajj__req--mandatory">
+      <span class="longeva-hajj__tag longeva-hajj__tag--mandatory">Mandatory</span>
+      <h3 class="longeva-hajj__h3">Meningococcal ACWY vaccination</h3>
+      <p>
+        Meningococcal ACWY vaccination is a mandatory entry requirement for all Hajj and Umrah pilgrims aged one year and over, and you must hold a valid certificate to enter Saudi Arabia. The quadrivalent (A, C, W, Y) vaccine should be given at least 10 days before you arrive, and the certificate for the conjugate vaccine is accepted for up to five years.
+      </p>
+      <p>
+        At Longeva we provide the vaccination, your certificate, and a travel health consultation in the same visit.
+      </p>
+      <p class="longeva-hajj__links">
+        <a class="longeva-hajj__pill" href="/products/meningitis-acwy-vaccination-manchester">Meningococcal ACWY vaccination {% render 'longeva-arrow', size: 14 %}</a>
+      </p>
+    </div>
+
+    <div class="longeva-hajj__req longeva-hajj__req--conditional">
+      <span class="longeva-hajj__tag longeva-hajj__tag--conditional">May be required</span>
+      <h3 class="longeva-hajj__h3">Polio vaccination</h3>
+      <p>
+        Saudi Arabia requires proof of polio vaccination from pilgrims who have travelled from, or through, certain countries where polio remains a risk. Most pilgrims travelling directly from the UK will not need separate proof, but a polio booster is recommended to keep your cover up to date, and is usually given as a combined diphtheria, tetanus and polio vaccine. Our pharmacists will check whether this applies to you.
+      </p>
+      <p class="longeva-hajj__links">
+        <a class="longeva-hajj__pill" href="/products/diphtheria-tetanus-polio-booster">Diphtheria, tetanus and polio booster {% render 'longeva-arrow', size: 14 %}</a>
+      </p>
+    </div>
+
+    <div class="longeva-hajj__req longeva-hajj__req--conditional">
+      <span class="longeva-hajj__tag longeva-hajj__tag--conditional">May be required</span>
+      <h3 class="longeva-hajj__h3">Yellow fever vaccination</h3>
+      <p>
+        Yellow fever vaccination is not routinely required for travel from the United Kingdom. However, Saudi Arabia may require proof of yellow fever vaccination if you are travelling from, or transiting through, a country where yellow fever is present. If this applies to you, our pharmacists can advise whether vaccination and certification are needed.
+      </p>
+      <p class="longeva-hajj__links">
+        <a class="longeva-hajj__pill" href="/pages/yellow-fever-vaccination-centre">Visit our Yellow Fever Vaccination Centre {% render 'longeva-arrow', size: 14 %}</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="longeva-hajj__block longeva-container longeva-section" aria-labelledby="longeva-hajj-recommended">
+    <h2 id="longeva-hajj-recommended" class="longeva-display longeva-hajj__h2">Recommended vaccinations for pilgrims</h2>
+    <p class="longeva-hajj__intro">
+      Alongside the mandatory ACWY vaccine, our pharmacists commonly discuss the following with Hajj and Umrah pilgrims. Whether each is right for you depends on your health, your medical history and your plans, and we will talk this through at your consultation.
+    </p>
+    <ul class="longeva-hajj__rec-list">
+      <li class="longeva-hajj__rec">
+        <h3 class="longeva-hajj__h3">Typhoid</h3>
+        <p>Typhoid is spread through contaminated food and water, and large gatherings with shared catering can increase the risk.</p>
+        <a class="longeva-hajj__pill" href="/products/typhoid-vaccination">Typhoid vaccination {% render 'longeva-arrow', size: 14 %}</a>
+      </li>
+      <li class="longeva-hajj__rec">
+        <h3 class="longeva-hajj__h3">Hepatitis A</h3>
+        <p>Hepatitis A is commonly recommended for travel and is also spread through contaminated food and water.</p>
+        <a class="longeva-hajj__pill" href="/products/hepatitis-a-vaccination">Hepatitis A vaccination {% render 'longeva-arrow', size: 14 %}</a>
+      </li>
+      <li class="longeva-hajj__rec">
+        <h3 class="longeva-hajj__h3">Seasonal influenza</h3>
+        <p>Large gatherings raise the risk of respiratory infections, and seasonal influenza vaccination is commonly recommended for pilgrims before travel.</p>
+        <a class="longeva-hajj__pill" href="/products/flu-vaccination-manchester">Seasonal influenza vaccination {% render 'longeva-arrow', size: 14 %}</a>
+      </li>
+      <li class="longeva-hajj__rec">
+        <h3 class="longeva-hajj__h3">Pneumococcal</h3>
+        <p>Pneumococcal vaccination may be appropriate for older adults and for travellers with certain long-term conditions.</p>
+        <a class="longeva-hajj__pill" href="/products/pneumococcal-vaccination-manchester">Pneumococcal vaccination {% render 'longeva-arrow', size: 14 %}</a>
+      </li>
+      <li class="longeva-hajj__rec">
+        <h3 class="longeva-hajj__h3">Diphtheria, tetanus and polio booster</h3>
+        <p>A booster may be appropriate if it has been some years since your last dose, and it also covers polio.</p>
+        <a class="longeva-hajj__pill" href="/products/diphtheria-tetanus-polio-booster">Diphtheria, tetanus and polio booster {% render 'longeva-arrow', size: 14 %}</a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="longeva-hajj__block longeva-container longeva-section" aria-labelledby="longeva-hajj-planning">
+    <h2 id="longeva-hajj-planning" class="longeva-display longeva-hajj__h2">Planning your pilgrimage</h2>
+    <div class="longeva-hajj__plan-grid">
+      <div class="longeva-hajj__plan">
+        <h3 class="longeva-hajj__h3">Book early</h3>
+        <p>The Meningococcal ACWY vaccination must be given at least 10 days before you arrive in Saudi Arabia. Booking early leaves enough time for vaccination, certification and the rest of your preparations.</p>
+      </div>
+      <div class="longeva-hajj__plan">
+        <h3 class="longeva-hajj__h3">Umrah</h3>
+        <p>Umrah can be performed throughout the year, and appointment demand often rises during school holidays and in Ramadan.</p>
+      </div>
+      <div class="longeva-hajj__plan">
+        <h3 class="longeva-hajj__h3">Hajj</h3>
+        <p>Hajj takes place once a year, and demand for appointments usually increases in the months beforehand. Early booking is recommended.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="longeva-destination__cta-band longeva-container longeva-section" aria-labelledby="longeva-hajj-cta-heading">
+    <div class="longeva-destination__cta-inner">
+      <h2 id="longeva-hajj-cta-heading" class="longeva-display longeva-destination__cta-heading">
+        Book your travel vaccination consultation
+      </h2>
+      <p class="longeva-destination__cta-sub">
+        Our pharmacist-led team can advise on the required and recommended vaccines, certification, and any health risks relevant to your travel, so you can focus on your pilgrimage. We confirm the fee with you when you book.
+      </p>
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </section>
+
+  <section class="longeva-hajj__block longeva-container longeva-section" aria-labelledby="longeva-hajj-faq">
+    <h2 id="longeva-hajj-faq" class="longeva-display longeva-hajj__h2">Frequently asked questions</h2>
+    <div class="longeva-hajj__faqs">
+      <details class="longeva-hajj__faq">
+        <summary class="longeva-hajj__faq-q">Is the ACWY vaccine mandatory for Umrah as well as Hajj?</summary>
+        <div class="longeva-hajj__faq-a">
+          <p>Yes. Meningococcal ACWY vaccination is a mandatory entry requirement for both Hajj and Umrah pilgrims aged one year and over, and you must hold a valid certificate to enter Saudi Arabia.</p>
+        </div>
+      </details>
+      <details class="longeva-hajj__faq">
+        <summary class="longeva-hajj__faq-q">How long before travel do I need the ACWY vaccine?</summary>
+        <div class="longeva-hajj__faq-a">
+          <p>It should be given at least 10 days before you arrive in Saudi Arabia, so the certificate is valid and your protection has time to develop. We recommend booking several weeks ahead where possible.</p>
+        </div>
+      </details>
+      <details class="longeva-hajj__faq">
+        <summary class="longeva-hajj__faq-q">Do I need a yellow fever certificate for Saudi Arabia?</summary>
+        <div class="longeva-hajj__faq-a">
+          <p>Not if you are travelling directly from the United Kingdom. You may need one if you are arriving from, or have travelled through, a country where yellow fever is present. Bring your full travel plans to your consultation and we will check.</p>
+        </div>
+      </details>
+      <details class="longeva-hajj__faq">
+        <summary class="longeva-hajj__faq-q">Which vaccines are required and which are recommended?</summary>
+        <div class="longeva-hajj__faq-a">
+          <p>Meningococcal ACWY is the mandatory entry requirement for all pilgrims. Polio and yellow fever may be required depending on the countries you have travelled from or through. Others, such as typhoid, hepatitis A, influenza and pneumococcal, are recommended based on your individual circumstances.</p>
+        </div>
+      </details>
+      <details class="longeva-hajj__faq">
+        <summary class="longeva-hajj__faq-q">Can my family be vaccinated together?</summary>
+        <div class="longeva-hajj__faq-a">
+          <p>Yes. We are happy to see families together and will talk through what each person needs. Please mention any children, older relatives, pregnancy or long-term health conditions when you book.</p>
+        </div>
+      </details>
+      <details class="longeva-hajj__faq">
+        <summary class="longeva-hajj__faq-q">Do you provide the certificate I need?</summary>
+        <div class="longeva-hajj__faq-a">
+          <p>Yes. Where a vaccination requires certification, we provide it at your appointment.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  {%- comment -%}
+    Further guidance. Authoritative references below the booking CTA as
+    quiet reference (consistent with the destination pages, Anthony
+    31 May 2026). Saudi Arabia FCDO and NaTHNaC.
+  {%- endcomment -%}
+  <section class="longeva-destination__sources longeva-container longeva-section" aria-labelledby="longeva-hajj-sources">
+    <h2 id="longeva-hajj-sources" class="longeva-display longeva-destination__h2">Further guidance</h2>
+    <ul class="longeva-destination__source-list">
+      <li>
+        <a class="longeva-destination__source-link" href="https://www.gov.uk/foreign-travel-advice/saudi-arabia" rel="noopener external" target="_blank">
+          FCDO travel advice for Saudi Arabia
+          <span class="longeva-destination__source-host">gov.uk</span>
+        </a>
+      </li>
+      <li>
+        <a class="longeva-destination__source-link" href="https://travelhealthpro.org.uk/country/191/saudi-arabia" rel="noopener external" target="_blank">
+          NaTHNaC country guidance for Saudi Arabia
+          <span class="longeva-destination__source-host">travelhealthpro.org.uk</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <footer class="longeva-destination__review longeva-container">
+    <p class="longeva-destination__review-text">
+      Last reviewed {{ reviewed_human }} by {{ reviewer | escape }}, GPhC-registered pharmacist team. Entry requirements are set by the Kingdom of Saudi Arabia and can change by season. Clinical information drawn from the Saudi Ministry of Health, NaTHNaC and the World Health Organization. We confirm current requirements with you at your consultation.
+    </p>
+  </footer>
+
+</article>
+
+{% schema %}
+{
+  "name": "Hajj and Umrah page",
+  "settings": [
+    { "type": "text", "id": "last_reviewed", "label": "Last reviewed (human readable)", "default": "31 May 2026" },
+    { "type": "text", "id": "reviewed_by", "label": "Reviewed by", "default": "the Longeva pharmacy team" }
+  ],
+  "enabled_on": { "templates": ["page"] }
+}
+{% endschema %}

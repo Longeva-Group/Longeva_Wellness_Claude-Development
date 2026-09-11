@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-travel-hub",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "h1": "South Asian Travel Vaccinations",
+        "mode": "curated",
+        "curated_handles": "pakistan, india, bangladesh"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

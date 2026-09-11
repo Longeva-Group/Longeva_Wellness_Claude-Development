@@ -1,0 +1,339 @@
+{% comment %}
+  Longeva Clinicians page. Pharmacist explainer, named
+  superintendent pharmacist (from settings), team standards and CTA.
+
+  Named clinician bios beyond the superintendent should go in the
+  block list below. Only fill a block when the person has agreed to
+  be named and their GPhC number is verified. Unfilled blocks hide.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+{% render 'longeva-schema-page-breadcrumb' %}
+{% render 'longeva-schema-clinicians' %}
+
+{%- liquid
+  assign super_name = settings.longeva_superintendent_name
+  assign super_gphc = settings.longeva_superintendent_gphc
+  assign super_role = section.settings.super_role | default: 'Superintendent Pharmacist'
+  assign super_bio = section.settings.super_bio
+  assign book_url = settings.longeva_book_cta_url | default: '/pages/book'
+-%}
+
+<section class="longeva-clinicians longeva-page longeva-page--light">
+  <div class="longeva-container longeva-clinicians__hero">
+    <p class="longeva-eyebrow">Our clinicians</p>
+    <h1 class="longeva-display longeva-clinicians__title">Our pharmacists in Manchester</h1>
+    <p class="longeva-clinicians__lede">
+      A pharmacist sees every patient. Longeva is a pharmacist-led private clinic in Greater Manchester. Every consultation is assessed by a GPhC-registered pharmacist, and treatment is delivered by trained clinicians working to written clinical protocols.
+    </p>
+  </div>
+
+  <div class="longeva-container longeva-clinicians__explainer">
+    <h2 class="longeva-clinicians__explainer-heading longeva-sr-only">Our clinical standards</h2>
+    <div class="longeva-clinicians__explainer-col">
+      <h3 class="longeva-clinicians__sub">How we supply medicines</h3>
+      <p>Medicines are supplied under a Patient Group Direction (PGD) by our qualified pharmacist. A PGD is a written instruction signed by a doctor and a pharmacist that allows our registered pharmacist to supply specific medicines to defined groups of patients who fit the clinical criteria.</p>
+      <p>That means we can assess your history, examine you where needed, order investigations and, where appropriate, supply licensed treatment under PGD. Where a service is outside our scope we will say so and refer you on. Our Superintendent Pharmacist is currently pursuing the Independent Prescriber qualification; site wording will be updated once that completes.</p>
+    </div>
+    <div class="longeva-clinicians__explainer-col">
+      <h3 class="longeva-clinicians__sub">How we work</h3>
+      <ul class="longeva-clinicians__list" role="list">
+        <li>Every clinician is registered with the relevant UK professional body and named.</li>
+        <li>We only prescribe UK-licensed medicines and source from MHRA-licensed wholesalers.</li>
+        <li>Treatment pathways follow NHS, NICE and BMJ guidance and are reviewed regularly.</li>
+        <li>Continuing professional development is logged and audited.</li>
+        <li>Any adverse event is recorded and reportable under Yellow Card where applicable.</li>
+      </ul>
+    </div>
+  </div>
+
+  {% if super_name != blank %}
+    <div class="longeva-clinicians__super">
+      <div class="longeva-container">
+        <h2 class="longeva-clinicians__super-eyebrow">Clinical leadership</h2>
+        <h3 class="longeva-display longeva-clinicians__super-name">{{ super_name | escape }}</h3>
+        <p class="longeva-clinicians__super-role">
+          {{ super_role | escape }}{% if super_gphc != blank %} &middot; GPhC {{ super_gphc | escape }}{% endif %}
+        </p>
+        {% if super_bio != blank %}
+          <div class="longeva-clinicians__super-bio">{{ super_bio }}</div>
+        {% endif %}
+        {%- comment -%}
+          GPhC pharmacist register verify link removed 2026-05-27 per
+          Anthony. The link routes to the GPhC pharmacist register
+          search, which in turn resolves to TFA's existing entries
+          while the Longeva entity transfer is in flight. Reinstate
+          once Longeva-specific register entries exist.
+        {%- endcomment -%}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if section.blocks.size == 0 and super_name == blank %}
+    <div class="longeva-container longeva-clinicians__placeholder">
+      <h2 class="longeva-display longeva-clinicians__placeholder-heading">Team profiles</h2>
+      <p class="longeva-clinicians__placeholder-body">We are finalising named profiles for our pharmacists and trained clinicians. Until they are published, every consultation is with a GPhC-registered pharmacist. If you would like to be seen by a specific clinician, mention it when you book and we will match you where we can.</p>
+    </div>
+  {% endif %}
+
+  {% if section.blocks.size > 0 %}
+    <div class="longeva-container longeva-clinicians__team">
+      <h2 class="longeva-display longeva-clinicians__team-heading">Wider team</h2>
+      <ul class="longeva-clinicians__team-list" role="list">
+        {% for block in section.blocks %}
+          {% if block.settings.name != blank %}
+            <li class="longeva-clinicians__card" {{ block.shopify_attributes }}>
+              <h3 class="longeva-clinicians__card-name">{{ block.settings.name | escape }}</h3>
+              {% if block.settings.role != blank %}
+                <p class="longeva-clinicians__card-role">
+                  {{ block.settings.role | escape }}{% if block.settings.reg_number != blank %} &middot; {{ block.settings.reg_body | default: 'GPhC' | escape }} {{ block.settings.reg_number | escape }}{% endif %}
+                </p>
+              {% endif %}
+              {% if block.settings.bio != blank %}
+                <div class="longeva-clinicians__card-bio">{{ block.settings.bio }}</div>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <div class="longeva-container longeva-clinicians__cta">
+    <h2 class="longeva-display longeva-clinicians__cta-heading">Not sure which service fits?</h2>
+    <p>Request a ten-minute triage call with the pharmacist on duty. No commitment.</p>
+    <p class="longeva-clinicians__cta-row">
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">Book a consultation</a>
+      <a class="longeva-btn longeva-btn--ghost" href="/pages/about">More about Longeva</a>
+    </p>
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-clinicians { padding-block: 0; }
+  .longeva-clinicians__hero {
+    padding-block: clamp(32px, 4vw, 56px) clamp(20px, 3vw, 32px);
+    max-width: 880px;
+  }
+  .longeva-clinicians__title {
+    font-size: clamp(36px, 5vw, 56px);
+    margin: 16px 0 0;
+  }
+  .longeva-clinicians__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 24px 0 0;
+    max-width: 64ch;
+  }
+  .longeva-clinicians__explainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    padding-block: clamp(20px, 3vw, 40px);
+    border-block-start: 1px solid var(--longeva-border);
+  }
+  .longeva-clinicians__sub {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0 0 16px;
+    color: var(--longeva-primary);
+    letter-spacing: -0.01em;
+  }
+  .longeva-clinicians__explainer p {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--longeva-text);
+    margin: 0 0 12px;
+  }
+  .longeva-clinicians__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .longeva-clinicians__list li {
+    position: relative;
+    padding-inline-start: 20px;
+    color: var(--longeva-text);
+  }
+  .longeva-clinicians__list li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.65em;
+    width: 8px; height: 2px;
+    background: var(--longeva-accent);
+  }
+  .longeva-clinicians__super {
+    background: var(--longeva-primary);
+    color: var(--longeva-primary-ivory);
+    padding-block: clamp(32px, 4vw, 56px);
+  }
+  .longeva-clinicians__super-eyebrow {
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.70);
+    margin: 0;
+  }
+  .longeva-clinicians__super-name {
+    font-size: clamp(32px, 4vw, 48px);
+    color: var(--longeva-primary-ivory);
+    margin: 8px 0 4px;
+  }
+  .longeva-clinicians__super-role {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: rgba(245, 241, 234, 0.85);
+    margin: 0 0 24px;
+  }
+  .longeva-clinicians__super-bio {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(245, 241, 234, 0.85);
+    max-width: 64ch;
+  }
+  .longeva-clinicians__super-bio p { margin: 0 0 10px; }
+  .longeva-clinicians__super-verify {
+    margin: 20px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+  }
+  .longeva-clinicians__super-verify a {
+    color: rgba(245, 241, 234, 0.85);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .longeva-clinicians__super-verify a:hover,
+  .longeva-clinicians__super-verify a:focus-visible {
+    color: var(--longeva-primary-ivory);
+  }
+  .longeva-clinicians__team {
+    padding-block: clamp(20px, 3vw, 40px);
+  }
+  .longeva-clinicians__team-heading {
+    font-size: clamp(24px, 3vw, 32px);
+    margin: 0 0 24px;
+  }
+  .longeva-clinicians__team-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .longeva-clinicians__placeholder {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    padding: clamp(24px, 4vw, 40px);
+    max-width: 820px;
+    margin-block: clamp(24px, 4vw, 48px);
+  }
+  .longeva-clinicians__placeholder-heading {
+    font-size: clamp(24px, 3vw, 32px);
+    margin: 0 0 12px;
+    color: var(--longeva-text);
+  }
+  .longeva-clinicians__placeholder-body {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--longeva-text-subdued);
+    margin: 0;
+    max-width: 64ch;
+  }
+  .longeva-clinicians__card {
+    border: 1px solid var(--longeva-border);
+    border-radius: var(--longeva-radius-card);
+    padding: 28px;
+    background: #FFFFFF;
+  }
+  .longeva-clinicians__card-name {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0;
+    color: var(--longeva-text);
+    letter-spacing: -0.01em;
+  }
+  .longeva-clinicians__card-role {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: var(--longeva-text-subdued);
+    margin: 6px 0 14px;
+  }
+  .longeva-clinicians__card-bio {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--longeva-text);
+  }
+  .longeva-clinicians__card-bio p { margin: 0 0 8px; }
+  .longeva-clinicians__cta {
+    padding-block: clamp(20px, 3vw, 40px);
+    max-width: 880px;
+  }
+  .longeva-clinicians__cta-heading {
+    font-size: clamp(24px, 3vw, 32px);
+    margin: 0;
+  }
+  .longeva-clinicians__cta p {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: var(--longeva-text);
+    margin: 16px 0 0;
+  }
+  .longeva-clinicians__cta-row {
+    margin-block-start: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .longeva-clinicians__explainer { grid-template-columns: 1fr; gap: 32px; }
+    .longeva-clinicians__team-list { grid-template-columns: 1fr; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva Clinicians page",
+  "tag": "section",
+  "class": "longeva-clinicians-page-section",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "text", "id": "super_role", "label": "Superintendent role label", "default": "Superintendent Pharmacist" },
+    { "type": "richtext", "id": "super_bio", "label": "Superintendent bio (optional)" }
+  ],
+  "max_blocks": 8,
+  "blocks": [
+    {
+      "type": "clinician",
+      "name": "Clinician",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Name" },
+        { "type": "text", "id": "role", "label": "Role" },
+        { "type": "text", "id": "reg_body", "label": "Regulator (e.g. GPhC, GMC, NMC)", "default": "GPhC" },
+        { "type": "text", "id": "reg_number", "label": "Registration number" },
+        { "type": "richtext", "id": "bio", "label": "Short bio" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Longeva Clinicians page" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,118 @@
+{% comment %}
+  Longeva "destinations where this vaccine is recommended" reverse link.
+
+  Builds the vaccine -> destination internal link Varsha asked for in the
+  SEO review (2 June 2026, "Vaccine pages and relevant destination pages").
+  It derives the list automatically: it iterates the destination
+  metaobjects and lists any whose recommended_vaccines include THIS
+  product. No manual matrix needed, and it stays in sync as Varsha edits
+  destinations.
+
+  Self-gating: renders only when at least one destination references this
+  product, so it appears on travel-vaccine products and shows nothing on
+  any other service product (aesthetics, minor ailments, etc.).
+{% endcomment %}
+
+{% liquid
+  assign heading = block.settings.heading | default: "Destinations where this vaccine is recommended"
+  assign max_items = block.settings.max_items | default: 12
+  assign all_dest = shop.metaobjects.destination.values
+  assign pairs = ''
+  if all_dest
+    for d in all_dest
+      assign recs = d.recommended_vaccines.value
+      if recs and d.country != blank and d.system.handle != blank
+        for vp in recs
+          if vp.id == product.id
+            assign pairs = pairs | append: d.system.handle | append: '::' | append: d.country | append: '||'
+            break
+          endif
+        endfor
+      endif
+    endfor
+  endif
+  assign pairs = pairs | split: '||'
+%}
+
+{% if pairs.size > 0 %}
+  <section class="longeva-service-destinations" {{ block.shopify_attributes }} aria-labelledby="longeva-service-destinations-heading-{{ block.id }}">
+    <h2 id="longeva-service-destinations-heading-{{ block.id }}" class="longeva-service-destinations__heading">{{ heading | escape }}</h2>
+    <ul class="longeva-service-destinations__list" role="list">
+      {% for p in pairs limit: max_items %}
+        {% assign parts = p | split: '::' %}
+        {% assign d_handle = parts[0] %}
+        {% assign d_country = parts[1] %}
+        {% if d_handle != blank and d_country != blank %}
+          <li>
+            <a class="longeva-service-destinations__link" href="/pages/destinations/{{ d_handle }}">
+              Travel vaccinations for {{ d_country | escape }} {% render 'longeva-arrow', size: 14 %}
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+{% stylesheet %}
+  .longeva-service-destinations {
+    padding-block: 1.5rem;
+  }
+  .longeva-service-destinations__heading {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .longeva-service-destinations__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .longeva-service-destinations__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    background: #F4ECDE;
+    border: 1px solid rgba(45, 25, 14, 0.12);
+    border-radius: 999px;
+    color: #2D190E;
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+  .longeva-service-destinations__link:hover {
+    border-color: #A6783C;
+    background: #efe2cd;
+  }
+  .longeva-service-destinations__link:focus-visible {
+    outline: 2px solid #8a5f2a;
+    outline-offset: 2px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Service destinations",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Destinations where this vaccine is recommended"
+    },
+    {
+      "type": "range",
+      "id": "max_items",
+      "label": "Maximum destinations shown",
+      "min": 4,
+      "max": 24,
+      "step": 1,
+      "default": 12
+    }
+  ]
+}
+{% endschema %}

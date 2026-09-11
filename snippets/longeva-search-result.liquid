@@ -1,0 +1,91 @@
+{%- comment -%}
+  Renders a single search result row for sections/longeva-search-page.liquid.
+  Inputs:
+    r    : the search.results item (product | article | page)
+    kind : 'service' | 'hub' | 'info' | 'article' | 'product'
+
+  Picks an image source per object_type, an eyebrow tag per kind, and
+  a snippet (excerpt, summary, or first paragraph) per object_type.
+  Uses --no-thumb modifier when the result has no usable image so the
+  grid collapses to a 2-column layout instead of leaving a hole.
+{%- endcomment -%}
+
+{%- liquid
+  assign result_url = r.url
+  assign result_title = r.title
+  assign result_image = nil
+  assign snippet_text = ''
+  assign eyebrow = ''
+
+  # snippet_text: strip HTML first so the source markup cannot leak
+  # tags or scripts, then truncate to 24 words, then escape on render.
+  # Escape happens at print site so we never inject unescaped strings
+  # into the DOM even if a future editor adds `<` or `&` to a page body.
+  if r.object_type == 'product'
+    assign result_image = r.featured_image
+    assign snippet_text = r.description | strip_html | truncatewords: 24
+    assign eyebrow = 'Product'
+  elsif r.object_type == 'article'
+    assign result_image = r.image
+    if r.excerpt != blank
+      assign snippet_text = r.excerpt | strip_html | truncatewords: 24
+    else
+      assign snippet_text = r.content | strip_html | truncatewords: 24
+    endif
+    assign eyebrow = 'Article'
+  elsif r.object_type == 'page'
+    assign snippet_text = r.content | strip_html | truncatewords: 24
+    if kind == 'service'
+      assign eyebrow = 'Service'
+    elsif kind == 'hub'
+      assign eyebrow = 'Treatment area'
+    else
+      assign eyebrow = 'Information'
+    endif
+  else
+    # Future Shopify object_type values land here. Try featured_image
+    # first (covers collection.featured_image, blog has none), fall
+    # back to no thumb. Snippet pulls from .description if present.
+    assign result_image = r.featured_image | default: r.image
+    assign snippet_text = r.description | default: r.content | default: '' | strip_html | truncatewords: 24
+    assign eyebrow = r.object_type | capitalize
+  endif
+-%}
+
+<li class="longeva-search__result {% unless result_image %}longeva-search__result--no-thumb{% endunless %}">
+  {%- if result_image -%}
+    {%- comment -%}
+      Plain span wrapper, not an anchor. The thumb is decorative;
+      the title link below is the single tab stop. Earlier anchor
+      had `aria-hidden="true"` + `tabindex="-1"` which conflicts
+      with axe rule aria-hidden-focus and the broader principle
+      that aria-hidden cannot wrap focusable content.
+    {%- endcomment -%}
+    <span class="longeva-search__result-thumb" aria-hidden="true">
+      <img
+        src="{{ result_image | image_url: width: 200 }}"
+        srcset="{{ result_image | image_url: width: 120 }} 120w, {{ result_image | image_url: width: 200 }} 200w, {{ result_image | image_url: width: 320 }} 320w"
+        sizes="88px"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        width="{{ result_image.width }}"
+        height="{{ result_image.height }}"
+      >
+    </span>
+  {%- endif -%}
+  <div class="longeva-search__result-meta">
+    {%- if eyebrow != blank -%}
+      <p class="longeva-search__result-eyebrow">{{ eyebrow | escape }}</p>
+    {%- endif -%}
+    <h3 class="longeva-search__result-title">
+      <a href="{{ result_url }}">{{ result_title | escape }}</a>
+    </h3>
+    {%- if snippet_text != blank -%}
+      <p class="longeva-search__result-snippet">{{ snippet_text | escape }}</p>
+    {%- endif -%}
+  </div>
+  <span class="longeva-search__result-arrow" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+  </span>
+</li>

@@ -1,0 +1,467 @@
+{% comment %}
+  Longeva About page. Positioning, clinical philosophy, regulatory
+  anchors, founder, differentiation, who-we-serve, contact, governance
+  stamp. Reg numbers pull from theme settings, with the confirmed
+  numbers as fallbacks. Prefer the admin settings; do not hand-edit
+  numbers in markup.
+  Content mapped from the client About Us brief (Longeva Wellness
+  section), 30 May 2026.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+{% render 'longeva-schema-page-breadcrumb' %}
+
+{%- liquid
+  assign phone = settings.longeva_phone
+  assign email = settings.longeva_email
+  assign address = settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign super_name = settings.longeva_superintendent_name | default: 'Alicia Barker'
+  assign super_gphc = settings.longeva_superintendent_gphc | default: '2241860'
+  assign book_url = settings.longeva_book_cta_url | default: '/pages/book'
+  assign gphc_number = settings.longeva_gphc_number | default: '9012378'
+  assign mhra_wdah = settings.longeva_mhra_wdah | default: '59619'
+  assign company_no = settings.longeva_company_number | default: '12643186'
+  assign vat_no = settings.longeva_vat_number | default: 'GB358493064'
+
+  assign founder_name = section.settings.founder_name | default: 'Anthony Higgins'
+  assign founder_bio = section.settings.founder_bio | default: 'Anthony Higgins founded Longeva to bring pharmacy-grade clinical governance to private wellness and aesthetic care in Greater Manchester.'
+  assign review_date = section.settings.review_date | default: 'May 2026'
+-%}
+
+<section class="longeva-about longeva-page longeva-page--light">
+  <div class="longeva-container longeva-about__hero">
+    <p class="longeva-eyebrow">About Longeva Wellness</p>
+    <h1 class="longeva-display longeva-about__title">Private clinical care, held to pharmacy standards.</h1>
+    <p class="longeva-about__lede">
+      Longeva is a UK pharmacy-led clinical wellness and aesthetics service, offering skin health, weight management, vaccinations, travel health and aesthetic medicine. Our approach combines clinical oversight, evidence-based treatment pathways and regulated healthcare governance to support safe, responsible and personalised care.
+    </p>
+    <p class="longeva-about__lede longeva-about__lede--sub">
+      We work with adults seeking medically guided wellness and aesthetic services delivered within a regulated UK healthcare framework.
+    </p>
+  </div>
+
+  <div class="longeva-container longeva-about__pillars">
+    <div class="longeva-about__section-head">
+      <p class="longeva-eyebrow">Our clinical standards</p>
+      <h2 class="longeva-display longeva-about__section-heading">Standards we hold on every appointment.</h2>
+    </div>
+    <div class="longeva-about__pillar-grid">
+      <div class="longeva-about__pillar">
+        <h3 class="longeva-about__pillar-title">Pharmacy-led care</h3>
+        <p>All clinical services operate under GPhC-registered pharmacist supervision and regulated professional standards.</p>
+      </div>
+      <div class="longeva-about__pillar">
+        <h3 class="longeva-about__pillar-title">Evidence-based treatment</h3>
+        <p>Treatment decisions are based on clinical suitability, consultation outcomes and current professional guidance. We follow NHS, NICE and BMJ guidance and only source UK-licensed medicines through regulated supply chains.</p>
+      </div>
+      <div class="longeva-about__pillar">
+        <h3 class="longeva-about__pillar-title">Patient-first approach</h3>
+        <p>We prioritise conservative treatment planning, informed consent, aftercare and ongoing support where clinically appropriate. Same-day appointments are available where suitable, and if a treatment is not clinically appropriate we will say so and refer you on.</p>
+      </div>
+      <div class="longeva-about__pillar">
+        <h3 class="longeva-about__pillar-title">Regulated supply governance</h3>
+        <p>Where applicable, medicines and products are sourced through regulated UK supply chains and licensed wholesalers, with documented sourcing standards.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="longeva-about__regs">
+    <div class="longeva-container">
+      <h2 class="longeva-display longeva-about__regs-heading">Regulation and governance</h2>
+      <p class="longeva-about__regs-lede">Our registrations underpin every service we deliver.</p>
+
+      <dl class="longeva-about__regs-list">
+        <div class="longeva-about__reg">
+          <dt>GPhC pharmacy registration</dt>
+          <dd>{{ gphc_number }}</dd>
+        </div>
+        {% if super_name != blank %}
+        <div class="longeva-about__reg">
+          <dt>Superintendent Pharmacist</dt>
+          <dd>{{ super_name | escape }}{% if super_gphc != blank %}, GPhC {{ super_gphc | escape }}{% endif %}</dd>
+        </div>
+        {% endif %}
+        <div class="longeva-about__reg">
+          <dt>MHRA WDA(H) licence</dt>
+          <dd>{{ mhra_wdah }}</dd>
+        </div>
+        <div class="longeva-about__reg">
+          <dt>Registered premises</dt>
+          <dd>{{ address | escape }}</dd>
+        </div>
+        <div class="longeva-about__reg">
+          <dt>Company number</dt>
+          <dd>{{ company_no }}</dd>
+        </div>
+        <div class="longeva-about__reg">
+          <dt>VAT number</dt>
+          <dd>{{ vat_no }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  {% if founder_name != blank %}
+  <div class="longeva-container longeva-about__founder">
+    <p class="longeva-eyebrow">Founder</p>
+    <p class="longeva-about__founder-name">{{ founder_name | escape }}</p>
+    <p class="longeva-about__founder-bio">{{ founder_bio | escape }}</p>
+  </div>
+  {% endif %}
+
+  <div class="longeva-container longeva-about__diff">
+    <div class="longeva-about__section-head">
+      <p class="longeva-eyebrow">What makes us different</p>
+      <h2 class="longeva-display longeva-about__section-heading">Built on governance, not retail.</h2>
+    </div>
+    <div class="longeva-about__diff-grid">
+      <div class="longeva-about__diff-item">
+        <h3 class="longeva-about__diff-title">Pharmacy-led at source</h3>
+        <p>Clinical oversight and prescribing governance are built into the business rather than added as a retail afterthought.</p>
+      </div>
+      <div class="longeva-about__diff-item">
+        <h3 class="longeva-about__diff-title">Regulated supply standards</h3>
+        <p>We prioritise reputable manufacturers, regulated wholesalers and documented sourcing standards.</p>
+      </div>
+      <div class="longeva-about__diff-item">
+        <h3 class="longeva-about__diff-title">Evidence-led wellness</h3>
+        <p>Our approach is informed by current research in longevity, nutrition, metabolic health and preventative wellness.</p>
+      </div>
+      <div class="longeva-about__diff-item">
+        <h3 class="longeva-about__diff-title">Long-term patient outcomes</h3>
+        <p>We focus on sustainable wellbeing, responsible prescribing and clinically appropriate treatment pathways rather than trend-led wellness marketing.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="longeva-about__serve">
+    <div class="longeva-container longeva-about__serve-inner">
+      <div class="longeva-about__serve-head">
+        <p class="longeva-eyebrow">Who we serve</p>
+        <h2 class="longeva-display longeva-about__section-heading">Care for adults who want it done properly.</h2>
+      </div>
+      <ul class="longeva-about__serve-list" role="list">
+        <li>Adults seeking evidence-based wellness support</li>
+        <li>Patients requiring pharmacist-led clinical services</li>
+        <li>Individuals seeking medically guided aesthetic treatments</li>
+        <li>Customers requiring travel health and vaccination services</li>
+        <li>Patients seeking regulated consultation and treatment pathways</li>
+      </ul>
+      <p class="longeva-about__serve-note">
+        Our services are intended to support general wellness and clinically appropriate treatment pathways. They are not intended to replace personalised medical advice from a qualified healthcare professional.
+      </p>
+    </div>
+  </div>
+
+  <div class="longeva-container longeva-about__contact">
+    <h2 class="longeva-display longeva-about__contact-heading">Contact</h2>
+    <ul class="longeva-about__contact-list" role="list">
+      {% if phone != blank %}
+        <li><strong>Phone.</strong> <a href="tel:{{ phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' }}">{{ phone | escape }}</a></li>
+      {% endif %}
+      {% if email != blank %}
+        <li><strong>Email.</strong> <a href="mailto:{{ email | escape }}">{{ email | escape }}</a></li>
+      {% endif %}
+      <li><strong>In person.</strong> {{ address | escape }}</li>
+      <li><strong>Enquiries.</strong> <a href="/pages/contact">Contact our team</a></li>
+      <li><strong>Complaints.</strong> <a href="/pages/complaints-procedure">Read our complaints procedure</a></li>
+    </ul>
+
+    <p class="longeva-about__cta-row">
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">Book a consultation</a>
+      <a class="longeva-btn longeva-btn--ghost" href="/pages/services-manchester">Browse services</a>
+    </p>
+
+    {% if super_name != blank %}
+      <p class="longeva-about__review-stamp">
+        Reviewed by {{ super_name | escape }}, Superintendent Pharmacist{% if super_gphc != blank %} (GPhC {{ super_gphc | escape }}){% endif %}, {{ review_date | escape }}.
+      </p>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-about {
+    padding-block: 0;
+  }
+  .longeva-about__hero {
+    padding-block: clamp(72px, 9vw, 120px) clamp(40px, 6vw, 64px);
+    max-width: 880px;
+  }
+  .longeva-about__title {
+    font-size: clamp(36px, 5vw, 56px);
+    margin: 16px 0 0;
+    color: var(--longeva-text);
+  }
+  .longeva-about__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 24px 0 0;
+    max-width: 64ch;
+  }
+  .longeva-about__lede--sub {
+    font-size: 16px;
+    margin-block-start: 16px;
+  }
+  .longeva-about__section-head {
+    max-width: 60ch;
+    margin-block-end: clamp(28px, 4vw, 44px);
+  }
+  .longeva-about__section-heading {
+    font-size: clamp(26px, 3.4vw, 38px);
+    margin: 12px 0 0;
+    color: var(--longeva-text);
+    letter-spacing: -0.01em;
+  }
+  .longeva-about__pillars {
+    padding-block: clamp(48px, 7vw, 80px);
+    border-block-start: 1px solid var(--longeva-border);
+  }
+  .longeva-about__pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+  .longeva-about__pillar-title {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0 0 12px;
+    color: var(--longeva-primary);
+    letter-spacing: -0.01em;
+  }
+  .longeva-about__pillar p {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--longeva-text);
+    margin: 0;
+    max-width: 52ch;
+  }
+  .longeva-about__regs {
+    background: var(--longeva-primary);
+    color: var(--longeva-primary-ivory);
+    padding-block: clamp(56px, 7vw, 88px);
+  }
+  .longeva-about__regs-heading {
+    font-size: clamp(28px, 3.5vw, 40px);
+    color: var(--longeva-primary-ivory);
+    margin: 0;
+  }
+  .longeva-about__regs-lede {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: rgba(245, 241, 234, 0.75);
+    margin: 12px 0 40px;
+    max-width: 56ch;
+  }
+  .longeva-about__regs-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 48px;
+    margin: 0;
+    padding: 0;
+  }
+  .longeva-about__reg {
+    border-block-start: 1px solid rgba(245, 241, 234, 0.20);
+    padding-block-start: 16px;
+  }
+  .longeva-about__reg dt {
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(245, 241, 234, 0.70);
+    margin: 0 0 8px;
+  }
+  .longeva-about__reg dd {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: var(--longeva-primary-ivory);
+    margin: 0;
+    line-height: 1.45;
+  }
+  .longeva-about__founder {
+    padding-block: clamp(48px, 7vw, 80px);
+    max-width: 760px;
+  }
+  .longeva-about__founder-name {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: clamp(22px, 2.6vw, 28px);
+    color: var(--longeva-text);
+    margin: 12px 0 0;
+  }
+  .longeva-about__founder-bio {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--longeva-text-subdued);
+    margin: 12px 0 0;
+    max-width: 60ch;
+  }
+  .longeva-about__diff {
+    padding-block: clamp(48px, 7vw, 80px);
+    border-block-start: 1px solid var(--longeva-border);
+  }
+  .longeva-about__diff-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+  .longeva-about__diff-title {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 20px;
+    margin: 0 0 10px;
+    color: var(--longeva-primary);
+    letter-spacing: -0.01em;
+  }
+  .longeva-about__diff-item p {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--longeva-text);
+    margin: 0;
+    max-width: 52ch;
+  }
+  .longeva-about__serve {
+    background: var(--longeva-primary-sand, #F2E6DC);
+  }
+  .longeva-about__serve-inner {
+    padding-block: clamp(48px, 7vw, 80px);
+  }
+  .longeva-about__serve-head {
+    max-width: 60ch;
+    margin-block-end: clamp(24px, 3vw, 36px);
+  }
+  .longeva-about__serve-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 48px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .longeva-about__serve-list li {
+    position: relative;
+    padding-inline-start: 26px;
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--longeva-text);
+  }
+  .longeva-about__serve-list li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--longeva-accent, #B99157);
+  }
+  .longeva-about__serve-note {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--longeva-text-subdued);
+    margin: clamp(24px, 3vw, 36px) 0 0;
+    max-width: 70ch;
+  }
+  .longeva-about__contact {
+    padding-block: clamp(56px, 7vw, 88px);
+    max-width: 880px;
+  }
+  .longeva-about__contact-heading {
+    font-size: clamp(28px, 3.5vw, 40px);
+    margin: 0 0 24px;
+  }
+  .longeva-about__contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 12px;
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .longeva-about__contact-list a {
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .longeva-about__contact-list a:hover,
+  .longeva-about__contact-list a:focus-visible {
+    color: #1F120A;
+  }
+  .longeva-about__cta-row {
+    margin: 32px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .longeva-about__review-stamp {
+    margin: 32px 0 0;
+    padding-block-start: 20px;
+    border-block-start: 1px solid var(--longeva-border);
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: var(--longeva-text-subdued);
+  }
+  @media (max-width: 900px) {
+    .longeva-about__regs-list { grid-template-columns: 1fr 1fr; gap: 24px 32px; }
+  }
+  @media (max-width: 749px) {
+    .longeva-about__pillar-grid { grid-template-columns: 1fr; gap: 24px; }
+    .longeva-about__diff-grid { grid-template-columns: 1fr; gap: 24px; }
+    .longeva-about__serve-list { grid-template-columns: 1fr; gap: 12px; }
+  }
+  @media (max-width: 600px) {
+    .longeva-about__regs-list { grid-template-columns: 1fr; gap: 20px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva About page",
+  "tag": "section",
+  "class": "longeva-about-page-section",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Founder"
+    },
+    {
+      "type": "text",
+      "id": "founder_name",
+      "label": "Founder name",
+      "default": "Anthony Higgins"
+    },
+    {
+      "type": "textarea",
+      "id": "founder_bio",
+      "label": "Founder bio",
+      "info": "Professional background, qualifications or industry experience. Keep to two or three sentences.",
+      "default": "Anthony Higgins founded Longeva to bring pharmacy-grade clinical governance to private wellness and aesthetic care in Greater Manchester."
+    },
+    {
+      "type": "header",
+      "content": "Clinical review"
+    },
+    {
+      "type": "text",
+      "id": "review_date",
+      "label": "Last reviewed",
+      "default": "May 2026"
+    }
+  ],
+  "presets": [
+    { "name": "Longeva About page" }
+  ]
+}
+{% endschema %}

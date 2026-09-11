@@ -1,0 +1,235 @@
+/* ===================================================================
+   Longeva Yellow Fever Vaccination Centre page
+   Scoped to .longeva-yf. Reuses the brand tokens and primitives from
+   longeva-destinations.css (loaded alongside this file): longeva-container,
+   longeva-section, longeva-display, longeva-eyebrow, longeva-prose,
+   longeva-btn, and the longeva-destination__cta-band / __sources / __review
+   blocks. This file only adds what is specific to the yellow fever page.
+   No !important. Specificity handled by the .longeva-yf scope.
+   =================================================================== */
+
+.longeva-yf {
+  color: var(--longeva-ink, #2D190E);
+}
+
+/* Breadcrumb */
+.longeva-yf__breadcrumb {
+  padding-top: 20px;
+}
+.longeva-yf__crumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: var(--longeva-muted, #6b5d52);
+}
+.longeva-yf__crumbs li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.longeva-yf__crumbs li + li::before {
+  content: "/";
+  color: var(--longeva-line, rgba(45, 25, 14, 0.4));
+}
+.longeva-yf__crumbs a {
+  color: var(--longeva-muted, #6b5d52);
+  text-decoration: none;
+}
+.longeva-yf__crumbs a:hover,
+.longeva-yf__crumbs a:focus-visible {
+  color: var(--longeva-gold, #A6783C);
+}
+
+/* Hero */
+.longeva-yf__hero {
+  padding-top: clamp(16px, 3vw, 28px);
+}
+.longeva-yf__eyebrow {
+  margin: 0 0 12px;
+}
+.longeva-yf__h1 {
+  font-size: clamp(30px, 4.5vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+  max-width: 22ch;
+}
+.longeva-yf__lead {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 16px;
+}
+.longeva-yf__hero-actions {
+  margin: 24px 0 8px;
+}
+
+/* Credential strip */
+.longeva-yf__credentials {
+  list-style: none;
+  padding: 0;
+  margin: 28px 0 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  border-top: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.14));
+  padding-top: 24px;
+}
+@media (min-width: 600px) {
+  .longeva-yf__credentials { grid-template-columns: repeat(2, 1fr); gap: 18px 32px; }
+}
+@media (min-width: 980px) {
+  .longeva-yf__credentials { grid-template-columns: repeat(4, 1fr); }
+}
+.longeva-yf__credentials li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.longeva-yf__cred-key {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--longeva-ink, #2D190E);
+}
+.longeva-yf__cred-val {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--longeva-muted, #6b5d52);
+}
+
+/* Content blocks */
+.longeva-yf__block {
+  border-top: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.1));
+}
+.longeva-yf__h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+  margin: 0 0 18px;
+}
+.longeva-yf__h3 {
+  font-family: var(--longeva-font-display, Georgia, 'Times New Roman', serif);
+  font-weight: 600;
+  font-size: clamp(18px, 2vw, 22px);
+  line-height: 1.2;
+  margin: 0 0 8px;
+}
+
+/* Destination groups */
+.longeva-yf__dest-intro {
+  font-size: 17px;
+  line-height: 1.55;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 28px;
+}
+.longeva-yf__dest-group {
+  margin: 0 0 32px;
+}
+.longeva-yf__dest-note {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--longeva-muted, #6b5d52);
+  max-width: 64ch;
+  margin: 0 0 14px;
+}
+.longeva-yf__dest-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 600px) {
+  .longeva-yf__dest-list { grid-template-columns: repeat(2, 1fr); gap: 10px 24px; }
+}
+@media (min-width: 980px) {
+  .longeva-yf__dest-list { grid-template-columns: repeat(3, 1fr); }
+}
+.longeva-yf__dest-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.14));
+  border-radius: 10px;
+  color: var(--longeva-ink, #2D190E);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.longeva-yf__dest-link:hover,
+.longeva-yf__dest-link:focus-visible {
+  border-color: var(--longeva-gold, #A6783C);
+  background: #F4ECDE;
+  outline: none;
+}
+.longeva-yf__dest-all {
+  margin: 8px 0 0;
+}
+.longeva-yf__dest-all a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--longeva-gold-deep, #8a5f2a);
+  font-weight: 600;
+  text-decoration: none;
+}
+.longeva-yf__dest-all a:hover,
+.longeva-yf__dest-all a:focus-visible {
+  text-decoration: underline;
+}
+
+/* FAQ */
+.longeva-yf__faqs {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.12));
+}
+.longeva-yf__faq {
+  border-bottom: 1px solid var(--longeva-line, rgba(45, 25, 14, 0.12));
+}
+.longeva-yf__faq-q {
+  cursor: pointer;
+  list-style: none;
+  padding: 18px 36px 18px 0;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.4;
+  position: relative;
+}
+.longeva-yf__faq-q::-webkit-details-marker { display: none; }
+.longeva-yf__faq-q::after {
+  content: "+";
+  position: absolute;
+  right: 4px;
+  top: 16px;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--longeva-gold, #A6783C);
+  transition: transform 0.18s ease;
+}
+.longeva-yf__faq[open] .longeva-yf__faq-q::after {
+  content: "\2212";
+}
+.longeva-yf__faq-q:focus-visible {
+  outline: 2px solid var(--longeva-gold, #A6783C);
+  outline-offset: 2px;
+}
+.longeva-yf__faq-a {
+  padding: 0 0 18px;
+  max-width: 70ch;
+}
+.longeva-yf__faq-a p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+}

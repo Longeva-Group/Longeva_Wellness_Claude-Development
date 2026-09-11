@@ -1,0 +1,181 @@
+{%- comment -%}
+  Longeva local area page (Brief v4 Section 12).
+
+  One reusable section for the local-area pages (Rochdale, Manchester,
+  Oldham, Bury, Bolton, Blackburn, Salford, Near Me, Manchester Airport).
+  Bound via page templates with suffix "local-area".
+
+  SEO GUARDRAIL (important): a single Rochdale clinic spinning up several
+  near-identical "travel clinic in [town]" pages is the classic
+  doorway/scaled-content pattern Google penalises. To prevent that:
+    - Every town page MUST carry genuinely differentiated content
+      (local intro, travel and transport context to the Rochdale clinic
+      from that town, local relevance). All admin-editable here.
+    - The section emits a robots "noindex" meta by default (noindex
+      setting defaults to true). A page is only made indexable once it
+      has unique local content, by unticking noindex per page. This
+      means shells ship safe and never get indexed as thin doorways.
+
+  Reuses the registered-address map pattern from the contact page and
+  the shared destination CTA / sticky primitives. British English, no
+  em dashes, no hardcoded prices.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-destinations.css' | asset_url | stylesheet_tag }}
+{{ 'longeva-local-area.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Indexing is controlled in layout/theme.liquid <head> via the page
+  metafield custom.noindex (it sets the robots meta in the head, the
+  only place a robots tag is reliably honoured). A section cannot emit a
+  valid head robots tag, so the guardrail lives on the page metafield:
+  every local-area page is created with custom.noindex = true and only
+  flipped to false once it has genuinely unique local content. This
+  section does not emit a robots meta itself.
+{%- endcomment -%}
+{%- liquid
+  assign h1 = section.settings.h1 | default: page.title
+  assign bc_crumbs = 'Home::/|Travel vaccinations::/pages/travel-vaccinations|'
+  assign bc_crumbs = bc_crumbs | append: h1 | append: '::' | append: page.url
+-%}
+{% render 'longeva-schema-page-breadcrumb', crumbs: bc_crumbs %}
+
+{%- liquid
+  assign eyebrow = section.settings.eyebrow | default: 'Travel clinic'
+  assign intro = section.settings.intro
+  assign travel_body = section.settings.travel_body
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign book_url = section.settings.book_url | default: settings.longeva_book_cta_url | default: '/pages/book'
+
+  assign address = settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign address_query = 'Unit+1+Chichester+Court,+Milnrow+Road,+Rochdale+OL16+1UG'
+  assign default_map_embed = 'https://www.google.com/maps?q=' | append: address_query | append: '&output=embed'
+  assign map_src = section.settings.map_embed_url | default: default_map_embed
+  assign directions_url = section.settings.directions_url | default: 'https://www.google.com/maps/dir/?api=1&destination=' | append: address_query
+  assign show_map = section.settings.show_map
+
+  assign service_blocks = section.blocks | where: 'type', 'service_link'
+-%}
+
+<article class="longeva-destination longeva-local" aria-labelledby="longeva-local-heading">
+
+  <nav class="longeva-local__breadcrumb longeva-container" aria-label="Breadcrumb">
+    <ol class="longeva-local__crumbs">
+      <li><a href="/">Home</a></li>
+      <li><a href="/pages/travel-vaccinations">Travel vaccinations</a></li>
+      <li aria-current="page">{{ h1 | escape }}</li>
+    </ol>
+  </nav>
+
+  <header class="longeva-local__hero longeva-container longeva-section">
+    <p class="longeva-eyebrow longeva-local__eyebrow">{{ eyebrow | escape }}</p>
+    <h1 class="longeva-display longeva-local__h1" id="longeva-local-heading">{{ h1 | escape }}</h1>
+    {%- if intro != blank -%}
+      <div class="longeva-local__lead longeva-prose">{{ intro }}</div>
+    {%- endif -%}
+    <div class="longeva-local__hero-actions">
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </header>
+
+  {%- comment -%} Local travel and transport context (the differentiator) {%- endcomment -%}
+  {%- if travel_body != blank -%}
+    <section class="longeva-local__block longeva-container longeva-section" aria-labelledby="longeva-local-travel">
+      <h2 id="longeva-local-travel" class="longeva-display longeva-local__h2">{{ section.settings.travel_heading | default: 'Getting to the clinic' | escape }}</h2>
+      <div class="longeva-prose">{{ travel_body }}</div>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%} Services offered {%- endcomment -%}
+  {%- if service_blocks.size > 0 -%}
+    <section class="longeva-local__block longeva-container longeva-section" aria-labelledby="longeva-local-services">
+      <h2 id="longeva-local-services" class="longeva-display longeva-local__h2">{{ section.settings.services_heading | default: 'Services at our clinic' | escape }}</h2>
+      <ul class="longeva-local__service-grid">
+        {%- for block in service_blocks -%}
+          {%- if block.settings.label != blank and block.settings.url != blank -%}
+            <li>
+              <a class="longeva-local__service-link" href="{{ block.settings.url }}">
+                {{ block.settings.label | escape }} {% render 'longeva-arrow', size: 15 %}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%} Map to the registered Rochdale premises {%- endcomment -%}
+  {%- if show_map -%}
+    <section class="longeva-local__block longeva-container longeva-section" aria-labelledby="longeva-local-map">
+      <h2 id="longeva-local-map" class="longeva-display longeva-local__h2">{{ section.settings.map_heading | default: 'Find us' | escape }}</h2>
+      <p class="longeva-local__address">{{ address | escape }}</p>
+      <div class="longeva-local__map">
+        <iframe
+          src="{{ map_src }}"
+          title="Map to the Longeva clinic, {{ address | escape }}"
+          width="100%"
+          height="360"
+          style="border:0;"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+      <p class="longeva-local__directions"><a href="{{ directions_url }}" rel="noopener" target="_blank">Get directions {% render 'longeva-arrow', size: 14 %}</a></p>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%} Booking CTA band (primary action) {%- endcomment -%}
+  <section class="longeva-destination__cta-band longeva-container longeva-section" aria-labelledby="longeva-local-cta-heading">
+    <div class="longeva-destination__cta-inner">
+      <h2 id="longeva-local-cta-heading" class="longeva-display longeva-destination__cta-heading">{{ section.settings.cta_heading | default: 'Book your travel vaccination consultation' | escape }}</h2>
+      {%- if section.settings.cta_subhead != blank -%}<p class="longeva-destination__cta-sub">{{ section.settings.cta_subhead | escape }}</p>{%- endif -%}
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </section>
+
+  {%- comment -%} Sticky mobile booking bar (brief Section 22) {%- endcomment -%}
+  <div class="longeva-destination__sticky-cta">
+    <a class="longeva-btn longeva-btn--primary-on-light longeva-destination__sticky-cta-btn" href="{{ book_url }}">{{ book_label }}</a>
+  </div>
+
+</article>
+
+{% schema %}
+{
+  "name": "Local area",
+  "settings": [
+    { "type": "paragraph", "content": "Indexing is controlled by the page metafield custom.noindex (set in the head). Each local-area page ships noindex until it has unique local content, then set custom.noindex to false in the page's metafields to allow indexing." },
+    { "type": "header", "content": "Hero" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Travel clinic" },
+    { "type": "text", "id": "h1", "label": "H1 (falls back to page title)" },
+    { "type": "richtext", "id": "intro", "label": "Local intro", "info": "Unique to this town. Why a traveller from here would use the Rochdale clinic." },
+    { "type": "header", "content": "Getting to the clinic" },
+    { "type": "text", "id": "travel_heading", "label": "Heading", "default": "Getting to the clinic" },
+    { "type": "richtext", "id": "travel_body", "label": "Travel and transport context", "info": "Routes, driving and public transport from this town to the Rochdale clinic, parking. This local differentiation is what keeps the page out of doorway-page territory." },
+    { "type": "header", "content": "Services (add service_link blocks)" },
+    { "type": "text", "id": "services_heading", "label": "Heading", "default": "Services at our clinic" },
+    { "type": "header", "content": "Map" },
+    { "type": "checkbox", "id": "show_map", "label": "Show map", "default": true },
+    { "type": "text", "id": "map_heading", "label": "Map heading", "default": "Find us" },
+    { "type": "text", "id": "map_embed_url", "label": "Map embed URL override", "info": "Defaults to the registered Rochdale premises." },
+    { "type": "text", "id": "directions_url", "label": "Directions URL override" },
+    { "type": "header", "content": "Booking CTA" },
+    { "type": "text", "id": "cta_heading", "label": "CTA heading", "default": "Book your travel vaccination consultation" },
+    { "type": "text", "id": "cta_subhead", "label": "CTA subhead" },
+    { "type": "text", "id": "book_label", "label": "Book button label" },
+    { "type": "url", "id": "book_url", "label": "Book link" }
+  ],
+  "blocks": [
+    {
+      "type": "service_link",
+      "name": "Service link",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "url", "id": "url", "label": "Link" }
+      ]
+    }
+  ],
+  "enabled_on": { "templates": ["page"] }
+}
+{% endschema %}

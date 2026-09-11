@@ -1,0 +1,67 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hub": {
+      "type": "longeva-category-hub",
+      "blocks": {
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
+        "badge_2": { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 123456" } },
+        "badge_3": { "type": "trust_badge", "settings": { "primary": "Same-week appointments", "secondary": "No GP referral needed" } },
+        "badge_4": { "type": "trust_badge", "settings": { "primary": "UK-licensed medicines", "secondary": "From licensed wholesalers" } },
+        "faq_referral": {
+          "type": "faq",
+          "settings": {
+            "question": "Can I see a pharmacist privately if my GP has a long waitlist?",
+            "answer": "<p>Yes. Our pharmacists assess and treat skin-health conditions directly, without an NHS referral. Where the right pathway is the NHS we'll tell you and signpost you back.</p>"
+          }
+        },
+        "faq_prescription": {
+          "type": "faq",
+          "settings": {
+            "question": "Will my prescription be UK-licensed?",
+            "answer": "<p>Yes. We only prescribe UK-licensed medicines, dispensed from a wholesaler holding an MHRA WDA(H) authorisation. We do not supply unlicensed imports for skin-health conditions.</p>"
+          }
+        },
+        "faq_gp_communication": {
+          "type": "faq",
+          "settings": {
+            "question": "Will you share information with my GP?",
+            "answer": "<p>With your written consent we'll send a clinical summary to your GP after the consultation. If you would prefer we don't, we'll record that in your notes.</p>"
+          }
+        },
+        "faq_chronic": {
+          "type": "faq",
+          "settings": {
+            "question": "Do you treat long-term skin conditions like rosacea or psoriasis?",
+            "answer": "<p>Yes, we run private review appointments for chronic skin conditions and can issue private prescriptions where clinically appropriate. We do not replace specialist dermatology care for severe disease and will refer when that's the right pathway.</p>"
+          }
+        },
+        "cta_1": { "type": "cta", "settings": { "heading": "Speak to a pharmacist", "subhead": "Same-week appointments. Written aftercare with every consultation." } }
+      },
+      "block_order": [
+        "badge_1", "badge_2", "badge_3", "badge_4",
+        "faq_referral", "faq_prescription", "faq_gp_communication", "faq_chronic",
+        "cta_1"
+      ],
+      "settings": {
+        "eyebrow": "Skin Health",
+        "featured_heading": "",
+        "view_all_label": "View all skin-health services",
+        "faq_heading": "Skin health: frequently asked questions",
+        "related_heading": "Related categories",
+        "book_label": "Book a Consultation",
+        "book_url": "/pages/book",
+        "directory_url": "/pages/services-manchester"
+      }
+    }
+  },
+  "order": ["hub"]
+}

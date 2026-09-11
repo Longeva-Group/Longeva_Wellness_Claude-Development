@@ -1,0 +1,86 @@
+{%- comment -%}
+  JSON-LD for a Longeva category hub.
+
+  Renders three nodes:
+    - BreadcrumbList (Home > Category)
+    - CollectionPage describing the hub
+    - ItemList of featured services when the hub has them set via the
+      custom.hub_featured_services metafield (list.page_reference)
+
+  Called from longeva-category-hub.liquid. Silent when invoked outside
+  a page context, or when there is nothing meaningful to emit.
+{%- endcomment -%}
+
+{%- liquid
+  assign hub_title = page.title | strip
+  assign hub_url = shop.url | append: page.url
+  assign hub_desc = page.metafields.custom.hub_intro_body | default: page.metafields.global.description_tag
+  assign mf_featured = page.metafields.custom.hub_featured_services.value
+-%}
+
+{%- if hub_title != blank and request.page_type == 'page' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": {{ shop.url | json }} },
+    { "@type": "ListItem", "position": 2, "name": {{ hub_title | json }}, "item": {{ hub_url | json }} }
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": {{ hub_title | json }},
+  "url": {{ hub_url | json }},
+  {% if hub_desc != blank %}"description": {{ hub_desc | strip_html | strip_newlines | strip | json }},{% endif %}
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Longeva",
+    "url": {{ shop.url | json }}
+  },
+  "about": {
+    "@type": ["Pharmacy", "MedicalBusiness"],
+    "name": "Longeva",
+    "url": {{ shop.url | json }}
+  }
+}
+</script>
+
+{%- if mf_featured != blank -%}
+{%- assign valid_pages_count = 0 -%}
+{%- for pg in mf_featured -%}
+  {%- if pg -%}{%- assign valid_pages_count = valid_pages_count | plus: 1 -%}{%- endif -%}
+{%- endfor -%}
+{%- if valid_pages_count > 0 -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListOrder": "https://schema.org/ItemListOrderAscending",
+  "numberOfItems": {{ valid_pages_count }},
+  "itemListElement": [
+    {%- assign first_item = true -%}
+    {%- assign position = 0 -%}
+    {%- for pg in mf_featured -%}
+    {%- if pg -%}
+    {%- assign position = position | plus: 1 -%}
+    {%- unless first_item -%},{%- endunless -%}
+    {
+      "@type": "ListItem",
+      "position": {{ position }},
+      "url": {{ shop.url | append: pg.url | json }},
+      "name": {{ pg.title | remove: ' Manchester' | json }}
+    }
+    {%- assign first_item = false -%}
+    {%- endif -%}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}
+{%- endif -%}
+{%- endif -%}

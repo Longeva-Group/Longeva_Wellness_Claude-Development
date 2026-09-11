@@ -1,0 +1,225 @@
+{%- comment -%}
+  Longeva Complaints Procedure page. Renders the GPhC-compliant
+  complaints structure from theme settings so the content cannot drift
+  through admin Page-body paste accidents. Every visible string is
+  exposed as a section setting with a sensible default, so Anthony can
+  tune wording without touching code.
+
+  Source of truth: content/legal/complaints-procedure.md (MD mirror
+  retained for reference and for AI training scrapers reading the repo).
+
+  Usage: assign template `complaints-procedure` to the
+  /pages/complaints-procedure page in Shopify admin (Online Store >
+  Pages > Complaints procedure > Theme template > complaints-procedure).
+{%- endcomment -%}
+
+{%- liquid
+  assign super_name = settings.longeva_superintendent_name | default: 'Alicia Barker'
+  assign super_gphc = settings.longeva_superintendent_gphc | default: '2241860'
+  assign address = settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign email = settings.longeva_complaints_email | default: 'admin@longevawellness.co.uk'
+  assign gphc_num = settings.longeva_gphc_number | default: '9012378'
+
+  # gphc_register_url no longer used after the register link was removed
+  # 2026-05-27 (Anthony, LinkedIn thread). Kept the variable name out of
+  # the template to avoid silent-blank rendering surprises.
+-%}
+
+<section class="longeva-complaints longeva-page longeva-page--light">
+  <div class="longeva-container longeva-complaints__inner">
+    {% if section.settings.eyebrow != blank %}
+      <p class="longeva-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {% endif %}
+    <h1 class="longeva-display longeva-complaints__title">{{ section.settings.heading | default: 'Complaints procedure' | escape }}</h1>
+
+    {% if section.settings.lede != blank %}
+      <div class="longeva-complaints__lede">{{ section.settings.lede }}</div>
+    {% endif %}
+
+    <h2 class="longeva-complaints__h2">{{ section.settings.how_heading | default: 'How to complain' | escape }}</h2>
+    <p class="longeva-complaints__lead-para">
+      {%- if section.settings.how_paragraph != blank -%}
+        {{ section.settings.how_paragraph }}
+      {%- else -%}
+        Put it in writing. If you prefer, write to the Superintendent Pharmacist <strong>{{ super_name | escape }}</strong> (Registration number: {{ super_gphc | escape }}) at {{ address | escape }}, or email us on <a href="mailto:{{ email | escape }}">{{ email | escape }}</a>. Please include your name, the date of the visit, and what happened.
+      {%- endif -%}
+    </p>
+    <p class="longeva-complaints__ack">{{ section.settings.acknowledge_line | default: 'We aim to acknowledge your contact within 3 working days.' | escape }}</p>
+
+    <h2 class="longeva-complaints__h2">{{ section.settings.formal_heading | default: 'Formal written complaint' | escape }}</h2>
+    <p>{{ section.settings.formal_lede | default: 'If the matter is not resolved informally, you can submit a formal written complaint. Please include:' | escape }}</p>
+    <ol class="longeva-complaints__list">
+      <li>Your name and contact details.</li>
+      <li>The date and nature of the service or consultation.</li>
+      <li>What you believe went wrong.</li>
+      <li>What outcome you would like.</li>
+    </ol>
+
+    <p>Send the complaint to the Superintendent Pharmacist:</p>
+    <address class="longeva-complaints__address">
+      <strong>{{ super_name | escape }}</strong><br>
+      GPhC registration: {{ super_gphc | escape }}<br>
+      Longeva Wellness<br>
+      {{ address | escape }}<br>
+      Email: <a href="mailto:{{ email | escape }}">{{ email | escape }}</a>
+    </address>
+
+    <h2 class="longeva-complaints__h2">{{ section.settings.timeframes_heading | default: 'Our response timeframes' | escape }}</h2>
+    <ul class="longeva-complaints__list">
+      <li><strong>Acknowledgement:</strong> within 3 working days of receipt.</li>
+      <li><strong>Full written response:</strong> within 20 working days of receipt.</li>
+      <li>If the investigation takes longer, we will write to you at the 20-day mark to explain why and give a new target date.</li>
+    </ul>
+    <p>Our response will set out: what we investigated, what we found, any action we have taken or will take, and how to escalate if you remain dissatisfied.</p>
+
+    <h2 class="longeva-complaints__h2">{{ section.settings.escalation_heading | default: 'Escalation' | escape }}</h2>
+
+    <h3 class="longeva-complaints__h3">General Pharmaceutical Council (GPhC)</h3>
+    <p>If you are not satisfied with our response, or if your concern relates to the professional conduct of a pharmacist, you can contact the GPhC:</p>
+    <ul class="longeva-complaints__list">
+      <li>Website: <a href="https://www.pharmacyregulation.org/raising-concerns" rel="noopener" target="_blank">pharmacyregulation.org/raising-concerns</a></li>
+      <li>Phone: 0203 713 8000</li>
+      <li>Email: <a href="mailto:concerns@pharmacyregulation.org">concerns@pharmacyregulation.org</a></li>
+    </ul>
+
+    <h3 class="longeva-complaints__h3">Parliamentary and Health Service Ombudsman (PHSO)</h3>
+    <p>If the complaint relates to NHS-funded services, the final escalation route is the PHSO:</p>
+    <ul class="longeva-complaints__list">
+      <li>Website: <a href="https://www.ombudsman.org.uk/making-complaint" rel="noopener" target="_blank">ombudsman.org.uk/making-complaint</a></li>
+      <li>Phone: 0345 015 4033</li>
+    </ul>
+
+    <h3 class="longeva-complaints__h3">Information Commissioner's Office (ICO)</h3>
+    <p>For complaints specifically about how we handle your personal data, see the <a href="/policies/privacy-policy">privacy policy</a> or contact the ICO at <a href="https://ico.org.uk/concerns/" rel="noopener" target="_blank">ico.org.uk/concerns</a>.</p>
+
+    {%- comment -%}
+      UX-09 fix (Varsha feedback May 2026): confidentiality_body and
+      retention_body are richtext settings — they already contain HTML
+      <p> tags. Applying `| escape` turned the literal markup into visible
+      text on the page. Remove escape on the richtext outputs; keep
+      escape on the plain-text headings. The `<p>` wrappers below are
+      also removed since the richtext already provides them.
+    {%- endcomment -%}
+    <h2 class="longeva-complaints__h2">{{ section.settings.confidentiality_heading | default: 'Confidentiality' | escape }}</h2>
+    {{ section.settings.confidentiality_body | default: '<p>All complaints are handled confidentially. Information is shared only with the people investigating the complaint and, where necessary, the appropriate regulator. Complaint records are retained separately from clinical records.</p>' }}
+
+    <h2 class="longeva-complaints__h2">{{ section.settings.retention_heading | default: 'Retention' | escape }}</h2>
+    {{ section.settings.retention_body | default: '<p>Complaint records are retained for <strong>10 years</strong> from the date of final response, in line with NHS Records Management Code of Practice retention schedules for complaint records.</p>' }}
+
+    <p class="longeva-complaints__regulator-line">
+      Pharmacy regulator: GPhC {{ gphc_num }}.
+    </p>
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-complaints { padding-block: 0; }
+  .longeva-complaints__inner {
+    max-width: 720px;
+    padding-block: clamp(56px, 8vw, 96px) clamp(64px, 10vw, 120px);
+  }
+  .longeva-complaints__title {
+    font-size: clamp(36px, 5vw, 56px);
+    margin: 16px 0 0;
+    color: var(--longeva-text);
+  }
+  .longeva-complaints__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 24px 0 32px;
+  }
+  .longeva-complaints__lede p { margin: 0 0 12px; }
+  .longeva-complaints__lede p:last-child { margin-bottom: 0; }
+  .longeva-complaints__h2 {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: clamp(22px, 2.4vw, 28px);
+    letter-spacing: -0.01em;
+    margin: 40px 0 12px;
+    color: var(--longeva-text);
+  }
+  .longeva-complaints__h3 {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 18px;
+    margin: 24px 0 8px;
+    color: var(--longeva-primary);
+  }
+  .longeva-complaints__inner p,
+  .longeva-complaints__inner li {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--longeva-text);
+  }
+  .longeva-complaints__inner .longeva-complaints__lead-para {
+    font-size: 17px;
+    margin-block-start: 0;
+  }
+  .longeva-complaints__lead-para strong { color: var(--longeva-primary); }
+  .longeva-complaints__ack {
+    font-style: italic;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-complaints__list { padding-inline-start: 24px; margin-block: 12px 16px; }
+  .longeva-complaints__list li { margin-block-end: 6px; }
+  .longeva-complaints__address {
+    font-style: normal;
+    background: rgba(45, 25, 14, 0.04);
+    border-inline-start: 3px solid var(--longeva-accent-gold, #A6783C);
+    padding: 16px 20px;
+    margin-block: 12px 24px;
+    border-radius: 4px;
+    line-height: 1.7;
+  }
+  .longeva-complaints__inner a {
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(45, 25, 14, 0.35);
+  }
+  .longeva-complaints__inner a:hover,
+  .longeva-complaints__inner a:focus-visible {
+    text-decoration-color: var(--longeva-primary);
+  }
+  .longeva-complaints__inner .longeva-complaints__regulator-line {
+    margin-block-start: 32px;
+    padding-block-start: 16px;
+    border-block-start: 1px solid var(--longeva-border);
+    font-size: 14px;
+    color: var(--longeva-text-subdued);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva Complaints page",
+  "tag": "section",
+  "class": "longeva-complaints-page-section",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "paragraph", "content": "Renders the GPhC-compliant complaints procedure. Contact details cascade from Theme Settings (Superintendent Pharmacist, address, complaints email)." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Complaints procedure" },
+    { "type": "richtext", "id": "lede", "label": "Lede", "default": "<p>Longeva is a GPhC-registered pharmacy. We take every complaint seriously and follow the structure below in line with GPhC Standards for Pharmacies, standard 6.</p>" },
+    { "type": "header", "content": "How to complain" },
+    { "type": "text", "id": "how_heading", "label": "Heading", "default": "How to complain" },
+    { "type": "richtext", "id": "how_paragraph", "label": "Lead paragraph", "info": "Leave blank to render the verbatim default with Superintendent Pharmacist name + GPhC reg + address + email cascaded from Theme Settings." },
+    { "type": "text", "id": "acknowledge_line", "label": "Acknowledgement timeline", "default": "We aim to acknowledge your contact within 3 working days." },
+    { "type": "header", "content": "Section headings" },
+    { "type": "text", "id": "formal_heading", "label": "Formal complaint heading", "default": "Formal written complaint" },
+    { "type": "text", "id": "formal_lede", "label": "Formal complaint lede", "default": "If the matter is not resolved informally, you can submit a formal written complaint. Please include:" },
+    { "type": "text", "id": "timeframes_heading", "label": "Timeframes heading", "default": "Our response timeframes" },
+    { "type": "text", "id": "escalation_heading", "label": "Escalation heading", "default": "Escalation" },
+    { "type": "text", "id": "confidentiality_heading", "label": "Confidentiality heading", "default": "Confidentiality" },
+    { "type": "richtext", "id": "confidentiality_body", "label": "Confidentiality body", "default": "<p>All complaints are handled confidentially. Information is shared only with the people investigating the complaint and, where necessary, the appropriate regulator. Complaint records are retained separately from clinical records.</p>" },
+    { "type": "text", "id": "retention_heading", "label": "Retention heading", "default": "Retention" },
+    { "type": "richtext", "id": "retention_body", "label": "Retention body", "default": "<p>Complaint records are retained for <strong>10 years</strong> from the date of final response, in line with NHS Records Management Code of Practice retention schedules for complaint records.</p>" }
+  ],
+  "presets": [
+    { "name": "Longeva Complaints page" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,120 @@
+/* ===================================================================
+   Longeva local area pages. Scoped to .longeva-local. Reuses brand
+   tokens and the shared destination cta-band / sticky-cta primitives
+   from longeva-destinations.css. No priority overrides; specificity by
+   the .longeva-local scope, per PROJECT_RULES.md section 3.4.
+   =================================================================== */
+
+.longeva-local { color: #2D190E; }
+
+/* Breadcrumb */
+.longeva-local__breadcrumb { padding-top: 20px; }
+.longeva-local__crumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #6b5d52;
+}
+.longeva-local__crumbs li { display: flex; align-items: center; gap: 8px; }
+.longeva-local__crumbs li + li::before { content: "/"; color: rgba(45, 25, 14, 0.4); }
+.longeva-local__crumbs a { color: #6b5d52; text-decoration: none; }
+.longeva-local__crumbs a:hover,
+.longeva-local__crumbs a:focus-visible { color: #8a5f2a; }
+
+/* Hero */
+.longeva-local__hero { padding-top: clamp(16px, 3vw, 28px); }
+.longeva-local__eyebrow { margin: 0 0 12px; }
+.longeva-local__h1 {
+  font-size: clamp(30px, 4.5vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 18px;
+  max-width: 24ch;
+}
+.longeva-local__lead {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 8px;
+}
+.longeva-local__lead p { margin: 0 0 12px; }
+.longeva-local__lead p:last-child { margin-bottom: 0; }
+.longeva-local__hero-actions { margin: 24px 0 8px; }
+
+/* Prose. .longeva-prose is defined only in longeva-hajj-umrah.css, which
+   this section does not load, so the body copy (travel context, etc.)
+   would otherwise render unstyled. Scoped here to .longeva-local. */
+.longeva-local .longeva-prose p {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 16px;
+}
+.longeva-local .longeva-prose p:last-child { margin-bottom: 0; }
+.longeva-local .longeva-prose a { color: #8a5f2a; text-decoration: underline; }
+.longeva-local .longeva-prose ul,
+.longeva-local .longeva-prose ol { max-width: 64ch; margin: 0 0 16px; padding-left: 22px; line-height: 1.6; color: rgba(45, 25, 14, 0.85); }
+.longeva-local .longeva-prose li { margin: 0 0 6px; }
+
+/* Content blocks */
+.longeva-local__block { border-top: 1px solid rgba(45, 25, 14, 0.1); }
+.longeva-local__h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+  margin: 0 0 18px;
+}
+
+/* Services */
+.longeva-local__service-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 600px) { .longeva-local__service-grid { grid-template-columns: repeat(2, 1fr); gap: 10px 24px; } }
+@media (min-width: 980px) { .longeva-local__service-grid { grid-template-columns: repeat(3, 1fr); } }
+.longeva-local__service-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.14);
+  border-radius: 10px;
+  color: #2D190E;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.longeva-local__service-link:hover,
+.longeva-local__service-link:focus-visible { border-color: #A6783C; background: #F4ECDE; outline: none; }
+
+/* Map */
+.longeva-local__address { font-size: 16px; color: rgba(45, 25, 14, 0.85); margin: 0 0 14px; }
+.longeva-local__map {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(45, 25, 14, 0.12);
+  line-height: 0;
+}
+.longeva-local__map iframe { display: block; width: 100%; }
+.longeva-local__directions { margin: 14px 0 0; }
+.longeva-local__directions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a5f2a;
+  font-weight: 600;
+  text-decoration: none;
+}
+.longeva-local__directions a:hover,
+.longeva-local__directions a:focus-visible { text-decoration: underline; }

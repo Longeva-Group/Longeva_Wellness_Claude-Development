@@ -1,0 +1,228 @@
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="en-GB"
+>
+  <head>
+    {%- comment -%}
+      Favicon: bundled longeva-favicon-{16,32}.png + .ico is the canonical
+      brand mark (Varsha 2026-05-07: admin-uploaded favicon was a tiny
+      dot, the bundled version is the bold ivory L on brand-dark). The
+      bundled assets win regardless of settings.favicon to keep the
+      brand mark consistent across deploys. To replace, swap the PNG
+      files in /assets via theme editor or git push, do not rely on
+      Theme Settings > Logo and favicon > Favicon.
+    {%- endcomment -%}
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ 'longeva-favicon-32.png' | asset_url }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ 'longeva-favicon-16.png' | asset_url }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ 'longeva-favicon.ico' | asset_url }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ 'longeva-apple-touch.png' | asset_url }}">
+    <link rel="mask-icon" href="{{ 'longeva-safari-pinned.svg' | asset_url }}" color="#2D190E">
+    <meta name="theme-color" content="#2D190E">
+    <meta name="msapplication-TileColor" content="#2D190E">
+
+    {%- comment -%}
+      Resource hints (added 2026-05-12).
+      preconnect: warm the connection (DNS + TCP + TLS) before the page
+      needs the origin. dns-prefetch is cheaper but only resolves DNS.
+
+      - cdn.shopify.com: served by every asset_url. crossorigin required
+        because we fetch fonts (anonymous) from this origin.
+      - api.sesami.co: Sesami calendar slots and reservation fetches.
+        Fires on every service page; cold RTT previously cost ~100-200ms
+        on first-paint to first-slot-render.
+      - monorail-edge.shopifysvc.com: Shopify analytics beacon. Lower
+        priority; dns-prefetch is enough.
+
+      Klaviyo/GA4/Meta Pixel preconnects intentionally absent: not
+      currently wired up (Klaviyo on hold per Anthony 2026-04-20). Add
+      here if/when those apps go live.
+    {%- endcomment -%}
+    {%- # theme-check-disable RemoteAsset -%}
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    <link rel="preconnect" href="https://api.sesami.co" crossorigin>
+    <link rel="dns-prefetch" href="https://monorail-edge.shopifysvc.com">
+    {%- # theme-check-enable RemoteAsset -%}
+
+    {% comment %} This a way to wait for main content to load when navigating to a new page so that the view transitions can work consistently {% endcomment %}
+    {% if settings.transition_to_main_product or settings.page_transition_enabled %}
+      <link
+        rel="expect"
+        href="#MainContent"
+        blocking="render"
+        id="view-transition-render-blocker"
+      >
+    {% endif %}
+
+    {%- render 'meta-tags' -%}
+    {%- render 'stylesheets' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-schemes' -%}
+
+    {%- comment -%}
+      Longeva brand assets, loaded once per page.
+      Poppins (body font) is now self-hosted. Eliminates the
+      fonts.googleapis.com -> fonts.gstatic.com cross-origin chain
+      and the print-media swap dance. The 400-latin weight is
+      preloaded for first paint; 500/600 fetched lazily by the
+      browser as encountered. Latin-ext subsets fetched only when
+      the document contains characters in that range, courtesy of
+      unicode-range matching.
+    {%- endcomment -%}
+    {%- render 'longeva-fonts' -%}
+    {%- comment -%}
+      preload: true on longeva-pages.css so the brand stylesheet is
+      discovered alongside meta-tags / fonts / theme-variables in the
+      head, not after the rest of the head finishes parsing. Same
+      pattern Horizon uses for base.css.
+    {%- endcomment -%}
+    {{ 'longeva-pages.css' | asset_url | stylesheet_tag: preload: true }}
+    <script src="{{ 'longeva-animations.js' | asset_url }}" defer></script>
+
+    {%- comment -%}
+      Sesami widget script tag REMOVED 2026-05-08. Verified
+      `experience.sesami.co` is NXDOMAIN (Sesami deprecated the
+      standalone CDN subdomain). The Shopify app embed for Sesami
+      now injects everything needed: sesami-main.js, the
+      <sesami-experience> custom element registration, and the
+      variant form data scaffolding. Admin must toggle the Sesami
+      app embed ON in Customise > App embeds for the booking flow
+      to work end-to-end. Without the app embed, the
+      <sesami-experience> elements still render the slot preview
+      (via sesami-main.js loaded by the app proxy) but
+      add-to-cart fails with "form data not found" because the
+      variant form scaffolding isn't injected.
+    {%- endcomment -%}
+
+    {%- render 'longeva-meta-robots' -%}
+    {%- render 'longeva-schema-website' -%}
+    {%- render 'longeva-schema-article' -%}
+    {%- comment -%}
+      Pharmacy/MedicalBusiness JSON-LD rendered sitewide. Service, hub
+      and article schemas reference @id #pharmacy and need this node to
+      resolve on the same page. Skipped on cart, checkout, password and
+      account routes where commercial entity schema is not appropriate.
+    {%- endcomment -%}
+    {%- unless request.page_type == 'cart' or request.page_type == 'password' or request.page_type contains 'customers' -%}
+      {%- render 'longeva-schema-pharmacy' -%}
+    {%- endunless -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    <script>
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+</script>
+    {{ content_for_header }}
+  </head>
+
+  <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    <div id="header-group">
+      {% sections 'header-group' %}
+    </div>
+
+    <script>
+      // Inline header height and menu style calculations to prevent layout shift.
+      // Wrapped in requestAnimationFrame so the synchronous offsetHeight reads
+      // do not block first paint. The CSS variables this sets are consumed by
+      // sticky offsets which carry sensible fallbacks (var(--header-group-height, 80px));
+      // the values from this script refine the offset after first paint, not before.
+      // Note: Updates in calculateHeaderGroupHeight(), updateTransparentHeaderOffset() and setHeaderMenuStyle() utilities.js should be kept in sync with this function
+      window.requestAnimationFrame(function () {
+      (function setHeaderHeighCustomProperties() {
+        /*
+         * Header calculation functions for maintaining CSS variables
+         * Mimic calculateHeaderGroupHeight() in utilities.js
+         */
+        const header = document.querySelector('header-component');
+        const headerGroup = document.querySelector('#header-group');
+        const hasHeaderSection = headerGroup?.querySelector('.header-section');
+
+        if (!header || !headerGroup) return;
+
+        const headerTopRow = header.querySelector('.header__row--top');
+        const headerHeight = header.offsetHeight;
+
+        // Calculate the total height of the header group
+        let headerGroupHeight = 0;
+        const children = headerGroup.children;
+        for (let i = 0; i < children.length; i++) {
+          const element = children[i];
+          if (element === header || !(element instanceof HTMLElement)) continue;
+          headerGroupHeight += element.offsetHeight;
+        }
+
+        // Check for transparent header special case
+        if (header.hasAttribute('transparent') && header.parentElement?.nextElementSibling) {
+          headerGroupHeight += headerHeight;
+        }
+
+        // Set CSS variables
+        document.body.style.setProperty('--header-height', `${headerHeight}px`);
+        document.body.style.setProperty('--header-group-height', `${headerGroupHeight}px`);
+
+        if (headerTopRow) {
+          window.requestAnimationFrame(function () {
+            document.body.style.setProperty('--top-row-height', `${headerTopRow.offsetHeight}px`);
+          });
+        }
+
+        /**
+         * Updates CSS custom properties for transparent header offset calculation
+         * Mimic updateTransparentHeaderOffset() in utilities.js
+         */
+
+        if (!hasHeaderSection || !header?.hasAttribute('transparent')) {
+          document.body.style.setProperty('--transparent-header-offset-boolean', '0');
+          return;
+        }
+
+        const hasImmediateSection = hasHeaderSection.nextElementSibling?.classList.contains('shopify-section');
+
+        const shouldApplyOffset = !hasImmediateSection ? '1' : '0';
+        document.body.style.setProperty('--transparent-header-offset-boolean', shouldApplyOffset);
+      })();
+
+      (function setHeaderMenuStyle() {
+        const headerComponent = document.querySelector('#header-component');
+        if (headerComponent) {
+          const isTouchDevice = 'ontouchstart' in window && navigator.maxTouchPoints > 0;
+          const overflowList = headerComponent?.querySelector('overflow-list');
+          const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
+          headerComponent.dataset.menuStyle = isTouchDevice || hasReachedMinimum ? 'drawer' : 'menu';
+        }
+      })();
+      });
+    </script>
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+      data-product-transition="{{ settings.transition_to_main_product }}"
+      data-template="{{ template }}"
+    >
+      {% render 'back-button' %}
+      {{ content_for_layout }}
+    </main>
+
+    <footer>
+      {% sections 'footer-group' %}
+    </footer>
+
+    {% render 'search-modal' %}
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+  </body>
+</html>

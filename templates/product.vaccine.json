@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "breadcrumb": {
+      "type": "longeva-service-breadcrumb-product",
+      "settings": {
+        "show_home": true,
+        "home_label": "Home"
+      }
+    },
+    "layout": {
+      "type": "longeva-service-layout-product",
+      "settings": {}
+    }
+  },
+  "order": ["breadcrumb", "layout"]
+}

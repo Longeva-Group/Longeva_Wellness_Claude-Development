@@ -1,0 +1,113 @@
+{% comment %}
+  Longeva service clinicians grid.
+
+  Pulls the `clinicians` list from the service metaobject and renders a
+  grid of clinician cards (name, title, headshot). Prefers per-product
+  override (custom.clinicians metafield) if set; otherwise uses service.
+  Hidden when neither source has any entries.
+{% endcomment %}
+
+{% liquid
+  assign clinicians = null
+  if product.metafields.custom.clinicians.value.size > 0
+    assign clinicians = product.metafields.custom.clinicians.value
+  else
+    assign service = product.metafields.custom.service_ref.value
+    if service and service.clinicians.value.size > 0
+      assign clinicians = service.clinicians.value
+    endif
+  endif
+  assign heading = block.settings.heading | default: "Your clinicians"
+%}
+
+{% if clinicians %}
+  <section class="longeva-service-clinicians" {{ block.shopify_attributes }}>
+    <h2 class="longeva-service-clinicians__heading">{{ heading | escape }}</h2>
+    <ul class="longeva-service-clinicians__grid" role="list">
+      {% for clinician in clinicians %}
+        <li class="longeva-service-clinicians__card">
+          {% if clinician.headshot %}
+            <img
+              class="longeva-service-clinicians__headshot"
+              src="{{ clinician.headshot | image_url: width: 240 }}"
+              srcset="{{ clinician.headshot | image_url: width: 240 }} 1x, {{ clinician.headshot | image_url: width: 480 }} 2x"
+              alt="{{ clinician.name | escape }}"
+              loading="lazy"
+              width="120"
+              height="120"
+            >
+          {% endif %}
+          <div class="longeva-service-clinicians__meta">
+            <p class="longeva-service-clinicians__name">{{ clinician.name | escape }}</p>
+            {% if clinician.title != blank %}
+              <p class="longeva-service-clinicians__title">{{ clinician.title | escape }}</p>
+            {% endif %}
+            {% if clinician.gphc_number != blank %}
+              <p class="longeva-service-clinicians__reg">GPhC {{ clinician.gphc_number | escape }}</p>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+{% stylesheet %}
+  .longeva-service-clinicians {
+    padding-block: 1.5rem;
+  }
+  .longeva-service-clinicians__heading {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .longeva-service-clinicians__grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .longeva-service-clinicians__card {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .longeva-service-clinicians__headshot {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--color-background-subdued, #f4f4f4);
+  }
+  .longeva-service-clinicians__name {
+    margin: 0;
+    font-weight: 600;
+  }
+  .longeva-service-clinicians__title,
+  .longeva-service-clinicians__reg {
+    margin: 0.125rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-foreground-subdued, currentColor);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva clinicians",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Your clinicians"
+    },
+    {
+      "type": "paragraph",
+      "content": "Prefers per-product clinician override metafield. Falls back to the service metaobject's clinicians list. Hidden when neither is populated."
+    }
+  ]
+}
+{% endschema %}

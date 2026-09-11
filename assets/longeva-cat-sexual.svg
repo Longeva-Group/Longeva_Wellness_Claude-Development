@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Sexual health service">
+  <rect width="400" height="400" rx="16" fill="#F2E6DC"/>
+  <g fill="none" stroke="#2D190E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(200 200)">
+    <path d="M0 -110 L-80 -85 L-80 10 C-80 65 -45 100 0 115 C45 100 80 65 80 10 L80 -85 Z"/>
+    <path d="M-30 0 L-8 22 L32 -22"/>
+  </g>
+  <g transform="translate(200 200)">
+    <circle cx="0" cy="-92" r="4" fill="#B99157"/>
+  </g>
+</svg>

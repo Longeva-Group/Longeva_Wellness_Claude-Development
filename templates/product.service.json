@@ -1,0 +1,82 @@
+{
+  "sections": {
+    "longeva_service_page": {
+      "type": "longeva-service-page",
+      "blocks": {
+        "hero": {
+          "type": "longeva-service-hero",
+          "settings": {}
+        },
+        "eligibility": {
+          "type": "longeva-service-eligibility",
+          "settings": {
+            "heading": "Who it is for"
+          }
+        },
+        "process": {
+          "type": "longeva-service-process",
+          "settings": {
+            "heading": "Our process"
+          }
+        },
+        "clinicians": {
+          "type": "longeva-service-clinicians",
+          "settings": {
+            "heading": "Your clinicians"
+          }
+        },
+        "faq": {
+          "type": "longeva-service-faq",
+          "settings": {
+            "heading": "Treatment FAQs"
+          }
+        },
+        "safety": {
+          "type": "longeva-service-safety",
+          "settings": {
+            "heading": "Safety and what to expect"
+          }
+        },
+        "destinations": {
+          "type": "longeva-service-destinations",
+          "settings": {
+            "heading": "Destinations where this vaccine is recommended"
+          }
+        },
+        "related": {
+          "type": "longeva-service-related",
+          "settings": {
+            "heading": "You may also like",
+            "max_items": 3
+          }
+        },
+        "cta": {
+          "type": "longeva-service-cta",
+          "settings": {
+            "heading": "Ready to book?"
+          }
+        }
+      },
+      "block_order": [
+        "hero",
+        "eligibility",
+        "process",
+        "clinicians",
+        "faq",
+        "safety",
+        "destinations",
+        "related",
+        "cta"
+      ],
+      "settings": {
+        "section_width": "page-width",
+        "color_scheme": "scheme-1",
+        "padding-block-start": 24,
+        "padding-block-end": 48
+      }
+    }
+  },
+  "order": [
+    "longeva_service_page"
+  ]
+}

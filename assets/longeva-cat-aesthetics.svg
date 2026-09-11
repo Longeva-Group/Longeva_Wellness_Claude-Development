@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Aesthetics service">
+  <rect width="400" height="400" rx="16" fill="#F2E6DC"/>
+  <g fill="none" stroke="#2D190E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(200 200)">
+    <path d="M-30 -110 C-90 -100 -110 -50 -100 0 C-90 60 -40 110 0 110 L20 130 L20 150 L-10 150"/>
+    <path d="M-65 -10 C-58 -12 -52 -8 -50 -2"/>
+    <path d="M-20 25 C-10 35 10 35 20 25"/>
+  </g>
+  <g transform="translate(200 200)">
+    <circle cx="35" cy="60" r="4" fill="#B99157"/>
+  </g>
+</svg>

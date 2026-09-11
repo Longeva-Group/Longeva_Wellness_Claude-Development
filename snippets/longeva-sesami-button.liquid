@@ -1,0 +1,193 @@
+{%- comment -%}
+  Longeva Sesami booking button.
+
+  Renders the Sesami Experience web component when a service id is
+  available so the booking flow opens inline without a page hop. Falls
+  back to a standard anchor when the service id is not yet set.
+
+  Parameters:
+    service_id    Sesami service id. When blank the snippet falls back.
+    variant_id    Shopify product variant id (numeric). When set, the
+                  <sesami-experience> is wrapped in a <form action="/cart/add">
+                  so Sesami's ws() form-discovery returns this form
+                  AND its closest('form[action*="/cart/add"]') traversal
+                  finds the experience-element-as-child, which means
+                  Sesami's hidden fields wrapper (properties[Date],
+                  properties[Time], properties[Team Member],
+                  properties[_reservation_token], etc.) gets included
+                  when Sesami calls new FormData(form). Without the
+                  wrap, Sesami uses a detached form and the slot
+                  metadata is dropped from the cart line.
+    shop_id       Sesami shop id. Falls back to settings.longeva_sesami_shop_id.
+    label         Button label. Falls back to settings.longeva_book_cta_label.
+    variant       primary | ghost | primary-on-dark (default: primary).
+    fallback_url  URL used when service_id is blank.
+    classes       Additional class names on the anchor / host.
+    id            Optional DOM id.
+    auto_add      Set to false to disable auto-add-to-cart (default: true).
+    skip_cart     Set to true to skip cart drawer + go to checkout (default: false).
+
+  Configuration history (2026-05-08, item 4.6 escalated):
+
+  Iteration 1: both flags `true` (auto-add ON, skip-cart ON).
+    Behaviour: slot click attempted silent auto-add + checkout redirect.
+    If the Sesami dashboard service-to-variant binding was off (variant
+    inactive, no inventory, no variant linked), step 1 silently failed
+    and the user saw nothing happen. Reported as "click does nothing".
+
+  Iteration 2: both flags `false`.
+    Behaviour: slot picker advances date -> time, then stops. The
+    Sesami web component requires auto-add-to-cart to progress past
+    slot selection; with it off, the picker is a dead-end UI.
+
+  Iteration 3 (current): auto_add `true`, skip_cart `false`.
+    Behaviour: slot click -> calendar -> time -> auto-add to cart ->
+    redirects to /cart (the on-brand longeva cart page from PR #192).
+    User sees the booking line item with Sesami booking attributes,
+    clicks "Secure checkout", and Shopify checkout collects name,
+    email, phone, payment as per the standard Shopify Sesami flow.
+    This is the canonical book-and-pay path.
+
+    If the user STILL sees nothing after time pick under this config,
+    the failure is in Sesami's auto-add-to-cart step itself. Root
+    cause is Sesami dashboard service-to-variant binding (admin-side
+    only). Anthony to verify:
+      1. Sesami dashboard > Services > each service is linked to a
+         published Shopify product variant.
+      2. Variant status: Active (not Draft).
+      3. Inventory: tracking disabled OR variant has stock.
+
+  Sesami button-style JSON keys (per Sesami configurator output):
+    color, color_background, border_color, border_width,
+    border_radius, font_size, width, height, alignment.
+{%- endcomment -%}
+
+{%- liquid
+  assign svc_id = service_id | default: '' | strip
+  assign vid = variant_id | default: '' | strip
+  assign shop_handle = shop_id | default: settings.longeva_sesami_shop_id | default: ''
+  assign btn_label = label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign btn_variant = variant | default: 'primary'
+  assign extra_classes = classes | default: ''
+  assign host_id = id | default: ''
+  assign fallback = fallback_url | default: settings.longeva_book_cta_url | default: '/pages/book'
+  assign use_auto_add = auto_add
+  if use_auto_add == nil
+    assign use_auto_add = true
+  endif
+  assign use_skip_cart = skip_cart
+  if use_skip_cart == nil
+    assign use_skip_cart = false
+  endif
+  comment
+    Optional pre-filled booking line property (e.g. Destination set from a
+    destination page), carried into the cart line so the clinician sees it.
+  endcomment
+  assign prop_name = prop_name | default: '' | strip
+  assign prop_value = prop_value | default: '' | strip
+  comment
+    Optional trip-detail prompts (destination booking, Anthony 3 June).
+    When enabled, travel date and length of stay are collected in the same
+    /cart/add form so they ride into the cart line as booking properties
+    alongside the Sesami slot metadata. Only shown in the form branch.
+  endcomment
+  assign want_travel_date = ask_travel_date | default: false
+  assign want_length_of_stay = ask_length_of_stay | default: false
+-%}
+
+{%- if svc_id != '' and shop_handle != '' -%}
+  {%- case btn_variant -%}
+    {%- when 'ghost' -%}
+      {%- assign btn_bg = '#F2E6DC' -%}
+      {%- assign btn_text = '#2D190E' -%}
+      {%- assign btn_border = '#2D190E' -%}
+    {%- when 'primary-on-dark' -%}
+      {%- assign btn_bg = '#F2E6DC' -%}
+      {%- assign btn_text = '#2D190E' -%}
+      {%- assign btn_border = '#F2E6DC' -%}
+    {%- else -%}
+      {%- assign btn_bg = '#2D190E' -%}
+      {%- assign btn_text = '#F2E6DC' -%}
+      {%- assign btn_border = '#2D190E' -%}
+  {%- endcase -%}
+  {%- capture btn_style -%}{"width":"100%","height":"56px","font_size":15,"color":"{{ btn_text }}","color_background":"{{ btn_bg }}","border_width":2,"border_color":"{{ btn_border }}","border_radius":999,"alignment":"center"}{%- endcapture -%}
+  {%- if vid != '' -%}
+    {%- comment -%}
+      Wrap the <sesami-experience> in a /cart/add form so Sesami's
+      ws() form-discovery finds it via t.closest('form[action*="/cart/add"]'),
+      which means the hidden fields Sesami injects inside the
+      experience element (properties[Date], properties[Time],
+      properties[Team Member], properties[_reservation_token],
+      properties[_locale], properties[_session-id]) all get included
+      in new FormData(form) on submit. Without the wrap the slot
+      metadata is dropped from the cart line.
+
+      vo() validation requires <input type="submit"> or
+      <button type="submit"> inside the form. The inset hidden submit
+      button satisfies that. tabindex=-1 + aria-hidden so AT skips it.
+    {%- endcomment -%}
+    <form
+      class="longeva-sesami-form"
+      action="{{ routes.cart_url }}/add"
+      method="post"
+      enctype="multipart/form-data"
+      data-sesami-cart-form
+    >
+      <input type="hidden" name="form_type" value="product">
+      <input type="hidden" name="utf8" value="✓">
+      <input type="hidden" name="id" value="{{ vid | escape }}">
+      <input type="hidden" name="quantity" value="1">
+      {%- if prop_name != '' and prop_value != '' -%}<input type="hidden" name="properties[{{ prop_name | escape }}]" value="{{ prop_value | escape }}">{%- endif -%}
+      {%- if want_travel_date or want_length_of_stay -%}
+        <div class="longeva-sesami-trip">
+          {%- if want_travel_date -%}
+            <label class="longeva-sesami-trip__field">
+              <span class="longeva-sesami-trip__label">Travel date</span>
+              <input class="longeva-sesami-trip__input" type="date" name="properties[Travel date]" autocomplete="off">
+            </label>
+          {%- endif -%}
+          {%- if want_length_of_stay -%}
+            <label class="longeva-sesami-trip__field">
+              <span class="longeva-sesami-trip__label">Length of stay</span>
+              <input class="longeva-sesami-trip__input" type="text" name="properties[Length of stay]" placeholder="e.g. 2 weeks" autocomplete="off">
+            </label>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+      <sesami-experience
+        class="longeva-sesami longeva-sesami--{{ btn_variant }} {{ extra_classes }}"
+        {% if host_id != '' %}id="{{ host_id }}"{% endif %}
+        shop-id="{{ shop_handle | escape }}"
+        service-id="{{ svc_id | escape }}"
+        {% if use_auto_add %}auto-add-to-cart{% endif %}
+        {% if use_skip_cart %}skip-cart{% endif %}
+        button-label="{{ btn_label | escape }}"
+        button-style="{{ btn_style | url_encode }}"
+      ></sesami-experience>
+      <button type="submit" class="longeva-sr-only" tabindex="-1" aria-hidden="true">Add to cart</button>
+    </form>
+  {%- else -%}
+    <sesami-experience
+      class="longeva-sesami longeva-sesami--{{ btn_variant }} {{ extra_classes }}"
+      {% if host_id != '' %}id="{{ host_id }}"{% endif %}
+      shop-id="{{ shop_handle | escape }}"
+      service-id="{{ svc_id | escape }}"
+      {% if use_auto_add %}auto-add-to-cart{% endif %}
+      {% if use_skip_cart %}skip-cart{% endif %}
+      button-label="{{ btn_label | escape }}"
+      button-style="{{ btn_style | url_encode }}"
+    ></sesami-experience>
+  {%- endif -%}
+{%- else -%}
+  {%- case btn_variant -%}
+    {%- when 'ghost' -%}
+      {%- assign btn_class = 'longeva-btn longeva-btn--ghost' -%}
+    {%- when 'primary-on-dark' -%}
+      {%- assign btn_class = 'longeva-btn longeva-btn--primary-on-dark' -%}
+    {%- else -%}
+      {%- assign btn_class = 'longeva-btn longeva-btn--primary-on-light' -%}
+  {%- endcase -%}
+  <a class="{{ btn_class }} {{ extra_classes }}"
+     {% if host_id != '' %}id="{{ host_id }}"{% endif %}
+     href="{{ fallback }}">{{ btn_label | escape }}</a>
+{%- endif -%}

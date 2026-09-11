@@ -1,0 +1,112 @@
+{%- comment -%}
+  JSON-LD ItemList of named clinicians with full E-E-A-T trust signals.
+  Rendered from sections/longeva-clinicians-page.liquid. Highest single
+  E-E-A-T lever for a YMYL pharmacy site, per the SEO audit.
+
+  Each Person carries:
+    - name (required, never emitted blank)
+    - jobTitle (role)
+    - worksFor reference to the sitewide Pharmacy node @id
+    - identifier (PropertyValue with canonical register URL propertyID)
+    - description (bio, stripped to plain text)
+
+  Regulator URL mapping for propertyID:
+    GPhC -> https://www.pharmacyregulation.org/registers/pharmacist
+    GMC  -> https://www.gmc-uk.org/registration-and-licensing/the-medical-register
+    NMC  -> https://www.nmc.org.uk/registration
+    other -> regulator label as-is (no canonical URL known)
+
+  Silent when no clinician data is set so the schema is never emitted
+  with empty Person entities.
+{%- endcomment -%}
+
+{%- liquid
+  assign super_name = settings.longeva_superintendent_name
+  assign super_gphc = settings.longeva_superintendent_gphc
+  assign super_role = section.settings.super_role | default: 'Superintendent Pharmacist'
+  assign super_bio = section.settings.super_bio | strip_html | strip_newlines | strip
+  assign clinician_blocks = section.blocks
+
+  assign should_emit = false
+  if super_name != blank
+    assign should_emit = true
+  else
+    for block in clinician_blocks
+      if block.settings.name != blank
+        assign should_emit = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- if should_emit -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Longeva clinicians",
+  "itemListElement": [
+    {%- assign idx = 0 -%}
+    {%- if super_name != blank -%}
+      {%- assign idx = idx | plus: 1 -%}
+      {
+        "@type": "ListItem",
+        "position": {{ idx }},
+        "item": {
+          "@type": "Person",
+          "name": {{ super_name | json }},
+          "jobTitle": {{ super_role | json }},
+          "worksFor": { "@id": "{{ shop.url }}/#pharmacy" }
+          {%- if super_gphc != blank -%},
+          "identifier": [
+            { "@type": "PropertyValue", "name": "GPhC pharmacist registration", "value": {{ super_gphc | json }} }
+          ]
+          {%- endif -%}
+          {%- if super_bio != blank -%},
+          "description": {{ super_bio | json }}
+          {%- endif -%}
+        }
+      }
+    {%- endif -%}
+    {%- for block in clinician_blocks -%}
+      {%- if block.settings.name != blank -%}
+        {%- assign idx = idx | plus: 1 -%}
+        {%- if idx > 1 -%},{%- endif -%}
+        {%- assign reg_body = block.settings.reg_body | default: 'GPhC' -%}
+        {%- assign reg_body_upper = reg_body | upcase -%}
+        {%- assign block_bio = block.settings.bio | strip_html | strip_newlines | strip -%}
+        {
+          "@type": "ListItem",
+          "position": {{ idx }},
+          "item": {
+            "@type": "Person",
+            "name": {{ block.settings.name | json }},
+            "worksFor": { "@id": "{{ shop.url }}/#pharmacy" }
+            {%- if block.settings.role != blank -%},
+            "jobTitle": {{ block.settings.role | json }}
+            {%- endif -%}
+            {%- if block.settings.reg_number != blank -%},
+            "identifier": [
+              {%- if reg_body_upper == 'GPHC' -%}
+                { "@type": "PropertyValue", "name": "GPhC pharmacist registration", "value": {{ block.settings.reg_number | json }} }
+              {%- elsif reg_body_upper == 'GMC' -%}
+                { "@type": "PropertyValue", "propertyID": "https://www.gmc-uk.org/registration-and-licensing/the-medical-register", "name": "GMC registration", "value": {{ block.settings.reg_number | json }} }
+              {%- elsif reg_body_upper == 'NMC' -%}
+                { "@type": "PropertyValue", "propertyID": "https://www.nmc.org.uk/registration", "name": "NMC registration", "value": {{ block.settings.reg_number | json }} }
+              {%- else -%}
+                { "@type": "PropertyValue", "propertyID": {{ reg_body | json }}, "value": {{ block.settings.reg_number | json }} }
+              {%- endif -%}
+            ]
+            {%- endif -%}
+            {%- if block_bio != blank -%},
+            "description": {{ block_bio | json }}
+            {%- endif -%}
+          }
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}

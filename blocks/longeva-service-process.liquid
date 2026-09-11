@@ -1,0 +1,83 @@
+{% comment %}
+  Longeva service process block.
+
+  Renders a numbered "our process" list from the service metaobject
+  (custom.service_ref -> process_steps). Hidden when empty.
+{% endcomment %}
+
+{% liquid
+  assign service = product.metafields.custom.service_ref.value
+  assign steps = null
+  if service and service.process_steps.value
+    assign steps = service.process_steps.value
+  endif
+  assign heading = block.settings.heading | default: "Our process"
+%}
+
+{% if steps %}
+  <section class="longeva-service-process" {{ block.shopify_attributes }}>
+    <h2 class="longeva-service-process__heading">{{ heading | escape }}</h2>
+    <ol class="longeva-service-process__list">
+      {% for step in steps %}
+        <li class="longeva-service-process__step">
+          <span class="longeva-service-process__index">{{ forloop.index }}</span>
+          <span class="longeva-service-process__body">{{ step | escape }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+{% endif %}
+
+{% stylesheet %}
+  .longeva-service-process {
+    padding-block: 1.5rem;
+  }
+  .longeva-service-process__heading {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .longeva-service-process__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    counter-reset: step;
+  }
+  .longeva-service-process__step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .longeva-service-process__index {
+    flex: 0 0 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-primary, currentColor);
+    color: var(--color-primary-foreground, #fff);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  .longeva-service-process__body {
+    line-height: 1.5;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva service process",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Our process"
+    }
+  ]
+}
+{% endschema %}

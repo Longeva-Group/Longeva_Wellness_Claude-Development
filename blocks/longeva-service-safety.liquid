@@ -1,0 +1,66 @@
+{% comment %}
+  Longeva service safety block.
+
+  Renders a rich-text "what to expect / side effects" section from the
+  service metaobject's regulatory_line. Defaults to a generic safety
+  notice when the field is blank.
+{% endcomment %}
+
+{% liquid
+  assign service = product.metafields.custom.service_ref.value
+  assign body = ''
+  if service and service.regulatory_line != blank
+    assign body = service.regulatory_line
+  endif
+  assign heading = block.settings.heading | default: "Safety and what to expect"
+  assign default_body = block.settings.fallback_body
+%}
+
+<section class="longeva-service-safety" {{ block.shopify_attributes }}>
+  <h2 class="longeva-service-safety__heading">{{ heading | escape }}</h2>
+  <div class="longeva-service-safety__body">
+    {% if body != blank %}
+      {{ body | newline_to_br }}
+    {% elsif default_body != blank %}
+      {{ default_body }}
+    {% else %}
+      <p>All Longeva services follow GPhC standards. Suspected adverse reactions to any vaccine or medicine are reported through the <a href="https://yellowcard.mhra.gov.uk/" rel="noopener noreferrer">MHRA Yellow Card scheme</a>. Written aftercare is provided at every appointment. Contact us at the number in the footer if you have concerns after your visit.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-service-safety {
+    padding-block: 1.5rem;
+  }
+  .longeva-service-safety__heading {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .longeva-service-safety__body {
+    line-height: 1.6;
+  }
+  .longeva-service-safety__body p:first-child { margin-top: 0; }
+  .longeva-service-safety__body p:last-child { margin-bottom: 0; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva service safety",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Safety and what to expect"
+    },
+    {
+      "type": "richtext",
+      "id": "fallback_body",
+      "label": "Fallback safety copy",
+      "info": "Shown when the service metaobject's regulatory_line field is empty."
+    }
+  ]
+}
+{% endschema %}

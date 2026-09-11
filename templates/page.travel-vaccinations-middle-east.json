@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-travel-hub",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "h1": "Travel Vaccinations for the Middle East",
+        "mode": "region",
+        "region_match": "Middle East"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

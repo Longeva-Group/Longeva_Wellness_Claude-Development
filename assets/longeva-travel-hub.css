@@ -1,0 +1,176 @@
+/* ===================================================================
+   Longeva travel hub (regional + travel-pattern hub pages).
+   Scoped to .longeva-travel-hub. Reuses brand tokens and the shared
+   longeva-destination__* primitives (cta-band, sources) and the
+   longeva-destinations-index page chrome from longeva-destinations.css.
+   No priority overrides; specificity handled by the .longeva-travel-hub
+   scope, per PROJECT_RULES.md section 3.4.
+   =================================================================== */
+
+/* Breadcrumb (visible, matches the destination pages) */
+.longeva-travel-hub__breadcrumb { padding-top: 20px; }
+.longeva-travel-hub__crumbs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  color: #6b5d52;
+}
+.longeva-travel-hub__crumbs li { display: flex; align-items: center; gap: 8px; }
+.longeva-travel-hub__crumbs li + li::before { content: "/"; color: rgba(45, 25, 14, 0.4); }
+.longeva-travel-hub__crumbs a { color: #6b5d52; text-decoration: none; }
+.longeva-travel-hub__crumbs a:hover,
+.longeva-travel-hub__crumbs a:focus-visible { color: #8a5f2a; }
+
+.longeva-travel-hub__hero { padding-top: clamp(20px, 3vw, 36px); }
+.longeva-travel-hub__eyebrow { margin: 0 0 12px; }
+.longeva-travel-hub__heading {
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 18px;
+  max-width: 22ch;
+}
+.longeva-travel-hub__intro {
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.55;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 8px;
+}
+.longeva-travel-hub__intro p { margin: 0 0 12px; }
+.longeva-travel-hub__intro p:last-child { margin-bottom: 0; }
+.longeva-travel-hub__hero-actions { margin: 24px 0 8px; }
+
+/* Section headings reuse the index h2 token; only spacing tweaks here */
+.longeva-travel-hub__themes,
+.longeva-travel-hub__destinations,
+.longeva-travel-hub__cross {
+  border-top: 1px solid rgba(45, 25, 14, 0.1);
+}
+
+/* Dominant themes */
+.longeva-travel-hub__theme-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 600px) { .longeva-travel-hub__theme-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 24px; } }
+@media (min-width: 980px) { .longeva-travel-hub__theme-grid { grid-template-columns: repeat(4, 1fr); } }
+.longeva-travel-hub__theme {
+  border: 1px solid rgba(45, 25, 14, 0.12);
+  border-radius: 12px;
+  padding: 18px;
+  background: #fff;
+}
+.longeva-travel-hub__theme-title {
+  font-family: var(--longeva-font-display, Georgia, 'Times New Roman', serif);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.2;
+  margin: 0 0 6px;
+}
+.longeva-travel-hub__theme p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(45, 25, 14, 0.82);
+  margin: 0 0 10px;
+}
+.longeva-travel-hub__theme-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a5f2a;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.longeva-travel-hub__theme-link:hover,
+.longeva-travel-hub__theme-link:focus-visible { text-decoration: underline; }
+
+/* Destination card grid */
+.longeva-travel-hub__dest-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 600px) { .longeva-travel-hub__dest-grid { grid-template-columns: repeat(2, 1fr); gap: 12px 20px; } }
+@media (min-width: 980px) { .longeva-travel-hub__dest-grid { grid-template-columns: repeat(3, 1fr); } }
+.longeva-travel-hub__dest-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.14);
+  border-radius: 10px;
+  color: #2D190E;
+  text-decoration: none;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.longeva-travel-hub__dest-card:hover,
+.longeva-travel-hub__dest-card:focus-visible { border-color: #A6783C; background: #F4ECDE; outline: none; }
+.longeva-travel-hub__dest-name { font-weight: 600; font-size: 16px; }
+.longeva-travel-hub__dest-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b5d52;
+  white-space: nowrap;
+}
+.longeva-travel-hub__empty {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.82);
+  max-width: 60ch;
+  margin: 0 0 16px;
+}
+.longeva-travel-hub__all { margin: 18px 0 0; }
+.longeva-travel-hub__all a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a5f2a;
+  font-weight: 600;
+  text-decoration: none;
+}
+.longeva-travel-hub__all a:hover,
+.longeva-travel-hub__all a:focus-visible { text-decoration: underline; }
+
+/* Cross-links */
+.longeva-travel-hub__cross-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 600px) { .longeva-travel-hub__cross-grid { grid-template-columns: repeat(2, 1fr); gap: 10px 24px; } }
+.longeva-travel-hub__cross-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.14);
+  border-radius: 10px;
+  color: #2D190E;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.longeva-travel-hub__cross-link:hover,
+.longeva-travel-hub__cross-link:focus-visible { border-color: #A6783C; background: #F4ECDE; outline: none; }

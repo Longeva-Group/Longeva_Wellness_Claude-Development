@@ -1,0 +1,56 @@
+{%- comment -%}
+  Vaccine card for the destination detail recommended-vaccines grid.
+
+  Accepts:
+    vaccine_product   Product object (from destination.recommended_vaccines list).
+    cta_label         Optional CTA label override. Defaults to "Book Vaccination".
+
+  Reads the product directly. Falls back gracefully when optional fields
+  (featured_image, descriptionHtml) are blank.
+{%- endcomment -%}
+
+{%- liquid
+  assign p = vaccine_product
+  assign label = cta_label | default: 'Book Vaccination'
+  assign clean_title = p.title | strip
+  assign desc_plain = p.description | strip_html | strip_newlines | strip
+  comment
+    Product descriptions often open with an FAQ-style heading, e.g.
+    "What is Hepatitis A?", which strip_html runs straight into the body
+    ("...A?Hepatitis A is..."). Drop a leading question so the card lede
+    reads cleanly.
+  endcomment
+  assign q_parts = desc_plain | split: '?'
+  if q_parts.size > 1
+    assign lead_q_down = q_parts[0] | downcase
+    if lead_q_down contains 'what is' or lead_q_down contains 'what are' or lead_q_down contains 'why' or lead_q_down contains 'who' or lead_q_down contains 'when' or lead_q_down contains 'how'
+      assign lead_q = q_parts[0] | append: '?'
+      assign desc_plain = desc_plain | remove_first: lead_q | strip
+    endif
+  endif
+  assign desc_sentence = desc_plain | split: '. ' | first
+  if desc_sentence != blank
+    assign desc_sentence = desc_sentence | append: '.'
+  endif
+  assign has_real_price = false
+  if p.price > 0
+    assign has_real_price = true
+  endif
+-%}
+
+<li class="longeva-destination__vaccine-card" data-longeva-reveal>
+  <a class="longeva-destination__vaccine-link" href="{{ p.url }}">
+    <h3 class="longeva-display longeva-destination__vaccine-title">{{ clean_title | escape }}</h3>
+    {%- if desc_sentence != blank -%}
+      <p class="longeva-destination__vaccine-lede">{{ desc_sentence | escape }}</p>
+    {%- endif -%}
+    <p class="longeva-destination__vaccine-meta">
+      {%- if has_real_price -%}
+        <span class="longeva-destination__vaccine-price">From {{ p.price | money_without_trailing_zeros }}</span>
+      {%- else -%}
+        <span class="longeva-destination__vaccine-price longeva-destination__vaccine-price--placeholder">Pharmacist consultation</span>
+      {%- endif -%}
+    </p>
+    <span class="longeva-destination__vaccine-cta">{{ label | escape }} {% render 'longeva-arrow', size: 18 %}</span>
+  </a>
+</li>

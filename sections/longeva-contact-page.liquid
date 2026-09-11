@@ -1,0 +1,396 @@
+{% comment %}
+  Longeva Contact page. Two-column layout: contact details left,
+  Shopify native contact form right. Map embed below, then CTA.
+
+  Phone, email, address and opening hours come from theme settings
+  so the page stays in sync with the footer. Section still renders
+  cleanly when those are blank.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+{% render 'longeva-schema-page-breadcrumb' %}
+
+{%- liquid
+  assign phone = settings.longeva_phone
+  assign email = settings.longeva_email
+  assign address = settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign hours = section.settings.opening_hours
+  assign response_sla = section.settings.response_sla | default: 'We respond to contact-form enquiries within one working day.'
+  # Map embed: defaults to the registered address coordinates so the
+  # in-iframe Directions button resolves cleanly. Admin can override via
+  # section setting once a Longeva-branded Google Business Profile is
+  # verified at the same address.
+  assign address_query = 'Unit+1+Chichester+Court,+Milnrow+Road,+Rochdale+OL16+1UG'
+  assign default_map_embed = 'https://www.google.com/maps?q=' | append: address_query | append: '&output=embed'
+  assign map_src = section.settings.map_embed_url | default: default_map_embed
+  assign directions_url = section.settings.directions_url | default: 'https://www.google.com/maps/dir/?api=1&destination=Unit+1+Chichester+Court,+Milnrow+Road,+Rochdale+OL16+1UG'
+  assign show_map = section.settings.show_map
+-%}
+
+<section class="longeva-contact longeva-page longeva-page--light">
+  <div class="longeva-container longeva-contact__hero">
+    <p class="longeva-eyebrow">Contact</p>
+    <h1 class="longeva-display longeva-contact__title">Talk to the pharmacy.</h1>
+    <p class="longeva-contact__lede">{{ response_sla | escape }}</p>
+  </div>
+
+  <div class="longeva-container longeva-contact__grid">
+    <aside class="longeva-contact__details" aria-label="Contact details">
+      <dl class="longeva-contact__dl">
+        {% if phone != blank %}
+          <div class="longeva-contact__row">
+            <dt>Phone</dt>
+            <dd><a href="tel:{{ phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' }}">{{ phone | escape }}</a></dd>
+          </div>
+        {% endif %}
+        {% if email != blank %}
+          <div class="longeva-contact__row">
+            <dt>Email</dt>
+            <dd><a href="mailto:{{ email | escape }}">{{ email | escape }}</a></dd>
+          </div>
+        {% endif %}
+        <div class="longeva-contact__row">
+          <dt>Visit</dt>
+          <dd>{{ address | escape }}</dd>
+        </div>
+        {% if hours != blank %}
+          <div class="longeva-contact__row">
+            <dt>Opening hours</dt>
+            <dd class="longeva-contact__hours">{{ hours | newline_to_br }}</dd>
+          </div>
+        {% endif %}
+        <div class="longeva-contact__row">
+          <dt>Complaints</dt>
+          <dd><a href="/pages/complaints-procedure">Read our complaints procedure</a></dd>
+        </div>
+      </dl>
+    </aside>
+
+    <div class="longeva-contact__form-wrap">
+      <h2 class="longeva-display longeva-contact__form-heading">Send a message</h2>
+      <p class="longeva-contact__form-lede">Non-urgent only. Do not include sensitive clinical detail. We will reply by email or phone.</p>
+
+      {% form 'contact', class: 'longeva-contact__form' %}
+        {% if form.posted_successfully? %}
+          <p class="longeva-contact__note longeva-contact__note--ok" role="status">Thank you. We will be in touch within one working day.</p>
+        {% endif %}
+        {% if form.errors %}
+          <p class="longeva-contact__note longeva-contact__note--err" role="alert">
+            Please correct the following: {{ form.errors | default_errors }}
+          </p>
+        {% endif %}
+
+        <div class="longeva-contact__field-row">
+          <label class="longeva-contact__field">
+            <span class="longeva-contact__label">Name</span>
+            <input type="text" name="contact[name]" required autocomplete="name" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}">
+          </label>
+          <label class="longeva-contact__field">
+            <span class="longeva-contact__label">Email</span>
+            <input type="email" name="contact[email]" required autocomplete="email" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}">
+          </label>
+        </div>
+
+        <label class="longeva-contact__field">
+          <span class="longeva-contact__label">Phone (optional)</span>
+          <input type="tel" name="contact[phone]" autocomplete="tel" value="{{ form.phone }}">
+        </label>
+
+        <label class="longeva-contact__field">
+          <span class="longeva-contact__label">What can we help with?</span>
+          <select name="contact[topic]">
+            <option>General enquiry</option>
+            <option>Booking question</option>
+            <option>Skin health</option>
+            <option>Travel health</option>
+            <option>Vaccinations</option>
+            <option>Weight management</option>
+            <option>Minor ailments</option>
+            <option>Sexual health</option>
+            <option>Aesthetics</option>
+            <option>Complaint</option>
+          </select>
+        </label>
+
+        <label class="longeva-contact__field">
+          <span class="longeva-contact__label">Message</span>
+          <textarea name="contact[body]" rows="5" required>{{ form.body }}</textarea>
+        </label>
+
+        <p class="longeva-contact__consent">By submitting this form you consent to us storing the details you provide so we can respond. See the <a href="/policies/privacy-policy">privacy policy</a>.</p>
+
+        <button type="submit" class="longeva-btn longeva-btn--primary-on-light">Send message</button>
+      {% endform %}
+    </div>
+  </div>
+
+  {% if show_map and map_src != blank %}
+    <div class="longeva-contact__map-wrap">
+      <div class="longeva-container">
+        <div class="longeva-contact__map">
+          <iframe
+            src="{{ map_src }}"
+            width="100%"
+            height="420"
+            style="border:0"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Map to {{ address | escape }}"
+          ></iframe>
+        </div>
+        {%- comment -%}
+          Explicit "Get directions" link that bypasses the in-iframe
+          Directions button (which historically resolved to the wrong
+          address). Opens the registered Rochdale address as the
+          directions destination so the user lands on the right place
+          regardless of which embed URL the admin saved.
+        {%- endcomment -%}
+        <p class="longeva-contact__map-directions">
+          <a href="{{ directions_url }}" target="_blank" rel="noopener">
+            <svg class="longeva-contact__map-directions-pin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Get directions to the clinic</span>
+          </a>
+        </p>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+{% stylesheet %}
+  .longeva-contact { padding-block: 0; }
+  .longeva-contact__hero {
+    padding-block: clamp(72px, 9vw, 120px) clamp(24px, 4vw, 40px);
+    max-width: 880px;
+  }
+  .longeva-contact__title {
+    font-size: clamp(36px, 5vw, 56px);
+    margin: 16px 0 0;
+  }
+  .longeva-contact__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 24px 0 0;
+    max-width: 64ch;
+  }
+  .longeva-contact__grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 56px;
+    padding-block: clamp(24px, 4vw, 56px) clamp(56px, 8vw, 96px);
+    align-items: start;
+  }
+  .longeva-contact__details {
+    position: sticky;
+    top: 104px;
+    background: #FFFFFF;
+    border: 1px solid var(--longeva-border);
+    border-radius: var(--longeva-radius-card);
+    padding: 32px;
+  }
+  .longeva-contact__dl {
+    margin: 0;
+    display: grid;
+    gap: 20px;
+  }
+  .longeva-contact__row {
+    display: grid;
+    gap: 4px;
+  }
+  .longeva-contact__row dt {
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--longeva-text-quiet);
+    margin: 0;
+  }
+  .longeva-contact__row dd {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--longeva-text);
+    margin: 0;
+  }
+  .longeva-contact__row a {
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .longeva-contact__row a:hover,
+  .longeva-contact__row a:focus-visible {
+    color: #1F120A;
+  }
+  .longeva-contact__hours {
+    white-space: normal;
+  }
+  .longeva-contact__form-wrap { min-width: 0; }
+  .longeva-contact__form-heading {
+    font-size: clamp(24px, 3vw, 32px);
+    margin: 0;
+  }
+  .longeva-contact__form-lede {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    color: var(--longeva-text-subdued);
+    margin: 10px 0 28px;
+    max-width: 52ch;
+  }
+  .longeva-contact__form {
+    display: grid;
+    gap: 18px;
+  }
+  .longeva-contact__field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .longeva-contact__field {
+    display: grid;
+    gap: 6px;
+  }
+  .longeva-contact__label {
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--longeva-text);
+  }
+  .longeva-contact__field input,
+  .longeva-contact__field select,
+  .longeva-contact__field textarea {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    color: var(--longeva-text);
+    background: #FFFFFF;
+    border: 1px solid var(--longeva-border-mid);
+    border-radius: var(--longeva-radius-card);
+    padding: 12px 14px;
+    min-height: 48px;
+    transition: border-color 0.15s var(--longeva-ease), box-shadow 0.15s var(--longeva-ease);
+  }
+  .longeva-contact__field textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+  .longeva-contact__field input:focus,
+  .longeva-contact__field select:focus,
+  .longeva-contact__field textarea:focus {
+    outline: none;
+    border-color: var(--longeva-primary);
+    box-shadow: 0 0 0 3px rgba(45, 25, 14, 0.12);
+  }
+  .longeva-contact__consent {
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--longeva-text-subdued);
+    margin: 0;
+  }
+  .longeva-contact__consent a {
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .longeva-contact__note {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    padding: 12px 14px;
+    border-radius: var(--longeva-radius-card);
+    margin: 0;
+  }
+  .longeva-contact__note--ok {
+    background: rgba(44, 74, 71, 0.10);
+    color: var(--longeva-accent-dark);
+  }
+  .longeva-contact__note--err {
+    background: rgba(92, 38, 32, 0.10);
+    color: #5C2620;
+  }
+  .longeva-contact__form .longeva-btn {
+    justify-self: start;
+    margin-block-start: 4px;
+  }
+
+  .longeva-contact__map-wrap {
+    background: var(--longeva-bg);
+    padding-block-end: clamp(40px, 6vw, 72px);
+  }
+  .longeva-contact__map {
+    border: 1px solid var(--longeva-border);
+    border-radius: var(--longeva-radius-card);
+    overflow: hidden;
+    background: #F0EEE9;
+  }
+  .longeva-contact__map iframe {
+    display: block;
+    width: 100%;
+  }
+  .longeva-contact__map-directions {
+    margin: 8px 0 0;
+    /* Left-align so the link tucks against the map's left edge; the eye
+       reads map → directions in a single Z-pattern without the link
+       floating off to the right margin. */
+    text-align: start;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+  }
+  .longeva-contact__map-directions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    /* min-height + padding-block guarantee a 24px tap target per
+       WCAG 2.2 SC 2.5.8 even when the underlined text glyphs alone
+       are only ~20px tall. */
+    min-height: 24px;
+    padding-block: 2px;
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    transition: color 0.15s var(--longeva-ease), text-decoration-thickness 0.15s var(--longeva-ease);
+  }
+  .longeva-contact__map-directions a:hover,
+  .longeva-contact__map-directions a:focus-visible {
+    color: var(--longeva-accent, #B99157);
+    text-decoration-thickness: 2px;
+    outline: none;
+  }
+  .longeva-contact__map-directions-pin {
+    color: var(--longeva-accent, #B99157);
+    flex: 0 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .longeva-contact__grid { grid-template-columns: 1fr; gap: 32px; }
+    .longeva-contact__details { position: static; }
+    .longeva-contact__field-row { grid-template-columns: 1fr; }
+    .longeva-contact__form .longeva-btn {
+      width: 100%;
+      justify-self: stretch;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva Contact page",
+  "tag": "section",
+  "class": "longeva-contact-page-section",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "textarea", "id": "opening_hours", "label": "Opening hours (one per line)" },
+    { "type": "text", "id": "response_sla", "label": "Response SLA sentence", "default": "We respond to contact-form enquiries within one working day." },
+    { "type": "checkbox", "id": "show_map", "label": "Show map embed", "default": true },
+    { "type": "url", "id": "map_embed_url", "label": "Map embed URL", "info": "Paste a Google Maps embed URL (Share > Embed a map > Copy src). Leave blank to use the registered Rochdale address." },
+    { "type": "url", "id": "directions_url", "label": "Get directions URL", "info": "Opens in a new tab when the user clicks 'Get directions' below the map. Defaults to the registered Rochdale address." }
+  ],
+  "presets": [
+    { "name": "Longeva Contact page" }
+  ]
+}
+{% endschema %}

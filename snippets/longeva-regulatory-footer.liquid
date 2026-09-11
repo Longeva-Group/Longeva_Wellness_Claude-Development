@@ -1,0 +1,69 @@
+{% comment %}
+  Longeva regulatory display. Text-based per operating rules §3.3.
+
+  Accepts optional overrides via params; falls back to shop-level
+  defaults set in theme settings so clinical content stays out of Liquid
+  (operating rules §3.4).
+
+  Usage:
+    {% render 'longeva-regulatory-footer' %}
+
+  Per-page override (e.g. different superintendent on a specific page):
+    {% render 'longeva-regulatory-footer',
+        superintendent_name: 'X',
+        superintendent_gphc: '1234567' %}
+{% endcomment %}
+
+{% liquid
+  assign gphc_registration = gphc_registration | default: settings.longeva_gphc_number | default: '9012378'
+  assign wda_number = wda_number | default: settings.longeva_mhra_wdah | default: '59619'
+  assign company_number = company_number | default: settings.longeva_company_number | default: '12643186'
+  assign vat_number = vat_number | default: settings.longeva_vat_number | default: 'GB358493064'
+  assign premises = premises | default: settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign superintendent_name = superintendent_name | default: settings.longeva_superintendent_name
+  assign superintendent_gphc = superintendent_gphc | default: settings.longeva_superintendent_gphc
+  assign complaints_url = complaints_url | default: '/pages/complaints-procedure'
+%}
+
+<dl class="longeva-regulatory" aria-label="Regulatory information">
+  <div class="longeva-regulatory__row">
+    <dt>GPhC pharmacy registration</dt>
+    <dd>{{ gphc_registration }}</dd>
+  </div>
+
+  {% if superintendent_name != blank %}
+    <div class="longeva-regulatory__row">
+      <dt>Superintendent Pharmacist</dt>
+      <dd>
+        {{ superintendent_name }}
+        {% if superintendent_gphc != blank %}
+          (GPhC {{ superintendent_gphc }})
+        {% endif %}
+      </dd>
+    </div>
+  {% endif %}
+
+  <div class="longeva-regulatory__row">
+    <dt>MHRA WDA(H) licence</dt>
+    <dd>{{ wda_number }}</dd>
+  </div>
+
+  <div class="longeva-regulatory__row">
+    <dt>Registered premises</dt>
+    <dd>{{ premises }}</dd>
+  </div>
+
+  <div class="longeva-regulatory__row">
+    <dt>Company number</dt>
+    <dd>{{ company_number }}</dd>
+  </div>
+
+  <div class="longeva-regulatory__row">
+    <dt>VAT number</dt>
+    <dd>{{ vat_number }}</dd>
+  </div>
+</dl>
+
+<p class="longeva-regulatory__complaints">
+  <a href="{{ complaints_url }}">Complaints procedure</a>
+</p>

@@ -1,0 +1,58 @@
+{%- comment -%}
+  JSON-LD for a Longeva vaccine hub page. Emits MedicalWebPage, and a
+  FAQPage when FAQ blocks exist. reviewedBy / lastReviewed are included
+  ONLY when both the reviewer name and the last-reviewed date are set,
+  so structured data never asserts a clinical review that has not
+  happened (Brief Rule 4 + governance).
+{%- endcomment -%}
+{%- liquid
+  assign reviewer = section.settings.reviewed_by | strip
+  assign reviewed_date = section.settings.last_reviewed | strip
+  assign h1 = section.settings.h1 | default: page.title
+  assign faq_blocks = section.blocks | where: 'type', 'faq'
+  assign page_url = shop.url | append: page.url
+  assign valid_faqs = 0
+  for block in faq_blocks
+    if block.settings.question != blank and block.settings.answer != blank
+      assign valid_faqs = valid_faqs | plus: 1
+    endif
+  endfor
+-%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MedicalWebPage",
+  "name": {{ h1 | json }},
+  "url": {{ page_url | json }},
+  "inLanguage": "en-GB",
+  "medicalAudience": { "@type": "MedicalAudience", "audienceType": "Patient" },
+  "about": { "@type": "MedicalEntity", "name": {{ h1 | json }} }
+  {%- if reviewer != blank and reviewed_date != blank -%},
+  "lastReviewed": {{ reviewed_date | json }},
+  "reviewedBy": { "@type": "Person", "name": {{ reviewer | json }}, "jobTitle": "Superintendent Pharmacist" }
+  {%- endif -%}
+}
+</script>
+{%- if valid_faqs > 0 -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en-GB",
+  "mainEntity": [
+    {%- assign first = true -%}
+    {%- for block in faq_blocks -%}
+      {%- if block.settings.question != blank and block.settings.answer != blank -%}
+        {%- unless first %},{% endunless -%}
+        {%- assign first = false -%}
+        {
+          "@type": "Question",
+          "name": {{ block.settings.question | json }},
+          "acceptedAnswer": { "@type": "Answer", "text": {{ block.settings.answer | strip_html | strip_newlines | json }} }
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}

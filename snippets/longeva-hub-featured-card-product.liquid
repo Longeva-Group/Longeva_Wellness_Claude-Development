@@ -1,0 +1,58 @@
+{% comment %}
+  Hub featured card, product variant.
+
+  Mirrors longeva-hub-featured-card but reads from a product instead of a
+  page, so product-modelled bookable services (deposit-model vaccines and
+  ailments such as Dengue and Adrenaline) sit alongside the page cards in a
+  category hub with the same title / lede / price / duration rhythm.
+
+  Accepts:
+    product  Product object.
+    attrs    Optional Shopify block attributes string.
+
+  Price shown is the full treatment price (the product price is the 25%
+  booking deposit, so it is multiplied by 4 to match the product hero) and
+  uses the same "From <price>" wording as the page cards. The deposit detail
+  lives on the product page.
+{% endcomment %}
+
+{%- liquid
+  assign display_name = product.title | remove: ' Vaccination' | remove: ' vaccination'
+  assign lede = product.metafields.custom.lede | default: ''
+  if lede == blank
+    assign lede = product.description | strip_html | strip | truncate: 130
+  endif
+  assign has_real_price = false
+  if product.price > 0
+    assign has_real_price = true
+    assign full_price = product.price | times: 4 | money
+  endif
+  comment
+    Duration parity with the page cards. Falls back to 15 minutes (the
+    standard consultation slot) when the product carries no duration_minutes,
+    so every card in the merged list shows a title / price / duration triad.
+  endcomment
+  assign duration = product.metafields.custom.duration_minutes | default: ''
+  if duration == blank
+    assign duration = 15
+  endif
+-%}
+
+<li class="longeva-hub__featured-card" data-longeva-reveal {{ attrs }}>
+  <a class="longeva-hub__featured-link" href="{{ product.url }}">
+    <h3 class="longeva-display longeva-hub__featured-title">{{ display_name | escape }}</h3>
+    {% if lede != blank %}
+      <p class="longeva-hub__featured-lede">{{ lede | escape }}</p>
+    {% endif %}
+    <p class="longeva-hub__featured-meta">
+      {%- if has_real_price -%}
+        <span class="longeva-hub__featured-price">From {{ full_price }}</span>
+      {%- else -%}
+        <span class="longeva-hub__featured-price longeva-hub__featured-price--placeholder">Assessed at consultation</span>
+      {%- endif -%}
+      <span class="longeva-hub__featured-dot" aria-hidden="true">·</span>
+      <span class="longeva-hub__featured-duration">{{ duration }} min</span>
+    </p>
+    <span class="longeva-hub__featured-arrow">{% render 'longeva-arrow', size: 22 %}</span>
+  </a>
+</li>

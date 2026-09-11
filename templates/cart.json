@@ -1,0 +1,38 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "longeva-cart-page",
+      "settings": {
+        "eyebrow": "Your bookings",
+        "heading": "Bookings",
+        "summary_heading": "Summary",
+        "summary_note": "Shipping and any applicable VAT calculated at checkout.",
+        "checkout_label": "Continue to payment",
+        "trust_lede": "Regulated UK pharmacy. GPhC",
+        "trust_tail": "Secured via Shopify Payments.",
+        "show_note": true,
+        "note_label": "Add a note for the dispensing pharmacist",
+        "note_placeholder": "Allergies, repeat-prescription details, anything we should know.",
+        "empty_eyebrow": "Your bookings",
+        "empty_heading": "Nothing here yet",
+        "empty_lede": "Most consultations are booked through the booking flow rather than added to a basket. Browse services to find what you need.",
+        "empty_cta_label": "Browse services",
+        "empty_cta_url": "shopify://pages/services-manchester",
+        "empty_secondary_label": "Or book a consultation",
+        "empty_secondary_url": "shopify://pages/book"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

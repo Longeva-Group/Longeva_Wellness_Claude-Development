@@ -1,0 +1,666 @@
+{% comment %}
+  Longeva hero.
+
+  60/40 split on desktop, stacked on mobile. Left is burgundy content,
+  right is imagery. No overlay text on image.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+{%- comment -%}
+  longeva-schema-pharmacy is now rendered sitewide from layout/theme.liquid
+  so the @id #pharmacy node resolves on every page that references it
+  (service, hub, article schemas). Previously it only fired here on
+  index, which broke entity stitching elsewhere.
+{%- endcomment -%}
+
+{%- liquid
+  assign eyebrow = section.settings.eyebrow
+  assign heading = section.settings.heading
+  assign subhead = section.settings.subhead
+  assign cta_primary_label = section.settings.cta_primary_label
+  assign cta_primary_link = section.settings.cta_primary_link
+  assign cta_secondary_label = section.settings.cta_secondary_label
+  assign cta_secondary_link = section.settings.cta_secondary_link
+  assign trust_line = section.settings.trust_line
+  assign image = section.settings.image
+-%}
+
+{%- comment -%}
+  PR #127 Phase 3C: preload the hero image (LCP candidate) so the
+  browser can start fetching during HTML parse rather than waiting
+  for CSS to resolve and the <img> to be discovered. Emitted from
+  inside the section because layout/theme.liquid cannot read this
+  section's settings; preload links are valid anywhere in the doc
+  and remain effective when placed early in the body.
+{%- endcomment -%}
+{% if image and request.page_type == 'index' %}
+  <link
+    rel="preload"
+    as="image"
+    fetchpriority="high"
+    imagesrcset="{{ image | image_url: width: 720 }} 720w, {{ image | image_url: width: 1200 }} 1200w, {{ image | image_url: width: 1800 }} 1800w"
+    imagesizes="40vw"
+    media="(min-width: 1024px)"
+  >
+{% endif %}
+{% if section.settings.image_mobile and request.page_type == 'index' %}
+  <link
+    rel="preload"
+    as="image"
+    fetchpriority="high"
+    imagesrcset="{{ section.settings.image_mobile | image_url: width: 540 }} 540w, {{ section.settings.image_mobile | image_url: width: 800 }} 800w, {{ section.settings.image_mobile | image_url: width: 1080 }} 1080w"
+    imagesizes="100vw"
+    media="(max-width: 1023px)"
+  >
+{% endif %}
+
+<section class="longeva-hero longeva-page {% unless image %}longeva-hero--no-image{% endunless %}" data-hero-version="citadel-v2">
+  {%- comment -%}
+    Mobile-only image cell. Renders above the content stack at <=1023px
+    via CSS grid-row reordering. Hidden on desktop (the right-column
+    `image` field is used instead). Sourced from a separate
+    `image_mobile` setting so the art-direction can use a portrait
+    3:4 crop different to the desktop 4:5.
+  {%- endcomment -%}
+  {% if section.settings.image_mobile %}
+    <div class="longeva-hero__image-mobile">
+      <img
+        src="{{ section.settings.image_mobile | image_url: width: 1080 }}"
+        srcset="{{ section.settings.image_mobile | image_url: width: 540 }} 540w, {{ section.settings.image_mobile | image_url: width: 800 }} 800w, {{ section.settings.image_mobile | image_url: width: 1080 }} 1080w, {{ section.settings.image_mobile | image_url: width: 1440 }} 1440w"
+        sizes="100vw"
+        alt="{{ section.settings.image_mobile.alt | default: 'Longeva clinic' | escape }}"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        width="{{ section.settings.image_mobile.width }}"
+        height="{{ section.settings.image_mobile.height }}"
+      >
+    </div>
+  {% endif %}
+  <div class="longeva-hero__content">
+    <div class="longeva-hero__content-inner">
+      {%- comment -%}
+        Hero ornament density audit (2026-05-07): the paper-grain noise
+        overlay and corner glyph already do the editorial atmosphere
+        work. Stacking the plus-and-circle monogram on top compounded
+        three flourishes into "luxe-flash" territory; Anthony's brand
+        direction is Harley Street restraint, not beauty-brand
+        ornament. Monogram removed; one ornament per hero rule.
+      {%- endcomment -%}
+      {% if eyebrow != blank and template.name != 'index' %}
+        <p class="longeva-eyebrow longeva-hero__eyebrow">{{ eyebrow | escape }}</p>
+      {% endif %}
+      {% if heading != blank %}
+        <h1 class="longeva-display longeva-hero__heading">{{ heading | escape }}</h1>
+      {% endif %}
+      {% if subhead != blank or template.name == 'index' %}
+        {%- comment -%}
+          Homepage subhead splits across two lines so the operational
+          promise ("Same-day appointments in Rochdale") sits on its
+          own line for visual impact (Varsha review v2 3.NEW). The
+          .longeva-hero__subhead-em span uses display: block to force
+          the line break responsively, so 320px iPhones do not end up
+          with the previous hardcoded <br> breaking layout when the
+          first sentence wraps to two lines.
+        {%- endcomment -%}
+        <p class="longeva-hero__subhead">{% if template.name == 'index' %}Pharmacist-led, evidence-based clinical services.<span class="longeva-hero__subhead-em">Same-day appointments in Rochdale.</span>{% else %}{{ subhead | escape }}{% endif %}</p>
+      {%- comment -%}
+        UX-03 (Varsha feedback May 2026): "Pharmacist-led" was repeating
+        across subhead AND assurance line on the homepage hero. The
+        subhead line owns the claim now; assurance line moved off the
+        repeat token onto a complementary trust beat.
+      {%- endcomment -%}
+      {% endif %}
+      {% if cta_primary_label != blank or cta_secondary_label != blank %}
+        <div class="longeva-hero__ctas">
+          {% if template.name == 'index' %}
+            {%- comment -%}
+              CRO research (PR #114): 5/6 booking-led UK clinical sites lead
+              with "Book a consultation" as the primary brass CTA. Browse
+              becomes the subordinate text link. PR #121 polish pass: small
+              calendar icon on the brass CTA, microcopy moved out of the
+              cta-cluster to read as a hero-wide trust line not a button
+              caption.
+            {%- endcomment -%}
+            <div class="longeva-hero__cta-cluster">
+              <a class="longeva-btn longeva-btn--primary-on-dark longeva-hero__cta-primary" href="{{ cta_secondary_link | default: '/pages/book' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                <span>{{ cta_secondary_label | default: 'Book a consultation' | escape }}</span>
+              </a>
+            </div>
+            {% if cta_primary_label != blank %}
+              <a class="longeva-hero__cta-link" href="{{ cta_primary_link | default: '/pages/aesthetics-manchester' }}">
+                <span>{{ cta_primary_label | default: 'Browse treatments' | escape }}</span>
+                {% render 'longeva-arrow' %}
+              </a>
+            {% endif %}
+            <p class="longeva-hero__assurance">Same-day appointments &middot; GPhC registered &middot; Rochdale</p>
+          {% else %}
+            {% if cta_primary_label != blank %}
+              <div class="longeva-hero__cta-cluster">
+                <a class="longeva-btn longeva-btn--primary-on-dark longeva-hero__cta-primary" href="{{ cta_primary_link | default: '/pages/book' }}">{{ cta_primary_label | escape }}</a>
+                <span class="longeva-hero__cta-microcopy">Same-day appointments · GPhC registered</span>
+              </div>
+            {% endif %}
+            {% if cta_secondary_label != blank %}
+              <a class="longeva-hero__cta-link" href="{{ cta_secondary_link | default: '/collections/services' }}">
+                <span>{{ cta_secondary_label | escape }}</span>
+                {% render 'longeva-arrow' %}
+              </a>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endif %}
+      {%- assign trust_chips = trust_line | split: '·' -%}
+      {% if trust_chips.size > 0 and template.name != 'index' %}
+        <ul class="longeva-hero__trust-chips" role="list" data-longeva-reveal>
+          {% for chip in trust_chips %}
+            {%- assign t = chip | strip -%}
+            {% if t != blank %}
+              <li>{{ t | escape }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {%- comment -%}
+        Hero trust-meta dropped on home per CRO research (PR #114, agent 3):
+        zero peer pharmacy/clinic sites repeat regulator names ATF; numbers
+        belong in footer. Announcement bar already carries "GPhC-registered
+        · MHRA licensed" so a second mention 200px below was banner-blindness
+        bait. Kept the markup as a comment so it can be restored if the
+        decision changes; the asset CSS for .longeva-hero__trust-meta stays
+        in pages.css so other templates that opt in still style correctly.
+      {%- endcomment -%}
+    </div>
+  </div>
+
+  {% if image %}
+    <div class="longeva-hero__image">
+      <img
+        src="{{ image | image_url: width: 1200 }}"
+        srcset="{{ image | image_url: width: 720 }} 720w, {{ image | image_url: width: 1200 }} 1200w, {{ image | image_url: width: 1800 }} 1800w"
+        sizes="(max-width: 1023px) 100vw, 40vw"
+        alt="{{ image.alt | default: 'Longeva clinic' | escape }}"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        width="{{ image.width }}"
+        height="{{ image.height }}"
+      >
+    </div>
+  {% else %}
+    {%- comment -%}
+      Editorial sidebar in place of the image cell. Renders on desktop
+      (>=1024px) only so it never appears on mobile (where the hero is
+      single-column action-density). Magazine masthead vibe: hairline
+      rules, Cormorant captions in muted ivory, Montserrat numerals.
+      Adds desktop trust density without retail flourish.
+    {%- endcomment -%}
+    <aside class="longeva-hero__masthead" aria-label="Pharmacy registration and licence">
+      <div class="longeva-hero__masthead-inner">
+        <div class="longeva-hero__masthead-row">
+          <span class="longeva-hero__masthead-label">Registration</span>
+          <span class="longeva-hero__masthead-value">GPhC {{ settings.longeva_gphc_number | default: '9012378' }}</span>
+          <span class="longeva-hero__masthead-sub">Longeva Wellness, Rochdale</span>
+        </div>
+        <div class="longeva-hero__masthead-rule" aria-hidden="true"></div>
+        <div class="longeva-hero__masthead-row">
+          <span class="longeva-hero__masthead-label">Wholesale licence</span>
+          <span class="longeva-hero__masthead-value">WDA(H) {{ settings.longeva_mhra_wdah | default: '59619' }}</span>
+          <span class="longeva-hero__masthead-sub">MHRA, England</span>
+        </div>
+        <div class="longeva-hero__masthead-rule" aria-hidden="true"></div>
+        <div class="longeva-hero__masthead-row">
+          <span class="longeva-hero__masthead-label">Clinic</span>
+          <span class="longeva-hero__masthead-value">Rochdale, Manchester</span>
+          <span class="longeva-hero__masthead-sub">Six days a week. Same-day where appropriate.</span>
+        </div>
+        <div class="longeva-hero__masthead-rule" aria-hidden="true"></div>
+        <div class="longeva-hero__masthead-row">
+          <span class="longeva-hero__masthead-label">Care</span>
+          <span class="longeva-hero__masthead-value">Pharmacist-led</span>
+          <span class="longeva-hero__masthead-sub">Conservative. Evidence-led. Written aftercare.</span>
+        </div>
+      </div>
+    </aside>
+  {% endif %}
+</section>
+
+{%- if template.name == 'index' -%}
+  {%- comment -%}
+    Quickroute: 4-card category strip under the hero, only on home.
+    Surfaces the four service verticals so the user picks by need
+    instead of being funnelled into Aesthetics by a single Browse CTA.
+    Pattern from PR #114 research (agent 2): cards-just-below-hero is
+    the dominant choice architecture for multi-vertical clinical sites
+    (Manual, Hims, Therapie, Cosmetic Skin Clinic, Numan).
+
+    SEO: H2 visually hidden but crawler-readable, H3 per category.
+    Hierarchy: hero H1 -> quickroute H2 -> 4 H3s -> aesthetics-grid H2.
+  {%- endcomment -%}
+  <section class="longeva-quickroute" aria-labelledby="longeva-quickroute-heading">
+    <div class="longeva-container">
+      <h2 id="longeva-quickroute-heading" class="longeva-sr-only">Choose your service</h2>
+      <ul class="longeva-quickroute__grid" role="list">
+        <li>
+          <a class="longeva-quickroute__card" href="/pages/aesthetics-manchester">
+            <span class="longeva-quickroute__eyebrow">Look better</span>
+            <h3 class="longeva-quickroute__title">Aesthetics</h3>
+            <span class="longeva-quickroute__arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+          </a>
+        </li>
+        <li>
+          <a class="longeva-quickroute__card" href="/pages/skin-health-manchester">
+            <span class="longeva-quickroute__eyebrow">Clearer skin</span>
+            <h3 class="longeva-quickroute__title">Skin Health</h3>
+            <span class="longeva-quickroute__arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+          </a>
+        </li>
+        <li>
+          <a class="longeva-quickroute__card" href="/pages/weight-management-manchester">
+            <span class="longeva-quickroute__eyebrow">Manage weight</span>
+            <h3 class="longeva-quickroute__title">Weight Management</h3>
+            <span class="longeva-quickroute__arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+          </a>
+        </li>
+        <li>
+          <a class="longeva-quickroute__card" href="/pages/vaccinations-manchester">
+            <span class="longeva-quickroute__eyebrow">Travel and vaccines</span>
+            <h3 class="longeva-quickroute__title">Vaccinations</h3>
+            <span class="longeva-quickroute__arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .longeva-hero {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    /* Compressed per CRO research (Carrot A/B test +45% mobile uplift on slim hero,
+       Cronyx 50-65vh sweet spot). Uses dvh so iOS Safari URL bar doesn't push the
+       fold below the visible viewport. */
+    min-height: clamp(420px, 56dvh, 560px);
+    background: #2D190E;
+    color: #F2E6DC;
+    overflow: hidden;
+    position: relative;
+    isolation: isolate;
+  }
+  /* Paper-grain atmosphere overlay. Inline SVG noise at ~5% opacity so the
+     dark ink reads like printed brass on warm card, not flat CSS. */
+  .longeva-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.91  0 0 0 0 0.86  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 160px 160px;
+  }
+  /* Hairline apothecary corner glyphs: top-left and bottom-right plus marks. */
+  .longeva-hero::after {
+    content: '';
+    position: absolute;
+    inset: 24px;
+    pointer-events: none;
+    z-index: 0;
+    border-inline-start: 1px solid rgba(185, 145, 87, 0.22);
+    border-block-start: 1px solid rgba(185, 145, 87, 0.22);
+    border-inline-end: 1px solid rgba(185, 145, 87, 0);
+    border-block-end: 1px solid rgba(185, 145, 87, 0);
+    width: 40px;
+    height: 40px;
+  }
+  .longeva-hero__content,
+  .longeva-hero__masthead,
+  .longeva-hero__image { position: relative; z-index: 1; }
+  /* CTA cluster: primary button + microcopy stacked. */
+  .longeva-hero__cta-cluster {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .longeva-hero__cta-microcopy {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-eyebrow);
+    letter-spacing: var(--longeva-tracking-eyebrow);
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.55);
+    padding-inline-start: 4px;
+  }
+  .longeva-hero__content {
+    display: flex;
+    align-items: center;
+    padding: 48px 80px;
+  }
+  .longeva-hero__content-inner {
+    max-width: 640px;
+  }
+  /* No image set: keep the 60/40 split on desktop (so the right column reads
+     intentional, not orphaned) and pair the content with an editorial
+     masthead. Mobile collapses to single column; the masthead hides
+     because mobile fold is for action density, not trust density. */
+  .longeva-hero--no-image {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+  .longeva-hero--no-image .longeva-hero__image { display: none; }
+
+  /* Editorial masthead aside: magazine-set right column. */
+  .longeva-hero__masthead {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 64px 80px 64px 0;
+    color: rgba(245, 241, 234, 0.92);
+  }
+  .longeva-hero__masthead-inner {
+    width: 100%;
+    max-width: 360px;
+    border-inline-start: 1px solid rgba(245, 241, 234, 0.18);
+    padding-inline-start: 40px;
+  }
+  .longeva-hero__masthead-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding-block: 16px;
+  }
+  .longeva-hero__masthead-row:first-child { padding-block-start: 0; }
+  .longeva-hero__masthead-row:last-child { padding-block-end: 0; }
+  .longeva-hero__masthead-rule {
+    height: 1px;
+    background: rgba(245, 241, 234, 0.14);
+  }
+  .longeva-hero__masthead-label {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-eyebrow);
+    letter-spacing: var(--longeva-tracking-eyebrow);
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.95);
+  }
+  .longeva-hero__masthead-value {
+    font-family: var(--longeva-font-display);
+    font-size: 22px;
+    line-height: 1.15;
+    color: #F2E6DC;
+    margin-block-start: 2px;
+    letter-spacing: -0.005em;
+  }
+  .longeva-hero__masthead-sub {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(245, 241, 234, 0.62);
+    letter-spacing: 0.005em;
+  }
+  .longeva-hero__eyebrow {
+    margin-block-end: 24px;
+    color: var(--longeva-accent);
+  }
+  .longeva-hero__heading {
+    font-family: var(--longeva-font-display);
+    font-size: var(--longeva-h1-desktop);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: #F2E6DC;
+    margin: 0;
+  }
+  .longeva-hero__subhead {
+    margin-block-start: 24px;
+    font-family: var(--longeva-font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: rgba(245, 241, 234, 0.85);
+    max-width: 520px;
+    text-wrap: balance;
+  }
+  /* Second-line emphasis on homepage subhead. display: block forces
+     its own line responsively (replaces an earlier hardcoded <br>
+     that fought the responsive grid at 320px). Slightly tighter
+     line-spacing above so the two lines read as a paired statement,
+     not two separate paragraphs (Varsha review v2 3.NEW). */
+  .longeva-hero__subhead-em {
+    display: block;
+    margin-block-start: 6px;
+    color: #F2E6DC;
+    font-weight: 500;
+  }
+  .longeva-hero__ctas {
+    margin-block-start: 40px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .longeva-hero__cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(245, 241, 234, 0.90);
+    text-decoration: none;
+    padding: 8px 4px;
+    border-block-end: 1px solid rgba(245, 241, 234, 0.35);
+    transition: color 0.15s ease, border-color 0.15s ease, transform 0.2s var(--longeva-ease);
+  }
+  .longeva-hero__cta-link svg { display: none; }
+  .longeva-hero__cta-link span:last-child {
+    display: inline-block;
+    transition: transform 0.2s var(--longeva-ease);
+  }
+  .longeva-hero__cta-link:hover,
+  .longeva-hero__cta-link:focus-visible {
+    color: #F2E6DC;
+    border-color: #F2E6DC;
+    outline: none;
+  }
+  .longeva-hero__cta-link:hover span:last-child,
+  .longeva-hero__cta-link:focus-visible span:last-child {
+    transform: translateX(3px);
+  }
+  .longeva-hero__trust-chips {
+    list-style: none;
+    padding: 0;
+    margin: 40px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .longeva-hero__trust-chips li {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-eyebrow);
+    letter-spacing: var(--longeva-tracking-eyebrow);
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.80);
+    padding: 6px 12px;
+    border: 1px solid rgba(245, 241, 234, 0.22);
+    border-radius: 999px;
+  }
+  .longeva-hero__image {
+    position: relative;
+    background: #B99157;
+  }
+  .longeva-hero__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .longeva-hero__image-placeholder {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg, rgba(245, 241, 234, 0.12) 0%, rgba(245, 241, 234, 0) 60%),
+      #B99157;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .longeva-hero__mark {
+    width: clamp(160px, 24vw, 280px);
+    height: auto;
+    color: rgba(45, 25, 14, 0.55);
+  }
+  .longeva-hero__caption {
+    position: absolute;
+    inset-inline-end: 32px;
+    inset-block-end: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-eyebrow);
+    letter-spacing: var(--longeva-tracking-eyebrow);
+    text-transform: uppercase;
+    color: rgba(45, 25, 14, 0.85);
+  }
+
+  @media (max-width: 1023px) {
+    .longeva-hero,
+    .longeva-hero--no-image {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+      /* Mobile: keep hero compact, content-only. Image cell + masthead removed. */
+      min-height: clamp(380px, 56dvh, 480px);
+    }
+    .longeva-hero__image,
+    .longeva-hero__masthead { display: none; }
+    .longeva-hero__content {
+      padding: 24px 20px 28px;
+    }
+    .longeva-hero__eyebrow { margin-block-end: 12px; }
+    .longeva-hero__heading {
+      font-size: var(--longeva-h1-mobile);
+      letter-spacing: -0.015em;
+    }
+    .longeva-hero__subhead {
+      font-size: var(--longeva-body);
+      line-height: 1.5;
+      margin-block-start: 12px;
+      max-width: 38ch;
+    }
+    .longeva-hero__ctas {
+      margin-block-start: 20px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .longeva-hero__cta-link {
+      align-self: flex-start;
+      border-block-end-width: 0;
+      padding: 4px 0;
+    }
+    .longeva-hero__trust-chips {
+      margin-block-start: 20px;
+      gap: 6px;
+    }
+    .longeva-hero__trust-chips li {
+      font-size: 10px;
+      padding: 5px 10px;
+    }
+    .longeva-hero__image {
+      min-height: 32vh;
+    }
+    .longeva-hero--no-image {
+      grid-template-rows: 1fr;
+    }
+    .longeva-hero--no-image .longeva-hero__image {
+      display: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva hero",
+  "tag": "section",
+  "class": "longeva-hero-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "PHARMACY-LED PRIVATE CLINIC · MANCHESTER"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Clinical services in Manchester, delivered with rigour."
+    },
+    {
+      "type": "textarea",
+      "id": "subhead",
+      "label": "Subhead",
+      "default": "Pharmacist-led consultations for skin health, travel medicine, vaccinations and weight management. Same-day appointments, GPhC-registered, evidence-led."
+    },
+    {
+      "type": "header",
+      "content": "CTAs"
+    },
+    {
+      "type": "text",
+      "id": "cta_primary_label",
+      "label": "Primary CTA label",
+      "default": "Book a consultation"
+    },
+    {
+      "type": "url",
+      "id": "cta_primary_link",
+      "label": "Primary CTA link"
+    },
+    {
+      "type": "text",
+      "id": "cta_secondary_label",
+      "label": "Secondary CTA label",
+      "default": "Browse services"
+    },
+    {
+      "type": "url",
+      "id": "cta_secondary_link",
+      "label": "Secondary CTA link"
+    },
+    {
+      "type": "header",
+      "content": "Trust strip"
+    },
+    {
+      "type": "text",
+      "id": "trust_line",
+      "label": "Trust line",
+      "default": "GPhC-registered · MHRA WDA(H) licensed · UK-licensed medicines"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Desktop image (>=1024px)",
+      "info": "Right column on desktop. Recommended source: 1600 × 2000px (4:5 portrait), AVIF or WebP, under 250 KB."
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image (<=1023px)",
+      "info": "Sits above the heading on mobile. Recommended source: 1080 × 1440px (3:4 portrait), AVIF or WebP, under 180 KB."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva hero"
+    }
+  ]
+}
+{% endschema %}

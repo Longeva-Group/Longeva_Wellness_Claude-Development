@@ -1,0 +1,59 @@
+{%- comment -%}
+  BreadcrumbList JSON-LD (Citadel brief §06: "BreadcrumbList on all";
+  brief v4 §21).
+
+  Two modes:
+  1. Default (no crumbs param): two-level Home -> {page title}, using
+     the current page. Backward compatible with the existing callers
+     (about, destinations-index, clinicians, book, contact pages).
+  2. Custom (crumbs param): N-level breadcrumb. Pass a string of
+     "Label::path" pairs separated by "|", e.g.
+        crumbs: 'Home::/|Travel vaccinations::/pages/travel-vaccinations|Typhoid::/pages/typhoid'
+     Paths may be root-relative (a leading "/" is fine) or absolute.
+     Used by the vaccine-hub and traveller-type templates so the schema
+     matches their visible three-level breadcrumb nav.
+
+  Renders nothing outside a page context to stay safe if accidentally
+  included on the wrong template.
+{%- endcomment -%}
+
+{%- if request.page_type == 'page' and page.handle != blank -%}
+  {%- if crumbs != blank -%}
+    {%- assign crumb_pairs = crumbs | split: '|' -%}
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {%- assign pos = 0 -%}
+    {%- for pair in crumb_pairs -%}
+      {%- assign bits = pair | split: '::' -%}
+      {%- assign crumb_name = bits[0] | strip -%}
+      {%- assign crumb_path = bits[1] | strip -%}
+      {%- if crumb_name != blank and crumb_path != blank -%}
+        {%- assign pos = pos | plus: 1 -%}
+        {%- unless pos == 1 %},{% endunless -%}
+        {%- if crumb_path contains '://' -%}
+          {%- assign crumb_url = crumb_path -%}
+        {%- else -%}
+          {%- assign crumb_url = shop.url | append: crumb_path -%}
+        {%- endif -%}
+        { "@type": "ListItem", "position": {{ pos }}, "name": {{ crumb_name | json }}, "item": {{ crumb_url | json }} }
+      {%- endif -%}
+    {%- endfor -%}
+  ]
+}
+    </script>
+  {%- else -%}
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ shop.url }}" },
+    { "@type": "ListItem", "position": 2, "name": {{ page.title | json }}, "item": "{{ shop.url }}{{ page.url }}" }
+  ]
+}
+    </script>
+  {%- endif -%}
+{%- endif -%}

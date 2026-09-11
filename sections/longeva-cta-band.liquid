@@ -1,0 +1,95 @@
+{% comment %}
+  Longeva CTA band. 200px tall full-width burgundy, single centred CTA.
+
+  Hidden on the homepage (template == 'index') per Anthony 2026-04-29:
+  the homepage already carries the hero brass CTA + the footer trust
+  strip "Book a consultation" cell. PR #129 audit confirmed 4 visible
+  Book CTAs in the homepage scroll vs premium-clinical norm of 2.
+  Same template-guard pattern used by longeva-trust-strip and
+  longeva-journal-preview when they need to stay configurable for
+  other templates while invisible on home.
+{% endcomment %}
+
+{% if template.name == 'index' %}{% comment %}early-return for homepage{% endcomment %}{% else %}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign heading = section.settings.heading
+  assign subhead = section.settings.subhead
+  assign cta_label = section.settings.cta_label
+  assign cta_link = section.settings.cta_link
+-%}
+
+<section class="longeva-cta-band" aria-label="{{ heading | escape }}">
+  <div class="longeva-container longeva-cta-band__inner" data-longeva-stagger="80">
+    {% if heading != blank %}
+      <h2 class="longeva-display longeva-cta-band__heading" data-longeva-reveal>{{ heading | escape }}</h2>
+    {% endif %}
+    {% if subhead != blank %}
+      <p class="longeva-cta-band__subhead" data-longeva-reveal>{{ subhead | escape }}</p>
+    {% endif %}
+    {% if cta_label != blank %}
+      <div class="longeva-cta-band__cta-wrap" data-longeva-reveal>
+        {% render 'longeva-sesami-button',
+           label: cta_label,
+           variant: 'primary-on-dark',
+           fallback_url: cta_link | default: '/pages/contact',
+           classes: 'longeva-cta-band__cta' %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endif %}{% comment %}end homepage guard{% endcomment %}
+
+{% stylesheet %}
+  .longeva-cta-band {
+    background: #2D190E;
+    color: #F2E6DC;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+  }
+  .longeva-cta-band__inner {
+    text-align: center;
+    padding-block: var(--longeva-section-pad-default);
+    width: 100%;
+  }
+  .longeva-cta-band__heading {
+    margin: 0;
+    font-size: var(--longeva-h2-desktop);
+    color: #F2E6DC;
+  }
+  .longeva-cta-band__subhead {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: rgba(245, 241, 234, 0.85);
+    margin: 12px 0 0;
+  }
+  .longeva-cta-band__cta {
+    margin-block-start: 32px;
+  }
+
+  @media (max-width: 749px) {
+    .longeva-cta-band { min-height: 0; }
+    .longeva-cta-band__heading { font-size: var(--longeva-h2-mobile); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva CTA band",
+  "tag": "section",
+  "class": "longeva-cta-band-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Not sure where to start?" },
+    { "type": "textarea", "id": "subhead", "label": "Subhead", "default": "Speak to a pharmacist. Free 10-minute assessment, no commitment." },
+    { "type": "text", "id": "cta_label", "label": "CTA label", "default": "Request a callback" },
+    { "type": "url", "id": "cta_link", "label": "CTA link" }
+  ],
+  "presets": [
+    { "name": "Longeva CTA band" }
+  ]
+}
+{% endschema %}

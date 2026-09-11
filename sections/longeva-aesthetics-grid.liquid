@@ -1,0 +1,319 @@
+{%- comment -%}
+  Longeva aesthetics treatments grid. Citadel brief §05 homepage
+  wireframe specifies six treatment cards above the broader services
+  grid: name + from-price + duration + arrow, each linking to its
+  treatment page.
+
+  Block-driven so Anthony can rearrange order, swap pricing, or add
+  new treatments without code changes. Defaults populate the six
+  treatments from brief §05 verbatim, each pointing to the
+  corresponding existing /pages/<slug>-manchester page.
+
+  Hides itself when no blocks are present.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign heading = section.settings.heading
+  assign eyebrow = section.settings.eyebrow
+  assign view_all_label = section.settings.view_all_label
+  assign view_all_url = section.settings.view_all_url | default: '/pages/aesthetics-manchester'
+  assign price_prefix = section.settings.price_prefix | default: 'From '
+  assign duration_unit = section.settings.duration_unit | default: 'min'
+  assign card_blocks = section.blocks
+-%}
+
+{% if card_blocks.size > 0 %}
+  <section class="longeva-aesthetics-grid longeva-page longeva-page--light" aria-labelledby="longeva-aesthetics-grid-heading">
+    <div class="longeva-container longeva-aesthetics-grid__inner">
+      <header class="longeva-aesthetics-grid__head">
+        <div class="longeva-aesthetics-grid__head-main">
+          {% if eyebrow != blank %}
+            <p class="longeva-eyebrow longeva-aesthetics-grid__eyebrow">{{ eyebrow | escape }}</p>
+          {% endif %}
+          {% if heading != blank %}
+            <h2 id="longeva-aesthetics-grid-heading" class="longeva-display longeva-aesthetics-grid__heading">{{ heading | escape }}</h2>
+          {% endif %}
+        </div>
+        {% if view_all_label != blank %}
+          <a class="longeva-aesthetics-grid__view-all" href="{{ view_all_url }}">
+            <span>{{ view_all_label | escape }}</span>
+            {% render 'longeva-arrow' %}
+          </a>
+        {% endif %}
+      </header>
+
+      <ul
+        class="longeva-aesthetics-grid__list"
+        role="list"
+        data-longeva-stagger="80"
+        data-longeva-auto-carousel
+        data-interval="4000"
+      >
+        {% for block in card_blocks %}
+          {%- liquid
+            assign name = block.settings.name
+            assign summary = block.settings.summary
+            assign price = block.settings.from_price
+            assign duration = block.settings.duration_minutes
+            assign url = block.settings.link
+            assign card_url = url | default: '#'
+            assign idx = forloop.index
+            assign idx_padded = idx | prepend: '0' | slice: -2, 2
+          -%}
+          <li class="longeva-aesthetics-grid__item" data-longeva-reveal {{ block.shopify_attributes }}>
+            <a class="longeva-aesthetics-grid__card" href="{{ card_url }}">
+              <div class="longeva-aesthetics-grid__index">
+                <span class="longeva-aesthetics-grid__idx-num">{{ idx_padded }}</span>
+                <span class="longeva-aesthetics-grid__idx-rule" aria-hidden="true"></span>
+                <span class="longeva-aesthetics-grid__idx-label">Treatment</span>
+              </div>
+              <h3 class="longeva-aesthetics-grid__name">{{ name | escape }}</h3>
+              {% if summary != blank %}
+                <p class="longeva-aesthetics-grid__summary">{{ summary | escape }}</p>
+              {% endif %}
+              <div class="longeva-aesthetics-grid__foot">
+                <span class="longeva-aesthetics-grid__meta">
+                  {% if price != blank %}
+                    {%- comment -%}
+                      Hardcoded "From " label. The previous price_prefix
+                      setting lost its trailing space when admin saved
+                      "From " (Shopify trims trailing whitespace), giving
+                      "From£295" with no separator. Other price callsites
+                      (hub-featured-card, service-layout) already hardcode
+                      so this matches.
+                    {%- endcomment -%}
+                    <span class="longeva-aesthetics-grid__price">From {{ price | escape }}</span>
+                  {% endif %}
+                  {% if price != blank and duration != blank %}
+                    <span class="longeva-aesthetics-grid__sep" aria-hidden="true">·</span>
+                  {% endif %}
+                  {% if duration != blank %}
+                    <span class="longeva-aesthetics-grid__duration">{{ duration }} {{ duration_unit | escape }}</span>
+                  {% endif %}
+                </span>
+                <span class="longeva-aesthetics-grid__arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+              </div>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% render 'longeva-auto-carousel' %}
+{% endif %}
+
+{% stylesheet %}
+  .longeva-aesthetics-grid {
+    background: #FAFAF7;
+    padding-block: var(--longeva-section-pad-default);
+  }
+  .longeva-aesthetics-grid__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+    margin-block-end: 32px;
+    flex-wrap: wrap;
+  }
+  .longeva-aesthetics-grid__head-main { min-width: 0; }
+  .longeva-aesthetics-grid__eyebrow {
+    margin: 0 0 8px;
+  }
+  .longeva-aesthetics-grid__heading {
+    font-size: var(--longeva-h2-desktop);
+    margin: 0;
+    color: #1A1A1A;
+  }
+  .longeva-aesthetics-grid__view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #B99157;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  .longeva-aesthetics-grid__view-all:hover,
+  .longeva-aesthetics-grid__view-all:focus-visible {
+    color: #2D190E;
+    outline: none;
+  }
+  .longeva-aesthetics-grid__view-all:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  .longeva-aesthetics-grid__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--longeva-grid-gap);
+  }
+  .longeva-aesthetics-grid__item { min-width: 0; }
+  /* Magazine-grade treatment card. Reads as a journal entry, not a tile. */
+  .longeva-aesthetics-grid__card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: var(--longeva-card-pad);
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    height: 100%;
+    min-height: 200px;
+  }
+  .longeva-aesthetics-grid__card:hover,
+  .longeva-aesthetics-grid__card:focus-visible {
+    border-color: #2D190E;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(45, 25, 14, 0.06);
+    outline: none;
+  }
+  .longeva-aesthetics-grid__card:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 3px;
+  }
+  /* Index numeral row: "01: Treatment". Magazine wayfinding. */
+  .longeva-aesthetics-grid__index {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--longeva-font-body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.95);
+  }
+  .longeva-aesthetics-grid__idx-num { font-weight: 600; }
+  .longeva-aesthetics-grid__idx-rule {
+    flex: 1 0 24px;
+    max-width: 60px;
+    height: 1px;
+    background: rgba(185, 145, 87, 0.45);
+  }
+  .longeva-aesthetics-grid__idx-label { color: rgba(26, 26, 26, 0.45); }
+  .longeva-aesthetics-grid__name {
+    font-family: var(--longeva-font-display);
+    font-size: var(--longeva-h3-desktop);
+    line-height: 1.15;
+    color: #1A1A1A;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .longeva-aesthetics-grid__summary {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-small);
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.62);
+    margin: 0;
+  }
+  .longeva-aesthetics-grid__foot {
+    margin-top: auto;
+    padding-block-start: 14px;
+    border-block-start: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .longeva-aesthetics-grid__meta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: rgba(26, 26, 26, 0.65);
+  }
+  .longeva-aesthetics-grid__price { color: rgba(26, 26, 26, 0.92); font-weight: 600; letter-spacing: 0.005em; }
+  .longeva-aesthetics-grid__sep { opacity: 0.45; }
+  .longeva-aesthetics-grid__arrow {
+    color: #B99157;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.18s ease;
+  }
+  .longeva-aesthetics-grid__card:hover .longeva-aesthetics-grid__arrow { transform: translateX(3px); }
+
+  @media (max-width: 1023px) {
+    .longeva-aesthetics-grid__list { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    /* Horizontal swipe carousel, auto-advanced via longeva-auto-carousel */
+    .longeva-aesthetics-grid__list {
+      display: flex;
+      grid-template-columns: none;
+      flex-wrap: nowrap;
+      gap: var(--longeva-grid-gap);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 16px;
+      padding-inline: 16px;
+      margin-inline: -16px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .longeva-aesthetics-grid__list::-webkit-scrollbar { display: none; }
+    .longeva-aesthetics-grid__item {
+      flex: 0 0 80%;
+      min-width: 80%;
+      scroll-snap-align: start;
+    }
+    .longeva-aesthetics-grid__card { padding: var(--longeva-card-pad-mobile); }
+    .longeva-aesthetics-grid__head { align-items: start; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva aesthetics grid",
+  "tag": "section",
+  "class": "longeva-aesthetics-grid-section",
+  "max_blocks": 12,
+  "settings": [
+    { "type": "paragraph", "content": "Six-card treatment grid for the aesthetics-led homepage section per Citadel brief §05. Each card needs a name, from-price, duration, and link to the treatment page." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (optional)" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Aesthetics treatments" },
+    { "type": "text", "id": "view_all_label", "label": "View-all label", "default": "All aesthetics" },
+    { "type": "url", "id": "view_all_url", "label": "View-all URL", "info": "Defaults to /pages/aesthetics-manchester when blank." },
+    { "type": "text", "id": "price_prefix", "label": "Price prefix", "default": "From " },
+    { "type": "text", "id": "duration_unit", "label": "Duration unit", "default": "min" }
+  ],
+  "blocks": [
+    {
+      "type": "treatment",
+      "name": "Treatment card",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Treatment name" },
+        { "type": "text", "id": "summary", "label": "One-line summary (12 words max)" },
+        { "type": "text", "id": "from_price", "label": "From-price (e.g. £220)" },
+        { "type": "text", "id": "duration_minutes", "label": "Duration in minutes (number only)" },
+        { "type": "url", "id": "link", "label": "Treatment page URL" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva aesthetics grid",
+      "blocks": [
+        { "type": "treatment", "settings": { "name": "Anti-Wrinkle", "from_price": "£220", "duration_minutes": "30", "link": "/pages/anti-wrinkle-injections-manchester" } },
+        { "type": "treatment", "settings": { "name": "Dermal Fillers", "from_price": "£295", "duration_minutes": "45", "link": "/pages/dermal-fillers-manchester" } },
+        { "type": "treatment", "settings": { "name": "Skin Boosters", "from_price": "£300", "duration_minutes": "30", "link": "/pages/skin-boosters-manchester" } },
+        { "type": "treatment", "settings": { "name": "Chemical Peels", "from_price": "£120", "duration_minutes": "30", "link": "/pages/chemical-peels-manchester" } },
+        { "type": "treatment", "settings": { "name": "Microneedling", "from_price": "£180", "duration_minutes": "60", "link": "/pages/microneedling-manchester" } },
+        { "type": "treatment", "settings": { "name": "Thread Lifts", "from_price": "£750", "duration_minutes": "60", "link": "/pages/thread-lift-treatment-manchester" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

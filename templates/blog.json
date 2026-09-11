@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-journal-list",
+      "settings": {
+        "lede": "Clinical topics explained in plain English by a pharmacist-led team. Short pieces, sourced and dated."
+      }
+    }
+  },
+  "order": ["main"]
+}

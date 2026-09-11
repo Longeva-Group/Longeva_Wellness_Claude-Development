@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-content-page",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "show_cta": true
+      }
+    }
+  },
+  "order": ["main"]
+}

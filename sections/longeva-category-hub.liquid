@@ -1,0 +1,1227 @@
+{%- comment -%}
+  Longeva category hub. Editability cascade for every visible string:
+    1. page metafield (custom.hub_intro_body, hub_featured_services,
+       hub_related_hubs) when present
+    2. section setting or section block
+    3. theme-level settings.longeva_hub_* default
+    4. hide silently when all three are blank.
+  No placeholder copy is ever rendered. The heading falls back to the
+  page title, which always exists.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{% render 'longeva-schema-hub' %}
+<script src="{{ 'longeva-sticky-cta.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign eyebrow = section.settings.eyebrow | default: settings.longeva_hub_eyebrow
+  assign heading = section.settings.heading | default: page.title
+  assign heading_suffix = section.settings.heading_suffix
+  assign mf_intro = page.metafields.custom.hub_intro_body
+  assign section_intro = section.settings.intro
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign book_url = section.settings.book_url | default: settings.longeva_book_cta_url | default: '/pages/book'
+  assign directory_url = section.settings.directory_url | default: '/pages/services-manchester'
+  assign featured_heading = section.settings.featured_heading | default: settings.longeva_hub_featured_heading
+  assign faq_heading = section.settings.faq_heading | default: settings.longeva_hub_faq_heading
+  assign related_heading = section.settings.related_heading | default: settings.longeva_hub_related_heading
+  assign view_all_label = section.settings.view_all_label | default: settings.longeva_hub_viewall_label
+  assign category = page.metafields.custom.category
+  assign directory_anchor = directory_url
+  if category != blank
+    assign category_slug = category | handleize
+    assign directory_anchor = directory_url | append: '#' | append: category_slug
+    if book_url contains '?'
+      assign book_url = book_url | append: '&category=' | append: category_slug
+    else
+      assign book_url = book_url | append: '?category=' | append: category_slug
+    endif
+  endif
+  assign mf_featured = page.metafields.custom.hub_featured_services.value
+  assign mf_related = page.metafields.custom.hub_related_hubs.value
+  assign trust_blocks = section.blocks | where: 'type', 'trust_badge'
+  assign section_featured = section.blocks | where: 'type', 'featured_service'
+  assign section_related = section.blocks | where: 'type', 'related_category'
+  assign faq_blocks = section.blocks | where: 'type', 'faq'
+  assign cta_blocks = section.blocks | where: 'type', 'cta'
+
+  assign why_heading = section.settings.why_heading
+  assign why_bullet_1 = section.settings.why_bullet_1
+  assign why_bullet_2 = section.settings.why_bullet_2
+  assign why_bullet_3 = section.settings.why_bullet_3
+  assign why_show = false
+  if why_bullet_1 != blank or why_bullet_2 != blank or why_bullet_3 != blank
+    assign why_show = true
+  endif
+
+  assign team_heading = section.settings.team_heading
+  assign team_body = section.settings.team_body
+  assign team_link_label = section.settings.team_link_label
+  assign team_link_url = section.settings.team_link_url | default: '/pages/clinicians'
+  assign team_show = false
+  if team_heading != blank or team_link_label != blank
+    assign team_show = true
+  endif
+-%}
+
+<article class="longeva-hub longeva-page longeva-page--light" aria-labelledby="longeva-hub-heading">
+  <header class="longeva-hub__header longeva-container longeva-section">
+    <div class="longeva-hub__header-main">
+      {% if eyebrow != blank %}
+        <p class="longeva-eyebrow longeva-hub__eyebrow">{{ eyebrow | escape }}</p>
+      {% endif %}
+      <h1 id="longeva-hub-heading" class="longeva-display longeva-hub__heading">{{ heading | escape }}{%- if heading_suffix != blank %} <span class="longeva-hub__heading-suffix">{{ heading_suffix | escape }}</span>{%- endif -%}</h1>
+      {%- comment -%}
+        Long intro paragraph moved below the treatment grid (CRO research +
+        brief §04: above-fold should be the grid, not body copy). Hero now
+        carries only the eyebrow, H1, and the dual CTA.
+      {%- endcomment -%}
+      <div class="longeva-hub__hero-cta">
+        <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label | escape }}</a>
+      </div>
+    </div>
+  </header>
+
+  {% if trust_blocks.size > 0 %}
+    <section class="longeva-hub__trust longeva-container" aria-label="{{ section.settings.trust_aria_label | default: 'Trust and accreditation' | escape }}">
+      <ul class="longeva-hub__trust-list" role="list">
+        {% for block in trust_blocks %}
+          <li class="longeva-hub__trust-item" {{ block.shopify_attributes }}>
+            <span class="longeva-hub__trust-primary">{{ block.settings.primary | escape }}</span>
+            {% if block.settings.secondary != blank %}
+              <span class="longeva-hub__trust-sub">{{ block.settings.secondary | escape }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {%- comment -%}
+    All services in this category, alphabetised. Replaces the prior
+    3-card "Featured services" pattern that forced patients off-page
+    to the master directory just to see the rest. Arrives-with-intent
+    user lands here and gets the exhaustive list directly. Sort logic
+    matches the master directory (PR #145): two-pass, sort_natural on
+    pure titles to avoid separator-collision.
+
+    `page.metafields.custom.hub_featured_services.value` and section
+    `featured_service` blocks remain accepted for top-pinned items;
+    when set, those render as a small highlight row above the full
+    list. When empty, only the full list renders.
+  {%- endcomment -%}
+
+  {% if mf_featured != blank %}
+  {%- assign category_lower = category | downcase | default: 'services' -%}
+  {%- assign list_heading_default = 'All ' | append: category_lower -%}
+  {%- assign list_heading = list_heading_default -%}
+  {%- if featured_heading != blank and featured_heading != 'Featured services' -%}
+    {%- assign list_heading = featured_heading -%}
+  {%- endif -%}
+  <section class="longeva-hub__featured longeva-container longeva-section" aria-label="{{ list_heading | escape }}">
+    <h2 class="longeva-display longeva-hub__section-heading">{{ list_heading | escape }}</h2>
+    <ul class="longeva-hub__featured-grid longeva-hub__featured-grid--full" role="list" data-longeva-stagger="60">
+      {% for pg in mf_featured %}
+        {% if pg %}{% render 'longeva-hub-featured-card', pg: pg, attrs: '' %}{% endif %}
+      {% endfor %}
+    </ul>
+  </section>
+{% elsif category != blank %}
+    {%- capture handles_raw -%}{% render 'longeva-service-handles' %}{%- endcapture -%}
+    {%- assign all_handles = handles_raw | strip | newline_to_br | replace: '<br />', '|' | replace: '<br>', '|' | split: '|' -%}
+
+    {%- comment -%}
+      Build ONE alphabetical list for the hub. Candidates: pages whose
+      custom.category matches this hub, plus (Vaccinations) the curated
+      travel-vaccine pages that live under Travel Health and the
+      product-modelled vaccines, plus (Minor Ailments) the product-modelled
+      ailments. Everything interleaves into a single A-Z sequence so the
+      alphabet never restarts. Two-pass: sort pure titles (avoids the
+      delimiter-in-sort collision), then map each title to its card type.
+      cand_str entries are "<title>~~~<page|prod>~~~<handle>", "|||"-joined.
+    {%- endcomment -%}
+    {%- assign title_list = '' -%}
+    {%- assign cand_str = '' -%}
+    {%- for h in all_handles -%}
+      {%- assign handle = h | strip -%}
+      {%- if handle == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign pg = pages[handle] -%}
+      {%- if pg == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign pg_category = pg.metafields.custom.category | default: '' -%}
+      {%- if pg_category == category -%}
+        {%- assign t = pg.title | remove: ' Manchester' -%}
+        {%- assign title_list = title_list | append: t | append: '|' -%}
+        {%- assign cand_str = cand_str | append: t | append: '~~~page~~~' | append: handle | append: '|||' -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if category == 'Vaccinations' -%}
+      {%- comment -%} Travel vaccines live under Travel Health but also belong
+         in "all vaccinations". Non-vaccine travel services (malaria, altitude,
+         travellers diarrhoea, consultation) are deliberately excluded. The
+         product cards are the deposit-model vaccines with no page twin.
+         hepatitis-a-b-combined-vaccination is the A+B travel product, distinct
+         from the now-retired A+Typhoid combined. {%- endcomment -%}
+      {%- assign extra_vaccine_pages = 'cholera-vaccination-manchester,diphtheria-vaccination-manchester,hepatitis-a-vaccination-manchester,hepatitis-b-travel-vaccine-manchester,japanese-encephalitis-vaccination-manchester,rabies-vaccination-manchester,tick-borne-encephalitis-vaccination-manchester,typhoid-vaccination-manchester,yellow-fever-vaccination-manchester' | split: ',' -%}
+      {%- for ph in extra_vaccine_pages -%}
+        {%- assign xp = pages[ph] -%}
+        {%- if xp == blank -%}{%- continue -%}{%- endif -%}
+        {%- assign t = xp.title | remove: ' Manchester' -%}
+        {%- assign title_list = title_list | append: t | append: '|' -%}
+        {%- assign cand_str = cand_str | append: t | append: '~~~page~~~' | append: ph | append: '|||' -%}
+      {%- endfor -%}
+      {%- assign vaccine_product_handles = 'chikungunya-vaccination,hepatitis-a-b-combined-vaccination,dengue-fever-vaccination' | split: ',' -%}
+      {%- for ph in vaccine_product_handles -%}
+        {%- assign vp = all_products[ph] -%}
+        {%- if vp == blank -%}{%- continue -%}{%- endif -%}
+        {%- assign t = vp.title | remove: ' Vaccination' | remove: ' vaccination' -%}
+        {%- assign title_list = title_list | append: t | append: '|' -%}
+        {%- assign cand_str = cand_str | append: t | append: '~~~prod~~~' | append: ph | append: '|||' -%}
+      {%- endfor -%}
+    {%- elsif category == 'Minor Ailments' -%}
+      {%- assign minor_product_handles = 'adrenaline-nasal-spray-booking,thrush-treatment-manchester' | split: ',' -%}
+      {%- for ph in minor_product_handles -%}
+        {%- assign vp = all_products[ph] -%}
+        {%- if vp == blank -%}{%- continue -%}{%- endif -%}
+        {%- assign t = vp.title | remove: ' Treatment' | remove: ' Manchester' -%}
+        {%- assign title_list = title_list | append: t | append: '|' -%}
+        {%- assign cand_str = cand_str | append: t | append: '~~~prod~~~' | append: ph | append: '|||' -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {%- assign sorted_titles = title_list | split: '|' | sort_natural -%}
+    {%- assign cand_list = cand_str | split: '|||' -%}
+
+    {% if sorted_titles.size > 0 %}
+      {%- assign category_lower = category | downcase -%}
+      {%- assign list_heading_default = 'All ' | append: category_lower -%}
+      {%- assign list_heading = list_heading_default -%}
+      {%- if featured_heading != blank and featured_heading != 'Featured services' -%}
+        {%- assign list_heading = featured_heading -%}
+      {%- endif -%}
+      <section class="longeva-hub__featured longeva-container longeva-section" aria-label="{{ list_heading | escape }}">
+        <h2 class="longeva-display longeva-hub__section-heading">{{ list_heading | escape }}</h2>
+        <ul class="longeva-hub__featured-grid longeva-hub__featured-grid--full" role="list" data-longeva-stagger="60">
+          {%- for sorted_title in sorted_titles -%}
+            {%- if sorted_title == blank -%}{%- continue -%}{%- endif -%}
+            {%- for c in cand_list -%}
+              {%- assign parts = c | split: '~~~' -%}
+              {%- if parts[0] == sorted_title -%}
+                {%- if parts[1] == 'prod' -%}
+                  {%- assign vp = all_products[parts[2]] -%}
+                  {%- if vp != blank -%}{% render 'longeva-hub-featured-card-product', product: vp, attrs: '' %}{%- endif -%}
+                {%- else -%}
+                  {%- assign pg = pages[parts[2]] -%}
+                  {%- if pg != blank -%}{% render 'longeva-hub-featured-card', pg: pg, attrs: '' %}{%- endif -%}
+                {%- endif -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        </ul>
+      </section>
+    
+      
+  {% endif %}
+{% endif %}
+
+  {% comment %} {%- comment -%}
+    Long-form intro plus quickfacts panel, relocated from the hero header to
+    sit below the treatment grid (CRO research + brief §04 above-fold spec).
+    Mobile users see the grid first, the editorial copy second.
+  {%- endcomment -%}
+  {% if mf_intro != blank or section_intro != blank %}
+    <section class="longeva-hub__about longeva-container longeva-section" aria-label="About this service">
+      <div class="longeva-hub__about-inner">
+        <div class="longeva-hub__about-main">
+          {% if mf_intro != blank %}
+            <div class="longeva-hub__intro">{{ mf_intro | newline_to_br }}</div>
+          {% elsif section_intro != blank %}
+            <div class="longeva-hub__intro">{{ section_intro }}</div>
+          {% endif %}
+        </div>
+        <aside class="longeva-hub__quickfacts" aria-label="{{ section.settings.quickfacts_aria_label | default: 'At a glance' | escape }}">
+          {%- assign qf_pairs = '1|2|3|4' | split: '|' -%}
+          {%- for pair in qf_pairs -%}
+            {%- assign label_key = 'quickfact_' | append: pair | append: '_label' -%}
+            {%- assign value_key = 'quickfact_' | append: pair | append: '_value' -%}
+            {%- assign label = section.settings[label_key] -%}
+            {%- assign value = section.settings[value_key] -%}
+            {%- if label != blank and value != blank -%}
+              <div class="longeva-hub__quickfacts-row">
+                <span class="longeva-hub__quickfacts-label">{{ label | escape }}</span>
+                <span class="longeva-hub__quickfacts-value">{{ value | escape }}</span>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </aside>
+      </div>
+    </section>
+  {% endif %} {% endcomment %}
+
+  {% if why_show %}
+    <section class="longeva-hub__why longeva-container longeva-section" aria-label="{{ why_heading | default: 'Why Longeva' | escape }}">
+      <h2 class="longeva-display longeva-hub__section-heading">{{ why_heading | default: 'Why Longeva' | escape }}</h2>
+      <ul class="longeva-hub__why-list" role="list">
+        {% if why_bullet_1 != blank %}<li class="longeva-hub__why-item">{{ why_bullet_1 | escape }}</li>{% endif %}
+        {% if why_bullet_2 != blank %}<li class="longeva-hub__why-item">{{ why_bullet_2 | escape }}</li>{% endif %}
+        {% if why_bullet_3 != blank %}<li class="longeva-hub__why-item">{{ why_bullet_3 | escape }}</li>{% endif %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if team_show %}
+    <section class="longeva-hub__team longeva-container longeva-section" aria-label="{{ team_heading | default: 'Meet the clinical team' | escape }}">
+      <div class="longeva-hub__team-inner">
+        <div class="longeva-hub__team-main">
+          <h2 class="longeva-display longeva-hub__section-heading">{{ team_heading | default: 'Meet the clinical team' | escape }}</h2>
+          {% if team_body != blank %}
+            <p class="longeva-hub__team-body">{{ team_body | escape }}</p>
+          {% endif %}
+        </div>
+        {% if team_link_label != blank %}
+          <a class="longeva-hub__team-link" href="{{ team_link_url }}">
+            <span>{{ team_link_label | escape }}</span>
+            {% render 'longeva-arrow' %}
+          </a>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if faq_blocks.size > 0 %}
+    {%- assign faq_heading_resolved = faq_heading | default: 'Frequently asked questions' -%}
+    <section class="longeva-hub__faq longeva-container longeva-section" aria-label="{{ section.settings.faq_aria_label | default: 'Frequently asked questions' | escape }}">
+      <h2 class="longeva-display longeva-hub__section-heading">{{ faq_heading_resolved | escape }}</h2>
+      <div class="longeva-hub__faq-list">
+        {% for block in faq_blocks %}
+          <details class="longeva-hub__faq-item" {{ block.shopify_attributes }}>
+            <summary class="longeva-hub__faq-question">{{ block.settings.question | escape }}</summary>
+            <div class="longeva-hub__faq-answer">{{ block.settings.answer }}</div>
+          </details>
+        {% endfor %}
+      </div>
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {%- for block in faq_blocks -%}
+              {
+                "@type": "Question",
+                "name": {{ block.settings.question | json }},
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": {{ block.settings.answer | strip_html | json }}
+                }
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ]
+        }
+      </script>
+    </section>
+  {% endif %}
+
+  {% if cta_blocks.size > 0 %}
+    {% for block in cta_blocks %}
+      {%- liquid
+        assign cta_heading = block.settings.heading | default: settings.longeva_hub_cta_heading
+        assign cta_subhead = block.settings.subhead | default: settings.longeva_hub_cta_subhead
+        assign cta_label = block.settings.button_label | default: settings.longeva_hub_cta_label | default: book_label
+        assign cta_url = block.settings.button_url | default: book_url
+      -%}
+      {%- assign cta_heading_resolved = cta_heading | default: 'Book a consultation' -%}
+      <section class="longeva-hub__cta" aria-label="{{ cta_heading_resolved | escape }}" {{ block.shopify_attributes }}>
+        <div class="longeva-container longeva-hub__cta-inner">
+          <h2 class="longeva-display longeva-hub__cta-heading">{{ cta_heading_resolved | escape }}</h2>
+          {% if cta_subhead != blank %}
+            <p class="longeva-hub__cta-subhead">{{ cta_subhead | escape }}</p>
+          {% endif %}
+          <a class="longeva-btn longeva-btn--primary-on-dark" href="{{ cta_url }}">{{ cta_label | escape }}</a>
+          <ul class="longeva-hub__cta-trust" role="list">
+            {%- if section.settings.cta_trust_1 != blank -%}<li>{{ section.settings.cta_trust_1 | escape }}</li>{%- endif -%}
+            {%- if section.settings.cta_trust_2 != blank -%}<li>{{ section.settings.cta_trust_2 | escape }}</li>{%- endif -%}
+            {%- if section.settings.cta_trust_3 != blank -%}<li>{{ section.settings.cta_trust_3 | escape }}</li>{%- endif -%}
+          </ul>
+        </div>
+      </section>
+    {% endfor %}
+  {% endif %}
+
+  {%- comment -%}
+    Long-form intro plus quickfacts panel — moved below FAQs (Task 8 reorder:
+    Treatment cards → Why Longeva → FAQs → SEO text).
+  {%- endcomment -%}
+  {% if mf_intro != blank or section_intro != blank %}
+    <section class="longeva-hub__about longeva-container longeva-section" aria-label="About this service">
+      <div class="longeva-hub__about-inner">
+        <div class="longeva-hub__about-main">
+          {% comment %} {% if mf_intro != blank %}
+            <div class="longeva-hub__intro">{{ mf_intro | newline_to_br }}</div>
+          {% elsif section_intro != blank %}
+            <div class="longeva-hub__intro">{{ section_intro }}</div>
+          {% endif %} {% endcomment %}
+           {% if mf_intro != blank %}
+            <div class="longeva-hub__intro" id="longeva-hub-intro-body">{{ mf_intro | newline_to_br }}</div>
+          {% elsif section_intro != blank %}
+            <div class="longeva-hub__intro" id="longeva-hub-intro-body">{{ section_intro }}</div>
+          {% endif %}
+        </div>
+        <aside class="longeva-hub__quickfacts" aria-label="{{ section.settings.quickfacts_aria_label | default: 'At a glance' | escape }}">
+          {%- assign qf_pairs = '1|2|3|4' | split: '|' -%}
+          {%- for pair in qf_pairs -%}
+            {%- assign label_key = 'quickfact_' | append: pair | append: '_label' -%}
+            {%- assign value_key = 'quickfact_' | append: pair | append: '_value' -%}
+            {%- assign label = section.settings[label_key] -%}
+            {%- assign value = section.settings[value_key] -%}
+            {%- if label != blank and value != blank -%}
+              <div class="longeva-hub__quickfacts-row">
+                <span class="longeva-hub__quickfacts-label">{{ label | escape }}</span>
+                <span class="longeva-hub__quickfacts-value">{{ value | escape }}</span>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </aside>
+      </div>
+    </section>
+  {% endif %}
+
+  <script>
+    (function () {
+      {% comment %} if (window.matchMedia('(min-width: 641px)').matches) return; {% endcomment %}
+      var intro = document.getElementById('longeva-hub-intro-body');
+      if (!intro) return;
+      var nodes = Array.from(intro.childNodes);
+      var groups = [];
+      var current = null;
+      for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+        if (node.nodeType === 1 && node.tagName === 'B') {
+          current = { heading: node.textContent.trim(), nodes: [] };
+          groups.push(current);
+        } else if (current) {
+          current.nodes.push(node);
+        }
+      }
+      if (groups.length < 2) return;
+      var wrapper = document.createElement('div');
+      wrapper.className = 'longeva-hub__intro-accordion';
+      groups.forEach(function (group) {
+        var details = document.createElement('details');
+        details.className = 'longeva-hub__intro-item';
+        var summary = document.createElement('summary');
+        summary.className = 'longeva-hub__intro-question';
+        summary.textContent = group.heading;
+        details.appendChild(summary);
+        var answer = document.createElement('div');
+        answer.className = 'longeva-hub__intro-answer';
+        var start = 0;
+        while (start < group.nodes.length) {
+          var n = group.nodes[start];
+          if (n.nodeType === 3 && n.textContent.trim() === '') { start++; continue; }
+          if (n.nodeType === 1 && n.tagName === 'BR') { start++; continue; }
+          break;
+        }
+        var end = group.nodes.length - 1;
+        while (end >= start) {
+          var n = group.nodes[end];
+          if (n.nodeType === 3 && n.textContent.trim() === '') { end--; continue; }
+          if (n.nodeType === 1 && n.tagName === 'BR') { end--; continue; }
+          break;
+        }
+        for (var j = start; j <= end; j++) {
+          answer.appendChild(group.nodes[j].cloneNode(true));
+        }
+        details.appendChild(answer);
+        wrapper.appendChild(details);
+      });
+      intro.innerHTML = '';
+      intro.appendChild(wrapper);
+    })();
+  </script>
+
+  {%- liquid
+    assign related_count = 0
+    if mf_related != blank
+      assign related_count = mf_related.size
+    else
+      assign related_count = section_related.size
+    endif
+  -%}
+  {% if related_count > 0 %}
+    {%- assign related_heading_resolved = related_heading | default: 'Related categories' -%}
+    <section class="longeva-hub__related longeva-container longeva-section" aria-label="{{ section.settings.related_aria_label | default: 'Related categories' | escape }}">
+      <h2 class="longeva-display longeva-hub__section-heading">{{ related_heading_resolved | escape }}</h2>
+      <ul class="longeva-hub__related-list" role="list">
+        {% if mf_related != blank %}
+          {% for pg in mf_related %}
+            {% if pg %}
+              <li>
+                <a class="longeva-hub__related-link" href="{{ pg.url }}">
+                  <span class="longeva-hub__related-title">{{ pg.title | remove: ' in Manchester' | remove: ' Manchester' | escape }}</span>
+                  {% if pg.metafields.custom.lede != blank %}
+                    <span class="longeva-hub__related-lede">{{ pg.metafields.custom.lede | truncate: 100 | escape }}</span>
+                  {% endif %}
+                  <span class="longeva-hub__related-arrow">{% render 'longeva-arrow' %}</span>
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          {% for block in section_related %}
+            {%- liquid
+              assign target = block.settings.page
+              assign pg = nil
+              if target != blank
+                assign pg = pages[target]
+              endif
+            -%}
+            {% if pg %}
+              <li {{ block.shopify_attributes }}>
+                <a class="longeva-hub__related-link" href="{{ pg.url }}">
+                  <span class="longeva-hub__related-title">{{ pg.title | remove: ' in Manchester' | remove: ' Manchester' | escape }}</span>
+                  {% if pg.metafields.custom.lede != blank %}
+                    <span class="longeva-hub__related-lede">{{ pg.metafields.custom.lede | truncate: 100 | escape }}</span>
+                  {% endif %}
+                  <span class="longeva-hub__related-arrow">{% render 'longeva-arrow' %}</span>
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </ul>
+    </section>
+  {% endif %}
+</article>
+
+{% render 'longeva-auto-carousel' %}
+
+<aside class="longeva-hub__sticky" aria-label="Quick book">
+  <div class="longeva-hub__sticky-inner">
+    {%- comment -%}
+      Eyebrow label removed 2026-05-07 (Varsha review v2 1.NEW-c): the
+      static "Book a consultation" eyebrow next to a "Book a
+      Consultation" CTA button rendered the same words twice. The CTA
+      alone is unambiguous and matches the service-layout sticky.
+    {%- endcomment -%}
+    {% render 'longeva-sesami-button',
+       label: book_label,
+       variant: 'primary-on-light',
+       fallback_url: book_url,
+       classes: 'longeva-hub__sticky-cta' %}
+  </div>
+</aside>
+
+{% stylesheet %}
+  .longeva-hub {
+    background: #FAFAF7;
+  }
+  /* Tighten section rhythm across all viewports so the page reads as a
+     connected editorial flow instead of widely spaced blocks (whitespace
+     audit 2026-04-29, mobile retightened 2026-04-30). Single clamp
+     scales smoothly: ~20px each side at narrow mobile, ~40px each side
+     at wide desktop. Compound selectors keep __why and __team a notch
+     tighter still. */
+  .longeva-hub .longeva-section {
+    padding-block: clamp(20px, 3vw, 40px);
+  }
+  .longeva-hub__why.longeva-section {
+    padding-block: clamp(16px, 2.5vw, 32px);
+  }
+  .longeva-hub__team.longeva-section {
+    padding-block: clamp(14px, 2vw, 28px);
+  }
+  /* Hero header carries only eyebrow + H1 + dual CTA. Editorial intro and
+     quickfacts now live in the .longeva-hub__about section below the
+     treatment grid (brief §04 + CRO research). */
+  .longeva-hub__header {
+    display: block;
+    padding-block-start: clamp(32px, 5vw, 56px);
+    padding-block-end: clamp(20px, 3vw, 32px);
+  }
+  .longeva-hub__header-main { max-width: 720px; }
+
+  /* About panel below the grid: 2-col on desktop (intro + quickfacts), stacks on mobile. */
+  .longeva-hub__about-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+    gap: clamp(32px, 5vw, 56px);
+    align-items: start;
+  }
+  .longeva-hub__about-main { max-width: 64ch; }
+  @media (max-width: 1023px) {
+    .longeva-hub__about-inner { grid-template-columns: 1fr; gap: 24px; }
+  }
+  .longeva-hub__quickfacts {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .longeva-hub__quickfacts-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    align-items: baseline;
+    font-family: var(--longeva-font-body);
+    line-height: 1.45;
+    padding-block-end: 12px;
+    border-block-end: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .longeva-hub__quickfacts-row:last-child {
+    border-block-end: 0;
+    padding-block-end: 0;
+  }
+  .longeva-hub__quickfacts-label {
+    color: rgba(26, 26, 26, 0.66);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .longeva-hub__quickfacts-value {
+    color: #1A1A1A;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .longeva-hub__eyebrow {
+    margin: 0 0 16px;
+  }
+  .longeva-hub__heading {
+    font-size: var(--longeva-h1-desktop);
+    margin: 0;
+    color: #1A1A1A;
+  }
+  .longeva-hub__heading-suffix {
+    display: block;
+    font-size: 0.36em;
+    font-weight: 400;
+    color: rgba(26, 26, 26, 0.62);
+    letter-spacing: 0.01em;
+    margin-block-start: 8px;
+  }
+  .longeva-hub__intro {
+    margin: 20px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 18px;
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.75);
+    max-width: 72ch;
+  }
+  .longeva-hub__intro p:first-child { margin-top: 0; }
+  .longeva-hub__intro p:last-child { margin-bottom: 0; }
+  .longeva-hub__section-heading {
+    font-size: var(--longeva-h2-desktop);
+    margin: 0 0 24px;
+    color: #1A1A1A;
+  }
+
+  .longeva-hub__trust {
+    padding-block: 24px;
+    border-block: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+  }
+  .longeva-hub__trust-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .longeva-hub__trust-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .longeva-hub__trust-primary {
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #1A1A1A;
+  }
+  .longeva-hub__trust-sub {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: rgba(26, 26, 26, 0.60);
+  }
+
+  .longeva-hub__hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-block-start: 32px;
+  }
+  .longeva-hub__featured-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  /* Desktop: cap at 3-col so a 7-service category renders 3+3+1 without
+     a visibly empty 4th slot (whitespace audit, 2026-04-29). */
+  @media (min-width: 1024px) {
+    .longeva-hub__featured-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .longeva-hub__featured-card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    transition: border-color 0.15s var(--longeva-ease), transform 0.15s var(--longeva-ease), box-shadow 0.15s var(--longeva-ease);
+  }
+  .longeva-hub__featured-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(45, 25, 14, 0.08);
+  }
+  .longeva-hub__featured-link {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+  }
+  :root .longeva-hub__featured-card:hover,
+  :root .longeva-hub__featured-link:hover,
+  :root .longeva-hub__featured-link:focus-visible {
+    border-color: #2D190E;
+    outline: none;
+  }
+  .longeva-hub__featured-title {
+    margin: 0;
+    font-size: var(--longeva-h3-desktop);
+    line-height: 1.25;
+  }
+  .longeva-hub__featured-lede {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-small);
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.70);
+    margin: 0;
+  }
+  .longeva-hub__featured-meta {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: rgba(26, 26, 26, 0.68);
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    padding-block-start: 4px;
+    border-block-start: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .longeva-hub__featured-price {
+    color: #1A1A1A;
+    font-weight: 500;
+  }
+  .longeva-hub__featured-dot { color: rgba(26, 26, 26, 0.30); }
+  .longeva-hub__featured-arrow {
+    display: inline-flex;
+    color: #2D190E;
+    margin-block-start: auto;
+    padding-block-start: 4px;
+    transition: transform 0.15s var(--longeva-ease);
+  }
+  .longeva-hub__featured-link:hover .longeva-hub__featured-arrow,
+  .longeva-hub__featured-link:focus-visible .longeva-hub__featured-arrow {
+    transform: translateX(3px);
+  }
+  .longeva-hub__view-all {
+    margin: 32px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-small);
+  }
+  .longeva-hub__view-all a {
+    color: #1A1A1A;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .longeva-hub__faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 72ch;
+  }
+  .longeva-hub__faq-item {
+    border-block-end: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .longeva-hub__faq-question {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-h4);
+    font-weight: 500;
+    padding: 18px 32px 18px 0;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+  }
+  .longeva-hub__faq-question::-webkit-details-marker { display: none; }
+  .longeva-hub__faq-question::after {
+    content: "+";
+    position: absolute;
+    inset-inline-end: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+  }
+  .longeva-hub__faq-item[open] .longeva-hub__faq-question::after { content: "\2212"; }
+  .longeva-hub__faq-answer {
+    padding-block-end: 20px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.65;
+    color: rgba(26, 26, 26, 0.80);
+  }
+  .longeva-hub__faq-answer p:first-child { margin-top: 0; }
+  .longeva-hub__faq-answer p:last-child { margin-bottom: 0; }
+
+  .longeva-hub__cta {
+    background: #2D190E;
+    color: #F2E6DC;
+  }
+  .longeva-hub__cta-inner {
+    padding-block: 64px;
+    text-align: center;
+  }
+  .longeva-hub__cta-heading {
+    font-size: clamp(28px, 3vw, 36px);
+    margin: 0;
+    color: #F2E6DC;
+  }
+  .longeva-hub__cta-subhead {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: rgba(245, 241, 234, 0.85);
+    max-width: 48ch;
+    margin: 12px auto 24px;
+  }
+  .longeva-hub__cta-trust {
+    list-style: none;
+    padding: 0;
+    margin: 28px auto 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.62);
+  }
+  .longeva-hub__cta-trust li {
+    position: relative;
+    padding-inline-start: 20px;
+  }
+  .longeva-hub__cta-trust li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--longeva-accent);
+    opacity: 0.7;
+  }
+
+  .longeva-hub__related-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    /* Auto-fit so 2 sibling categories fill the row evenly instead of
+       leaving an orphan empty cell. With 3-4 items the row balances
+       itself; with 2 each card stretches to ~50%. */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .longeva-hub__related-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 16px;
+    row-gap: 6px;
+    padding: 24px 28px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    color: inherit;
+    text-decoration: none;
+    font-family: var(--longeva-font-body);
+    transition: border-color 0.15s var(--longeva-ease), transform 0.15s var(--longeva-ease), box-shadow 0.15s var(--longeva-ease);
+  }
+  .longeva-hub__related-title {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: #1A1A1A;
+  }
+  .longeva-hub__related-lede {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.66);
+  }
+  .longeva-hub__related-arrow {
+    grid-column: 2;
+    grid-row: 1;
+    color: #2D190E;
+    align-self: center;
+  }
+  :root .longeva-hub__related-link:hover,
+  :root .longeva-hub__related-link:focus-visible {
+    border-color: #2D190E;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(45, 25, 14, 0.08);
+    outline: none;
+  }
+
+  @media (max-width: 1023px) {
+    .longeva-hub__header {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .longeva-hub__trust-list { grid-template-columns: repeat(2, 1fr); }
+    /* Featured + related grids keep their auto-fit behaviour at tablet so
+       treatment cards wrap into 2 columns (brief §04 above-fold grid). */
+  }
+  @media (max-width: 640px) {
+    .longeva-hub__featured-grid { grid-template-columns: 1fr; }
+    .longeva-hub__related-list { grid-template-columns: 1fr; }
+    .longeva-hub__heading { font-size: var(--longeva-h1-mobile); }
+    .longeva-hub__intro { font-size: 16px; line-height: 1.6; }
+    .longeva-hub__intro p { margin-block: 0 12px; }
+    .longeva-hub__hero-cta { flex-direction: column; align-items: stretch; }
+    .longeva-hub__hero-cta .longeva-btn { width: 100%; }
+    .longeva-hub__quickfacts { padding: 20px 22px; }
+    .longeva-hub__quickfacts-row { grid-template-columns: 1fr; gap: 2px; }
+    .longeva-hub__cta-trust { flex-direction: column; gap: 8px; }
+  }
+
+  /* Why Longeva (Citadel brief §04 hub Section 2) */
+  .longeva-hub__why { padding-block: clamp(32px, 4vw, 56px); }
+  .longeva-hub__why-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .longeva-hub__why-item {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    padding: 24px 22px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.85);
+    border-inline-start: 3px solid #B99157;
+  }
+  @media (max-width: 749px) {
+    .longeva-hub__why-list { grid-template-columns: 1fr; }
+  }
+
+  /* Meet the clinical team (Citadel brief §04 hub Section 3) */
+  .longeva-hub__team { padding-block: clamp(24px, 3vw, 40px); }
+  .longeva-hub__team-inner {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px 32px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    flex-wrap: wrap;
+  }
+  .longeva-hub__team-main { min-width: 0; }
+  .longeva-hub__team-body {
+    margin: 8px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.7);
+    max-width: 60ch;
+  }
+  .longeva-hub__team-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #2D190E;
+    color: #F2E6DC;
+    border-radius: 999px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+  .longeva-hub__team-link:hover,
+  .longeva-hub__team-link:focus-visible {
+    opacity: 0.92;
+    outline: none;
+  }
+  .longeva-hub__team-link:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* Sticky CTA on category hub (Citadel brief §03 step 2 + §06 scroll behavior).
+     Backdrop-blur dropped 2026-05-07 audit pass: same rationale as the
+     services-directory sticky bar: Harley-Street tier sticky surfaces
+     read as a continuation of the page surface (solid bg, hairline
+     border), not a frosted SaaS overlay. Solid --longeva-bg also avoids
+     the WCAG 1.4.3 contrast risk on whatever scrolls beneath. */
+  .longeva-hub__sticky {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
+    background: var(--longeva-bg);
+    border-block-start: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+  .longeva-hub__sticky.is-hidden {
+    transform: translateY(110%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .longeva-hub__sticky { transition: none; }
+  }
+  .longeva-hub__sticky-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .longeva-hub__sticky-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 auto;
+    min-width: 200px;
+    max-width: 320px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  /* Article bottom padding: was 96px which stacked on top of the last
+     section's padding-block-end and produced a ~130px void above the
+     page footer (whitespace audit 2026-04-30). Match the section rhythm
+     clamp so the related cards sit naturally above the footer strip. */
+  .longeva-hub { padding-block-end: clamp(20px, 3vw, 40px); }
+  @media (max-width: 749px) {
+    .longeva-hub__sticky { padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); }
+    .longeva-hub__sticky-inner { gap: 12px; }
+    .longeva-hub__sticky-cta { min-width: 140px; min-height: 44px; padding: 0 18px; font-size: 13px; }
+  }
+  /* Hub intro accordion — mobile only (Task 9) */
+  .longeva-hub__intro-accordion {
+    display: flex;
+    flex-direction: column;
+  }
+  .longeva-hub__intro-item {
+    border-block-end: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  .longeva-hub__intro-question {
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    font-weight: 600;
+    padding: 16px 32px 16px 0;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+    color: #1A1A1A;
+  }
+  .longeva-hub__intro-question::-webkit-details-marker { display: none; }
+  .longeva-hub__intro-question::after {
+    content: "+";
+    position: absolute;
+    inset-inline-end: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    font-weight: 400;
+  }
+  .longeva-hub__intro-item[open] .longeva-hub__intro-question::after { content: "\2212"; }
+  .longeva-hub__intro-answer {
+    padding-block-end: 16px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.65;
+    color: rgba(26, 26, 26, 0.80);
+  }
+
+  /* Mobile (<=600px): a small highlight rail becomes a horizontal swipe
+     carousel. The full "All <category>" list (--full) is exempt and stays a
+     vertical single-column stack (per the <=640px rule) so a long lookup
+     list of 20+ vaccines stays scannable instead of one-card-at-a-time. */
+
+  @media (max-width: 600px) {
+    .longeva-hub__featured-grid:not(.longeva-hub__featured-grid--full) {
+      display: flex;
+      grid-template-columns: none;
+      flex-wrap: nowrap;
+      gap: 14px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 16px;
+      padding-inline: 16px;
+      margin-inline: -16px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .longeva-hub__featured-grid:not(.longeva-hub__featured-grid--full)::-webkit-scrollbar { display: none; }
+    .longeva-hub__featured-grid:not(.longeva-hub__featured-grid--full) .longeva-hub__featured-card {
+      flex: 0 0 80%;
+      min-width: 80%;
+      scroll-snap-align: start;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva category hub",
+  "tag": "section",
+  "class": "longeva-category-hub-section",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    { "type": "paragraph", "content": "Copy order: page metafield, then this setting, then Longeva copy theme setting, then hide. Leave blank to fall through." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (overrides theme default)" },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "Leave blank to use the page title as the h1." },
+    { "type": "text", "id": "heading_suffix", "label": "Heading suffix", "info": "Brief §04 example: 'clinician-delivered, GPhC-registered'. Renders smaller, secondary tone after the main h1.", "default": "clinician-delivered, GPhC-registered" },
+    { "type": "richtext", "id": "intro", "label": "Intro body", "info": "Used only when the page has no custom.hub_intro_body metafield." },
+    { "type": "header", "content": "Featured services" },
+    { "type": "text", "id": "featured_heading", "label": "Featured heading (overrides theme default)" },
+    { "type": "text", "id": "view_all_label", "label": "View-all label (overrides theme default)" },
+    { "type": "header", "content": "FAQ" },
+    { "type": "text", "id": "faq_heading", "label": "FAQ heading (overrides theme default)" },
+    { "type": "header", "content": "Related categories" },
+    { "type": "text", "id": "related_heading", "label": "Related heading (overrides theme default)" },
+    { "type": "header", "content": "Why Longeva (brief §04 Section 2)" },
+    { "type": "text", "id": "why_heading", "label": "Heading", "default": "Why Longeva" },
+    { "type": "text", "id": "why_bullet_1", "label": "Bullet 1", "default": "Clinician-led, not technician-delivered." },
+    { "type": "text", "id": "why_bullet_2", "label": "Bullet 2", "default": "GPhC-registered pharmacy with full clinical governance." },
+    { "type": "text", "id": "why_bullet_3", "label": "Bullet 3", "default": "Conservative, evidence-led approach. We say no when it's right to." },
+    { "type": "header", "content": "Meet the clinical team (brief §04 Section 3)" },
+    { "type": "text", "id": "team_heading", "label": "Heading", "default": "Meet the clinical team" },
+    { "type": "textarea", "id": "team_body", "label": "Body", "default": "GPhC-registered pharmacists and trained clinicians who deliver every consultation in-house." },
+    { "type": "text", "id": "team_link_label", "label": "Link label", "default": "View clinicians" },
+    { "type": "url", "id": "team_link_url", "label": "Link URL", "info": "Defaults to /pages/clinicians." },
+    { "type": "header", "content": "Booking" },
+    { "type": "text", "id": "book_label", "label": "Booking button label (overrides theme default)" },
+    { "type": "url", "id": "book_url", "label": "Booking button URL (overrides theme default)" },
+    { "type": "url", "id": "directory_url", "label": "Services directory URL", "info": "Base URL for the view-all anchor. Category anchor is appended from the page's custom.category metafield." },
+    { "type": "header", "content": "Quickfacts (At a glance panel)" },
+    { "type": "paragraph", "content": "Pairs of label and value, rendered in order. Leave both empty to hide a row." },
+    { "type": "text", "id": "quickfact_1_label", "label": "Row 1 label", "default": "Clinician" },
+    { "type": "text", "id": "quickfact_1_value", "label": "Row 1 value", "default": "GPhC-registered pharmacists" },
+    { "type": "text", "id": "quickfact_2_label", "label": "Row 2 label", "default": "Appointments" },
+    { "type": "text", "id": "quickfact_2_value", "label": "Row 2 value", "default": "Same-day where clinically appropriate" },
+    { "type": "text", "id": "quickfact_3_label", "label": "Row 3 label", "default": "Location" },
+    { "type": "text", "id": "quickfact_3_value", "label": "Row 3 value", "default": "Rochdale, Manchester. 6 days a week." },
+    { "type": "text", "id": "quickfact_4_label", "label": "Row 4 label", "default": "Response" },
+    { "type": "text", "id": "quickfact_4_value", "label": "Row 4 value", "default": "Typically within one working day" },
+    { "type": "header", "content": "CTA trust list (under booking CTA)" },
+    { "type": "text", "id": "cta_trust_1", "label": "Trust line 1", "default": "Same-day where clinically appropriate" },
+    { "type": "text", "id": "cta_trust_2", "label": "Trust line 2", "default": "GPhC-registered pharmacists" },
+    { "type": "text", "id": "cta_trust_3", "label": "Trust line 3", "default": "UK-licensed medicines only" },
+    { "type": "header", "content": "Accessibility labels" },
+    { "type": "text", "id": "quickfacts_aria_label", "label": "Quickfacts aside aria-label", "default": "At a glance" },
+    { "type": "text", "id": "trust_aria_label", "label": "Trust row aria-label", "default": "Trust and accreditation" },
+    { "type": "text", "id": "featured_aria_label", "label": "Featured row aria-label", "default": "Featured services" },
+    { "type": "text", "id": "faq_aria_label", "label": "FAQ row aria-label", "default": "Frequently asked questions" },
+    { "type": "text", "id": "related_aria_label", "label": "Related row aria-label", "default": "Related categories" }
+  ],
+  "blocks": [
+    {
+      "type": "trust_badge",
+      "name": "Trust badge",
+      "limit": 6,
+      "settings": [
+        { "type": "text", "id": "primary", "label": "Primary label" },
+        { "type": "text", "id": "secondary", "label": "Secondary label" }
+      ]
+    },
+    {
+      "type": "featured_service",
+      "name": "Featured (fallback)",
+      "limit": 6,
+      "settings": [
+        { "type": "paragraph", "content": "Only rendered when custom.hub_featured_services metafield is empty." },
+        { "type": "page", "id": "page", "label": "Service page" }
+      ]
+    },
+    {
+      "type": "faq",
+      "name": "FAQ",
+      "limit": 10,
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Answer" }
+      ]
+    },
+    {
+      "type": "cta",
+      "name": "Booking CTA",
+      "limit": 2,
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading (overrides theme default)" },
+        { "type": "textarea", "id": "subhead", "label": "Subhead (overrides theme default)" },
+        { "type": "text", "id": "button_label", "label": "Button label (overrides theme default)" },
+        { "type": "url", "id": "button_url", "label": "Button URL (overrides theme default)" }
+      ]
+    },
+    {
+      "type": "related_category",
+      "name": "Related hub (fallback)",
+      "limit": 6,
+      "settings": [
+        { "type": "paragraph", "content": "Only rendered when custom.hub_related_hubs metafield is empty." },
+        { "type": "page", "id": "page", "label": "Related category page" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva category hub",
+      "blocks": [
+        { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "9012378" } },
+        { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 59619" } },
+        { "type": "trust_badge", "settings": { "primary": "Pharmacist-led", "secondary": "Trained clinicians" } },
+        { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "UK-wide delivery" } },
+        { "type": "faq", "settings": { "question": "Do I need a GP referral?", "answer": "<p>No. Our pharmacist can assess and treat you directly for every service in this category.</p>" } },
+        { "type": "faq", "settings": { "question": "Are you GPhC-registered?", "answer": "<p>Yes, registration 9012378. The MHRA WDA(H) wholesale dealer licence is 59619.</p>" } },
+        { "type": "cta" }
+      ]
+    }
+  ]
+}
+{% endschema %}

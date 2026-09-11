@@ -1,0 +1,602 @@
+{% comment %}
+  Longeva Book page. Hero + three ways to book + what to expect +
+  service category CTAs + FAQ + reassurance band.
+
+  Phone, email and address are read from theme settings so the page
+  never drifts from the footer. Booking URL defaults to settings but
+  falls back to the contact form so the page never produces a dead
+  CTA while Sesami is being provisioned.
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+{% render 'longeva-schema-page-breadcrumb' %}
+
+{%- liquid
+  assign phone = settings.longeva_phone
+  assign email = settings.longeva_email
+  assign address = settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign opening_hours = section.settings.opening_hours
+-%}
+
+<script>
+  // Citadel brief §04 booking URL params: ?treatment=<slug> sends the
+  // user straight to the corresponding treatment page where the Sesami
+  // button has the right service-id baked in. Eliminates redundant click.
+  (function() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      var t = p.get('treatment');
+      if (!t) return;
+      var map = {
+        'anti-wrinkle': '/pages/anti-wrinkle-injections-manchester',
+        'dermal-fillers': '/pages/dermal-fillers-manchester',
+        'skin-boosters': '/pages/skin-boosters-manchester',
+        'chemical-peels': '/pages/chemical-peels-manchester',
+        'microneedling': '/pages/microneedling-manchester',
+        'fat-dissolve': '/pages/fat-dissolve-manchester',
+        'thread-lifts': '/pages/thread-lift-treatment-manchester',
+        'acne-treatment': '/pages/acne-treatment-manchester',
+        'rosacea': '/pages/rosacea-treatment-manchester',
+        'flu-vaccination': '/pages/flu-vaccination-manchester',
+        'travel-health': '/pages/travel-health-consultation-manchester',
+        'hpv': '/pages/hpv-vaccination-manchester'
+      };
+      var target = map[t];
+      if (target) {
+        window.location.replace(target);
+      }
+    } catch (e) { /* no-op */ }
+  })();
+</script>
+
+<section class="longeva-book longeva-page longeva-page--light">
+  <div class="longeva-container longeva-book__hero">
+    <div class="longeva-book__hero-main">
+      <p class="longeva-eyebrow">Book a consultation</p>
+      <h1 class="longeva-display longeva-book__title">Speak to a pharmacist today.</h1>
+      <p class="longeva-book__lede">
+        Same-day appointments are usually available for skin, travel, vaccinations and minor ailments. Choose how you would like to book.
+      </p>
+    </div>
+    <aside class="longeva-book__hero-trust" aria-label="{{ section.settings.hero_trust_aria_label | default: 'What to expect' | escape }}">
+      {%- assign trust_pairs = '1|2|3' | split: '|' -%}
+      {%- for pair in trust_pairs -%}
+        {%- assign label_key = 'hero_trust_' | append: pair | append: '_label' -%}
+        {%- assign value_key = 'hero_trust_' | append: pair | append: '_value' -%}
+        {%- assign trust_label = section.settings[label_key] -%}
+        {%- assign trust_value = section.settings[value_key] -%}
+        {%- if trust_label != blank and trust_value != blank -%}
+          <div class="longeva-book__hero-trust-row">
+            <span class="longeva-book__hero-trust-label">{{ trust_label | escape }}</span>
+            <span class="longeva-book__hero-trust-value">{{ trust_value | escape }}</span>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+      {% if opening_hours != blank %}
+        <div class="longeva-book__hero-trust-row">
+          <span class="longeva-book__hero-trust-label">{{ section.settings.hero_trust_hours_label | default: 'Hours' | escape }}</span>
+          <span class="longeva-book__hero-trust-value">{{ opening_hours | newline_to_br }}</span>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+
+  {%- comment -%}
+    Removed the mid-page GPhC/MHRA strip 2026-05-05 (Varsha review).
+    Regulator IDs already render in the announcement bar AND in the
+    footer regulatory disclosure on every page; a third repeat between
+    the hero and the booking cards read as banner-blindness ("looks
+    insecure rather than reassuring"). Two reassurance chips
+    (No account required / Cancel anytime) preserved in-place inside
+    the booking-card grid so the trust signal does not vanish.
+  {%- endcomment -%}
+
+  <div class="longeva-container longeva-book__grid">
+    <h2 class="longeva-book__grid-heading longeva-sr-only">Three ways to book</h2>
+    {%- comment -%}
+      Reassure row leads with the regulator anchor (GPhC reg) so a mobile
+      user lands on a clinical trust signal first, not commodity SaaS
+      copy. The two paired reassures stay as the practical lock-in.
+      Trust aside is hidden below 900px (commercial signals already
+      duplicated upstream); this row keeps the spine visible.
+    {%- endcomment -%}
+    {%- comment -%}
+      Reassure row carries three signals: regulator anchor (clinical),
+      practitioner identity (clinical), and operational clarity. The
+      operational line restores the cancellation reassurance that a
+      private-pay buyer needs without resorting to the SaaS pair
+      "No account · Cancel anytime" (DTC commodity tell). "Cancel up to
+      24 hours before" mirrors Spire / Bupa cancellation copy.
+    {%- endcomment -%}
+    <p class="longeva-book__grid-reassure" aria-label="Trust and booking reassurance">
+      <span class="longeva-book__grid-reassure-anchor">GPhC {{ settings.longeva_gphc_number | default: '9012378' }}</span>
+      <span aria-hidden="true">·</span>
+      <span>Pharmacist-led</span>
+      <span aria-hidden="true">·</span>
+      <span>Same-day where clinically appropriate</span>
+      <span aria-hidden="true">·</span>
+      <span>Cancel up to 24 hours before</span>
+    </p>
+    <article class="longeva-book__card">
+      <span class="longeva-book__icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </span>
+      <h3 class="longeva-book__card-title">Online</h3>
+      <p>Choose a service and share your medical context. A pharmacist confirms a time within the same working day.</p>
+      <p class="longeva-book__card-cta">
+        <a class="longeva-btn longeva-btn--primary-on-light" href="/pages/services-manchester">Pick a service</a>
+      </p>
+    </article>
+
+    <article class="longeva-book__card">
+      <span class="longeva-book__icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.72 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.35 1.85.59 2.81.72A2 2 0 0 1 22 16.92z"/></svg>
+      </span>
+      <h3 class="longeva-book__card-title">Phone</h3>
+      {% if phone != blank %}
+        <p>Call the pharmacy during opening hours to speak with the team.</p>
+        <p class="longeva-book__card-cta">
+          <a class="longeva-btn longeva-btn--primary-on-light" href="tel:{{ phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' }}">{{ phone | escape }}</a>
+        </p>
+      {% else %}
+        <p>We are setting up the phone line. Request a callback now and a pharmacist will ring you.</p>
+        <p class="longeva-book__card-cta">
+          <a class="longeva-btn longeva-btn--ghost" href="/pages/contact">Request a callback</a>
+        </p>
+      {% endif %}
+    </article>
+
+    <article class="longeva-book__card">
+      <span class="longeva-book__icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </span>
+      <h3 class="longeva-book__card-title">In person</h3>
+      <p>{{ address | escape }}</p>
+      {% if opening_hours != blank %}
+        <p class="longeva-book__hours">{{ opening_hours | newline_to_br }}</p>
+      {% endif %}
+      <p class="longeva-book__card-cta">
+        <a class="longeva-btn longeva-btn--ghost" href="https://maps.google.com/?q={{ address | url_encode }}" target="_blank" rel="noopener">Get directions</a>
+      </p>
+    </article>
+  </div>
+
+  <div class="longeva-book__steps">
+    <div class="longeva-container">
+      <h2 class="longeva-display longeva-book__steps-heading">What to expect</h2>
+      <ol class="longeva-book__steps-list" role="list">
+        <li>
+          <span class="longeva-book__step-num">01</span>
+          <h3>Choose a service</h3>
+          <p>Select from skin, travel, vaccinations, minor ailments or weight management. Not sure? Request a ten-minute triage call.</p>
+        </li>
+        <li>
+          <span class="longeva-book__step-num">02</span>
+          <h3>Brief health check</h3>
+          <p>We ask a short set of questions so the pharmacist can assess suitability before you arrive.</p>
+        </li>
+        <li>
+          <span class="longeva-book__step-num">03</span>
+          <h3>{{ section.settings.step_3_heading | default: 'Consultation' | escape }}</h3>
+          <p>{{ section.settings.step_3_body | default: 'A GPhC-registered pharmacist reviews your history, explains options and answers your questions before any treatment.' | escape }}</p>
+        </li>
+        <li>
+          <span class="longeva-book__step-num">04</span>
+          <h3>Treatment and follow-up</h3>
+          <p>Treatment delivered by trained clinicians with written aftercare guidance and a follow-up where clinically appropriate.</p>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="longeva-container longeva-book__cats">
+    <h2 class="longeva-display longeva-book__cats-heading">Or jump straight to a service</h2>
+    <ul class="longeva-book__cats-list" role="list">
+      <li><a href="/pages/aesthetics-manchester"><span>Aesthetics</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/skin-health-manchester"><span>Skin health</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/travel-health-manchester"><span>Travel health</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/weight-management-manchester"><span>Weight management</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/vaccinations-manchester"><span>Vaccinations</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/minor-ailments-manchester"><span>Minor ailments</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/sexual-health-manchester"><span>Sexual health</span>{% render 'longeva-arrow' %}</a></li>
+      <li><a href="/pages/services-manchester"><span>All services</span>{% render 'longeva-arrow' %}</a></li>
+    </ul>
+  </div>
+
+  <div class="longeva-container longeva-book__faq">
+    <h2 class="longeva-display longeva-book__faq-heading">Frequently asked questions</h2>
+    <details class="longeva-book__faq-item">
+      <summary>Do I need a GP referral?</summary>
+      <p>No. Longeva is a private clinic. You can book directly. For some services we will ask about any GP-prescribed medicines or recent investigations to keep the assessment safe.</p>
+    </details>
+    <details class="longeva-book__faq-item">
+      <summary>How soon can I be seen?</summary>
+      <p>Same-day appointments are usually available for most services where clinically appropriate. For more involved assessments we offer a time within a working day.</p>
+    </details>
+    <details class="longeva-book__faq-item">
+      <summary>What does a consultation cost?</summary>
+      <p>Consultation fees vary by service and are shown on each service page. If a treatment is not clinically appropriate for you, we will say so and will not take payment for onward treatment.</p>
+    </details>
+    <details class="longeva-book__faq-item">
+      <summary>Is my information confidential?</summary>
+      <p>Yes. Clinical records are held under GPhC professional standards and UK GDPR. See our privacy policy for detail on data retention and your rights.</p>
+    </details>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Do I need a GP referral?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Longeva is a private clinic. You can book directly. For some services we will ask about any GP-prescribed medicines or recent investigations to keep the assessment safe."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How soon can I be seen?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Same-day appointments are usually available for most services where clinically appropriate. For more involved assessments we offer a time within a working day."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What does a consultation cost?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Consultation fees vary by service and are shown on each service page. If a treatment is not clinically appropriate for you, we will say so and will not take payment for onward treatment."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my information confidential?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Clinical records are held under GPhC professional standards and UK GDPR. See our privacy policy for detail on data retention and your rights."
+            }
+          }
+        ]
+      }
+    </script>
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-book { padding-block: 0; }
+  /* Hero compressed 2026-05-05 (Varsha review): the three booking cards
+     must be visible at the mobile eye line on first paint without the
+     user scrolling. Top padding shrunk and bottom padding tightened
+     against the card grid, so on a typical 375x667 device the Online
+     card sits within the first viewport. Desktop breathing room
+     preserved through clamp upper bounds. */
+  .longeva-book__hero {
+    padding-block: clamp(40px, 6vw, 88px) clamp(20px, 3vw, 32px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: start;
+  }
+  .longeva-book__hero-main {
+    max-width: 640px;
+  }
+  .longeva-book__title {
+    font-size: clamp(28px, 4.4vw, 48px);
+    margin: 12px 0 0;
+    line-height: 1.1;
+  }
+  .longeva-book__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 16px 0 0;
+    max-width: 56ch;
+  }
+  .longeva-book__hero-trust {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .longeva-book__hero-trust-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: baseline;
+    font-family: var(--longeva-font-body);
+    line-height: 1.45;
+    padding-block-end: 12px;
+    border-block-end: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .longeva-book__hero-trust-row:last-child {
+    border-block-end: 0;
+    padding-block-end: 0;
+  }
+  .longeva-book__hero-trust-label {
+    color: rgba(26, 26, 26, 0.66);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .longeva-book__hero-trust-value {
+    color: #1A1A1A;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .longeva-book__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding-block: clamp(12px, 2vw, 28px) clamp(28px, 4vw, 48px);
+  }
+  .longeva-book__grid-reassure {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0 14px;
+    margin: 0 0 8px;
+    padding: 0;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: rgba(26, 26, 26, 0.62);
+    letter-spacing: 0.01em;
+  }
+  .longeva-book__grid-reassure span[aria-hidden="true"] {
+    color: rgba(26, 26, 26, 0.30);
+  }
+  .longeva-book__grid-reassure-anchor {
+    color: var(--longeva-primary);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .longeva-book__card {
+    background: #FFFFFF;
+    border: 1px solid var(--longeva-border);
+    border-radius: var(--longeva-radius-card);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+  }
+  .longeva-book__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(185, 145, 87, 0.14);
+    border: 1px solid rgba(185, 145, 87, 0.30);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #2D190E;
+    margin-block-end: 14px;
+  }
+  .longeva-book__card-title {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 24px;
+    margin: 12px 0 8px;
+    color: var(--longeva-text);
+    letter-spacing: -0.01em;
+  }
+  .longeva-book__card p {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--longeva-text);
+    margin: 0 0 12px;
+  }
+  .longeva-book__card .longeva-book__hours {
+    color: var(--longeva-text-subdued);
+    font-size: 14px;
+  }
+  .longeva-book__card .longeva-book__card-cta {
+    margin: auto 0 0;
+  }
+  .longeva-book__steps {
+    background: var(--longeva-primary);
+    color: var(--longeva-primary-ivory);
+    padding-block: clamp(56px, 7vw, 88px);
+  }
+  .longeva-book__steps-heading {
+    font-size: clamp(28px, 3.5vw, 40px);
+    color: var(--longeva-primary-ivory);
+    margin: 0 0 40px;
+  }
+  .longeva-book__steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .longeva-book__steps-list li {
+    border-block-start: 1px solid rgba(245, 241, 234, 0.20);
+    padding-block-start: 16px;
+  }
+  .longeva-book__step-num {
+    display: block;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: rgba(245, 241, 234, 0.60);
+    letter-spacing: 0.02em;
+  }
+  .longeva-book__steps-list h3 {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: var(--longeva-primary-ivory);
+    margin: 12px 0 8px;
+  }
+  .longeva-book__steps-list p {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(245, 241, 234, 0.80);
+    margin: 0;
+  }
+  .longeva-book__cats {
+    padding-block: clamp(40px, 6vw, 72px);
+  }
+  .longeva-book__cats-heading {
+    font-size: clamp(24px, 3vw, 32px);
+    margin: 0 0 24px;
+  }
+  .longeva-book__cats-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--longeva-border);
+    border: 1px solid var(--longeva-border);
+    border-radius: var(--longeva-radius-card);
+    overflow: hidden;
+  }
+  .longeva-book__cats-list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--longeva-bg);
+    padding: 20px 24px;
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: var(--longeva-text);
+    text-decoration: none;
+    min-height: 56px;
+    transition: background 0.15s var(--longeva-ease), color 0.15s var(--longeva-ease);
+  }
+  .longeva-book__cats-list a:hover,
+  .longeva-book__cats-list a:focus-visible {
+    background: var(--longeva-primary);
+    color: var(--longeva-primary-ivory);
+    outline: none;
+  }
+  .longeva-book__faq {
+    padding-block: clamp(40px, 6vw, 72px);
+    max-width: 880px;
+  }
+  .longeva-book__faq-heading {
+    font-size: clamp(24px, 3vw, 32px);
+    margin: 0 0 24px;
+  }
+  .longeva-book__faq-item {
+    border-block-start: 1px solid var(--longeva-border);
+    padding-block: 18px;
+  }
+  .longeva-book__faq-item:last-child {
+    border-block-end: 1px solid var(--longeva-border);
+  }
+  .longeva-book__faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--longeva-text);
+  }
+  .longeva-book__faq-item summary::-webkit-details-marker { display: none; }
+  .longeva-book__faq-item summary::after {
+    content: '+';
+    font-size: 22px;
+    line-height: 1;
+    color: var(--longeva-primary);
+    transition: transform 0.2s var(--longeva-ease);
+  }
+  .longeva-book__faq-item[open] summary::after { content: '\2212'; }
+  .longeva-book__faq-item p {
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--longeva-text);
+    margin: 12px 0 0;
+    max-width: 64ch;
+  }
+
+  @media (max-width: 900px) {
+    .longeva-book__hero {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding-block: 28px 12px;
+    }
+    /* Trust aside hidden on mobile (Varsha review 2026-05-05): every row
+       on it is already surfaced upstream (announcement bar carries GPhC,
+       lede carries "same-day", cards carry response/clinician). Hiding
+       it lets the three booking cards reach the eye line on first paint
+       on a 375x667 device. Visible on >=900px where there is no fold
+       penalty. */
+    .longeva-book__hero-trust {
+      display: none;
+    }
+    .longeva-book__grid { grid-template-columns: 1fr; padding-block: 8px 28px; }
+    .longeva-book__steps-list { grid-template-columns: 1fr 1fr; }
+    .longeva-book__cats-list { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .longeva-book__hero { padding-block: 22px 12px; }
+    .longeva-book__title { font-size: clamp(24px, 6vw, 32px); }
+    .longeva-book__lede { font-size: 15px; margin-top: 12px; }
+    .longeva-book__card { padding: 22px; min-height: 0; }
+    .longeva-book__steps-list { grid-template-columns: 1fr; }
+    .longeva-book__cats-list { grid-template-columns: 1fr; }
+    /* Narrow viewport: stack the reassure chips vertically so the GPhC
+       anchor never orphans on its own line above wrapped text. Hide
+       the inline middot separators since the line break replaces them. */
+    .longeva-book__grid-reassure {
+      flex-direction: column;
+      gap: 4px;
+      text-align: center;
+    }
+    .longeva-book__grid-reassure span[aria-hidden="true"] { display: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva Book page",
+  "tag": "section",
+  "class": "longeva-book-page-section",
+  "enabled_on": { "templates": ["page"] },
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "opening_hours",
+      "label": "Opening hours (optional, shown in the In person card)"
+    },
+    { "type": "header", "content": "Hero trust strip" },
+    { "type": "paragraph", "content": "Three rows of label and value rendered next to the booking widget. Leave both empty to hide a row." },
+    { "type": "text", "id": "hero_trust_1_label", "label": "Row 1 label", "default": "Same-day" },
+    { "type": "text", "id": "hero_trust_1_value", "label": "Row 1 value", "default": "Where clinically appropriate" },
+    { "type": "text", "id": "hero_trust_2_label", "label": "Row 2 label", "default": "Clinician" },
+    { "type": "text", "id": "hero_trust_2_value", "label": "Row 2 value", "default": "GPhC-registered pharmacists, every visit" },
+    { "type": "text", "id": "hero_trust_3_label", "label": "Row 3 label", "default": "Response" },
+    { "type": "text", "id": "hero_trust_3_value", "label": "Row 3 value", "default": "Typically within one working day" },
+    { "type": "text", "id": "hero_trust_hours_label", "label": "Hours row label", "default": "Hours", "info": "Only renders when Opening hours field above is filled." },
+    { "type": "text", "id": "hero_trust_aria_label", "label": "Trust strip aria-label", "default": "What to expect" },
+    { "type": "header", "content": "Step 3 (Consultation) copy" },
+    { "type": "paragraph", "content": "Step 3 mentions GPhC-registered pharmacist directly and is admin-tunable so wording can adapt to regulatory updates without code changes. Other step copy lives in markup." },
+    { "type": "text", "id": "step_3_heading", "label": "Step 3 heading", "default": "Consultation" },
+    { "type": "textarea", "id": "step_3_body", "label": "Step 3 body", "default": "A GPhC-registered pharmacist reviews your history, explains options and answers your questions before any treatment." }
+  ],
+  "presets": [
+    { "name": "Longeva Book page" }
+  ]
+}
+{% endschema %}

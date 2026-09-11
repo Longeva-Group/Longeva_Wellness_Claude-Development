@@ -1,0 +1,84 @@
+{%- comment -%}
+  Mobile auto-advance carousel.
+
+  Targets any element marked with [data-longeva-auto-carousel]. Advances
+  one card-width every interval (default 4000ms) using native scrollBy +
+  scroll-snap. Pauses on touch/wheel/hover for 6s, then resumes. Loops
+  back to the start on reaching the end. Mobile-only by default
+  (window.innerWidth <= 900); set data-mobile-only="false" to run at
+  all widths. Skips when prefers-reduced-motion is set.
+
+  Renders the script once per page via a window flag.
+{%- endcomment -%}
+<script>
+  (function () {
+    if (window.__longevaAutoCarousel) return;
+    window.__longevaAutoCarousel = true;
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function init(el) {
+      var interval = parseInt(el.getAttribute('data-interval'), 10) || 4000;
+      var mobileOnly = el.getAttribute('data-mobile-only') !== 'false';
+      var timer = null;
+      var paused = false;
+      var resumeTimeout = null;
+
+      function tick() {
+        if (paused) return;
+        if (mobileOnly && window.innerWidth > 900) return;
+        var items = el.children;
+        if (!items.length) return;
+        var cardWidth = items[0].getBoundingClientRect().width;
+        var cs = getComputedStyle(el);
+        var gap = parseFloat(cs.columnGap || cs.gap || 0) || 0;
+        var step = cardWidth + gap;
+        var max = el.scrollWidth - el.clientWidth - 4;
+        if (el.scrollLeft >= max) {
+          el.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          el.scrollBy({ left: step, behavior: 'smooth' });
+        }
+      }
+
+      function start() {
+        stop();
+        if (reduceMotion.matches) return;
+        timer = setInterval(tick, interval);
+      }
+      function stop() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+      function pause() {
+        paused = true;
+        stop();
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+        resumeTimeout = setTimeout(function () { paused = false; start(); }, 6000);
+      }
+
+      ['touchstart', 'wheel', 'mouseenter'].forEach(function (ev) {
+        el.addEventListener(ev, pause, { passive: true });
+      });
+
+      reduceMotion.addEventListener && reduceMotion.addEventListener('change', function () {
+        if (reduceMotion.matches) stop(); else start();
+      });
+
+      start();
+    }
+
+    function bind() {
+      var nodes = document.querySelectorAll('[data-longeva-auto-carousel]:not([data-longeva-auto-carousel-init])');
+      nodes.forEach(function (el) {
+        el.setAttribute('data-longeva-auto-carousel-init', '1');
+        init(el);
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bind);
+    } else {
+      bind();
+    }
+  })();
+</script>

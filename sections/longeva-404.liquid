@@ -1,0 +1,179 @@
+{%- comment -%}
+  Longeva 404 section. Brand-led error page with a headline, search
+  box, and nearest-match links so a lost visitor always has a single
+  next action. Replaces Horizon's default main-404 + featured
+  products block via templates/404.json.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+
+<section class="longeva-404 longeva-page longeva-page--light" aria-labelledby="longeva-404-heading">
+  <div class="longeva-container longeva-404__inner" data-longeva-stagger="90">
+    <div class="longeva-404__code" aria-hidden="true" data-longeva-reveal="scale">404</div>
+    <p class="longeva-eyebrow longeva-404__eyebrow" data-longeva-reveal>Page not found</p>
+    <h1 id="longeva-404-heading" class="longeva-display longeva-404__heading" data-longeva-reveal>We can't find that page.</h1>
+    <p class="longeva-404__lede" data-longeva-reveal>The link may be incorrect, or the page has been moved. Try a search, or pick a shortcut below.</p>
+
+    <form class="longeva-404__search" action="{{ routes.search_url }}" method="get" role="search">
+      <label for="longeva-404-q" class="longeva-sr-only">Search Longeva</label>
+      <input
+        id="longeva-404-q"
+        class="longeva-404__search-input"
+        type="search"
+        name="q"
+        placeholder="Search, e.g. acne treatment"
+        autocomplete="off"
+      >
+      <button type="submit" class="longeva-btn longeva-btn--primary-on-light longeva-404__search-submit">Search</button>
+    </form>
+
+    <p class="longeva-404__quick-label">Or go to</p>
+    <ul class="longeva-404__quick" role="list">
+      <li><a href="/">Home</a></li>
+      <li><a href="/pages/aesthetics-manchester">Aesthetics</a></li>
+      <li><a href="/pages/skin-health-manchester">Skin health</a></li>
+      <li><a href="/pages/weight-management-manchester">Weight management</a></li>
+      <li><a href="/pages/vaccinations-manchester">Vaccinations</a></li>
+      <li><a href="/pages/minor-ailments-manchester">Minor ailments</a></li>
+      <li><a href="/pages/book">Book a consultation</a></li>
+      <li><a href="/pages/clinicians">Our clinicians</a></li>
+      <li><a href="/pages/contact">Contact</a></li>
+    </ul>
+
+    <div class="longeva-404__cta">
+      <a class="longeva-btn longeva-btn--ghost" href="/pages/contact">Still stuck? Tell us</a>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  /* UX-06 (Varsha May 2026): key copy + nav were below the fold because
+     of the oversized 404 numeral + heavy top padding. Reduced top padding
+     and capped the 404 numeral height so heading, search, and nav links
+     all sit above the 700px fold on desktop and 600px on mobile. */
+  .longeva-404 {
+    padding-block: clamp(32px, 6vw, 64px) clamp(60px, 8vw, 100px);
+    min-height: auto;
+  }
+  .longeva-404__inner {
+    max-width: 720px;
+    text-align: left;
+  }
+  .longeva-404__code {
+    font-family: var(--longeva-font-display);
+    font-size: clamp(56px, 10vw, 96px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: rgba(45, 25, 14, 0.12);
+    margin: 0 0 8px;
+  }
+  .longeva-404__eyebrow { margin: 0 0 12px; }
+  .longeva-404__heading {
+    font-size: clamp(32px, 4.5vw, 52px);
+    margin: 0 0 16px;
+    color: var(--longeva-text);
+  }
+  .longeva-404__lede {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--longeva-text-subdued);
+    margin: 0 0 32px;
+    max-width: 56ch;
+  }
+  .longeva-404__search {
+    display: flex;
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 0 40px;
+  }
+  .longeva-404__search-input {
+    flex: 1;
+    min-height: 52px;
+    padding: 0 18px;
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    color: var(--longeva-text);
+    background: #FFFFFF;
+    border: 1px solid var(--longeva-border-mid);
+    border-radius: var(--longeva-radius-card);
+    transition: border-color 0.15s var(--longeva-ease), box-shadow 0.15s var(--longeva-ease);
+  }
+  .longeva-404__search-input:focus {
+    outline: none;
+    border-color: var(--longeva-primary);
+    box-shadow: 0 0 0 3px rgba(45, 25, 14, 0.12);
+  }
+  .longeva-404__search-submit {
+    min-height: 52px;
+    padding: 0 24px;
+    font-size: 14px;
+  }
+  .longeva-404__quick-label {
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--longeva-text-quiet);
+    margin: 0 0 12px;
+  }
+  .longeva-404__quick {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .longeva-404__quick a {
+    display: inline-flex;
+    align-items: center;
+    /* Padding bumped from 10px 16px to 12px 18px so the chip clears
+       WCAG 2.2 AA SC 2.5.8 minimum target size (24x24) on every
+       breakpoint and lands close to the preferred 44x44 on touch. */
+    padding: 12px 18px;
+    border: 1px solid var(--longeva-border-mid);
+    border-radius: 999px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: var(--longeva-text);
+    background: transparent;
+    text-decoration: none;
+    transition: border-color 0.15s var(--longeva-ease), color 0.15s var(--longeva-ease), box-shadow 0.15s var(--longeva-ease);
+  }
+  /* Hover keeps the hairline + deepens border + colour, no fill. Reads
+     as informational link, not CTA. Aligned with the search empty/idle
+     quicklink treatment (PR #195). */
+  .longeva-404__quick a:hover {
+    color: var(--longeva-primary);
+    border-color: var(--longeva-primary);
+  }
+  .longeva-404__quick a:focus-visible {
+    color: var(--longeva-primary);
+    border-color: var(--longeva-primary);
+    box-shadow: 0 0 0 3px rgba(45, 25, 14, 0.10);
+    outline: none;
+  }
+  .longeva-404__cta {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 640px) {
+    .longeva-404__search { flex-direction: column; gap: 10px; }
+    .longeva-404__search-submit { width: 100%; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva 404",
+  "tag": "section",
+  "class": "longeva-404-section",
+  "enabled_on": { "templates": ["404"] },
+  "settings": [],
+  "presets": [
+    { "name": "Longeva 404" }
+  ]
+}
+{% endschema %}

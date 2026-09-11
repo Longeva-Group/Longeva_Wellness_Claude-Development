@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-travel-hub",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "h1": "Travel Vaccinations for Asia",
+        "mode": "region",
+        "region_match": "Asia"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

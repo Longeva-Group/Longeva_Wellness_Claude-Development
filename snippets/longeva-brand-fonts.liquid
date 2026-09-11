@@ -1,0 +1,15 @@
+{% comment %}
+  No-op guard.
+
+  Longeva brand typography, longeva-pages.css, and longeva-animations.js
+  now load once from layout/theme.liquid <head>. This snippet is kept
+  only so the ~18 section-level {% render 'longeva-brand-fonts' %}
+  calls do not need to be removed one-by-one; they resolve to an empty
+  fragment. Remove the calls during the next theme sweep and delete
+  this file.
+
+  When `owners-xwide-regular.woff2` and `owners-xwide-medium.woff2`
+  land in assets/, paste the @font-face block from
+  scripts/longeva-owners-xwide-fontface.txt into theme.liquid (or a
+  new longeva-fonts-custom snippet rendered from theme.liquid).
+{% endcomment %}

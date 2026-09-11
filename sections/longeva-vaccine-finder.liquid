@@ -1,0 +1,145 @@
+{%- comment -%}
+  Vaccine Finder, Phase 1 (Brief v4 Section 18).
+
+  A destination search. The traveller picks a destination and the tool
+  returns the vaccines recommended for that destination, a short travel
+  health risk summary, a link to the full destination guide, and a Book
+  CTA. It sits on the travel vaccinations index page and is linkable from
+  the homepage.
+
+  No clinical content originates here. Every recommendation is read live
+  from the destination metaobjects that Alicia signs off:
+    - country, region, system.handle      (label and link)
+    - recommended_vaccines.value          (product references, name + url)
+    - summary                             (travel health risk text)
+    - yellow_fever_category               (whether to flag yellow fever)
+  A destination with no vaccines populated shows a contact-us message,
+  never an invented list.
+
+  Phase 2 (the traveller-type filter) is scoped separately and is not
+  built here.
+
+  Progressive enhancement: the destination <select> and an A-Z link list
+  are server rendered, so without JavaScript the page still routes the
+  traveller to every destination guide. JavaScript adds the in-place
+  result panel.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-vaccine-finder.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'longeva-vaccine-finder.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign all = shop.metaobjects.destination.values
+  assign heading = section.settings.heading | default: 'Find vaccines for your destination'
+  assign intro = section.settings.intro | default: 'Choose where you are travelling to see the vaccines we usually recommend, the main travel health risks, and a link to the full guide.'
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign book_url = section.settings.book_url | default: settings.longeva_book_cta_url | default: '/pages/book'
+  assign empty_msg = section.settings.empty_msg | default: 'Requirements for this destination depend on your exact itinerary. Book a consultation and a pharmacist will plan your vaccinations with you.'
+  assign consult_note = section.settings.consult_note | default: 'Final cover is confirmed at consultation, based on your itinerary, length of stay and medical history.'
+  assign yf_note = section.settings.yf_note | default: 'Yellow fever may apply for this destination. The vaccine and certificate are issued only at a registered centre.'
+  comment
+    Compact mode (used on the homepage, where the finder is a secondary
+    entry point) omits the per-destination risk summary from the data
+    island to keep the LCP-critical homepage payload light. The full
+    travel vaccinations index page keeps the risk text. The script
+    already renders no risk block when the field is empty.
+  endcomment
+  assign compact = section.settings.compact
+-%}
+
+<section
+  class="longeva-vfinder longeva-container longeva-section"
+  aria-labelledby="longeva-vfinder-heading"
+  data-book-url="{{ book_url }}"
+  data-book-label="{{ book_label | escape }}"
+  data-empty-msg="{{ empty_msg | escape }}"
+  data-consult-note="{{ consult_note | escape }}"
+  data-yf-note="{{ yf_note | escape }}"
+>
+  <div class="longeva-vfinder__intro">
+    <h2 id="longeva-vfinder-heading" class="longeva-display longeva-vfinder__heading">{{ heading | escape }}</h2>
+    <p class="longeva-vfinder__lead">{{ intro | escape }}</p>
+  </div>
+
+  {%- comment -%} Data island, read by the script. Each value JSON-escaped. {%- endcomment -%}
+  <script type="application/json" id="longeva-vfinder-data">
+    [
+    {%- assign first = true -%}
+    {%- for d in all -%}
+      {%- if d.country != blank and d.system.handle != blank -%}
+        {%- unless first %},{% endunless -%}{%- assign first = false -%}
+        {
+          "handle": {{ d.system.handle | json }},
+          "name": {{ d.country | strip | json }},
+          "region": {{ d.region | default: '' | strip | json }},
+          "url": {{ '/pages/destinations/' | append: d.system.handle | json }},
+          "yf": {% if d.yellow_fever_category != blank %}true{% else %}false{% endif %},
+          "risk": {% if compact %}""{% else %}{{ d.summary | strip_html | strip | truncatewords: 60 | json }}{% endif %},
+          "vaccines": [
+            {%- assign vfirst = true -%}
+            {%- for vp in d.recommended_vaccines.value -%}
+              {%- if vp.title != blank -%}
+                {%- unless vfirst %},{% endunless -%}{%- assign vfirst = false -%}
+                { "name": {{ vp.title | json }}, "url": {{ vp.url | json }} }
+              {%- endif -%}
+            {%- endfor -%}
+          ]
+        }
+      {%- endif -%}
+    {%- endfor -%}
+    ]
+  </script>
+
+  <div class="longeva-vfinder__control">
+    <label class="longeva-vfinder__label" for="longeva-vfinder-select">Where are you travelling?</label>
+    <select id="longeva-vfinder-select" class="longeva-vfinder__select" autocomplete="off">
+      <option value="">Select a destination</option>
+      {%- assign sorted = all | sort: 'country' -%}
+      {%- for d in sorted -%}
+        {%- if d.country != blank and d.system.handle != blank -%}
+          <option value="{{ d.system.handle }}">{{ d.country | escape }}</option>
+        {%- endif -%}
+      {%- endfor -%}
+    </select>
+  </div>
+
+  {%- comment -%} JS renders the panel here. aria-live so the result is announced. {%- endcomment -%}
+  <div id="longeva-vfinder-results" class="longeva-vfinder__results" aria-live="polite" hidden></div>
+
+  {%- comment -%}
+    No-JavaScript fallback: a plain A-Z list of every destination guide.
+    The script hides this block (sets the hidden attribute) once it runs.
+  {%- endcomment -%}
+  <div class="longeva-vfinder__nojs" data-nojs>
+    <p class="longeva-vfinder__nojs-lead">Browse destination guides:</p>
+    <ul class="longeva-vfinder__nojs-list">
+      {%- for d in sorted -%}
+        {%- if d.country != blank and d.system.handle != blank -%}
+          <li><a href="/pages/destinations/{{ d.system.handle }}">{{ d.country | escape }}</a></li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Vaccine finder",
+  "tag": "section",
+  "settings": [
+    { "type": "paragraph", "content": "Phase 1 destination search. Reads recommended vaccines and risk summary live from the destination metaobjects. No clinical content is entered here." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Find vaccines for your destination" },
+    { "type": "textarea", "id": "intro", "label": "Intro" },
+    { "type": "checkbox", "id": "compact", "label": "Compact mode (omit risk summaries)", "default": false, "info": "Use on the homepage to keep the page light. The full risk summaries stay on the travel vaccinations index page." },
+    { "type": "text", "id": "book_label", "label": "Book button label" },
+    { "type": "url", "id": "book_url", "label": "Book link" },
+    { "type": "header", "content": "Result panel copy (editable by the pharmacy)" },
+    { "type": "textarea", "id": "consult_note", "label": "Consultation note", "info": "Shown under the recommended vaccines. Operational framing, not a clinical claim." },
+    { "type": "textarea", "id": "yf_note", "label": "Yellow fever note", "info": "Shown when a destination is flagged for yellow fever." },
+    { "type": "textarea", "id": "empty_msg", "label": "No-list message", "info": "Shown for a destination that has no vaccines populated yet." }
+  ],
+  "enabled_on": { "templates": ["page", "index"] },
+  "presets": [{ "name": "Vaccine finder" }]
+}
+{% endschema %}

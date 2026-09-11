@@ -1,0 +1,103 @@
+{% comment %}
+  Longeva service page section.
+
+  Host for the 8 longeva-service-* blocks on templates/product.service.json.
+  Renders blocks in the order set by the admin customiser.
+{% endcomment %}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+
+<div
+  class="longeva-service-page spacing-style section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
+  style="{% render 'spacing-padding', settings: section.settings %}"
+>
+  <div class="longeva-service-page__inner">
+    {% content_for 'blocks' %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .longeva-service-page__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 72ch;
+    margin-inline: auto;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva service page",
+  "tag": "section",
+  "class": "longeva-service-page-section",
+  "blocks": [
+    { "type": "longeva-service-hero" },
+    { "type": "longeva-service-eligibility" },
+    { "type": "longeva-service-process" },
+    { "type": "longeva-service-clinicians" },
+    { "type": "longeva-service-faq" },
+    { "type": "longeva-service-safety" },
+    { "type": "longeva-service-destinations" },
+    { "type": "longeva-service-related" },
+    { "type": "longeva-service-cta" }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        { "value": "page-width", "label": "Page width" },
+        { "value": "full-width", "label": "Full width" }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-1",
+      "label": "Colour scheme"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva service page",
+      "blocks": [
+        { "type": "longeva-service-hero" },
+        { "type": "longeva-service-eligibility" },
+        { "type": "longeva-service-process" },
+        { "type": "longeva-service-clinicians" },
+        { "type": "longeva-service-faq" },
+        { "type": "longeva-service-safety" },
+        { "type": "longeva-service-related" },
+        { "type": "longeva-service-cta" }
+      ]
+    }
+  ]
+}
+{% endschema %}

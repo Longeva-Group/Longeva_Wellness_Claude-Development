@@ -1,0 +1,90 @@
+{%- comment -%}
+  Longeva robots.txt.
+
+  Built on Shopify's default `robots_for_group` output so every standard
+  block (checkout disallow, admin disallow, sitemap reference, etc.)
+  remains intact. Only adds explicit user-agent allow groups for named
+  AI crawlers, after the default groups.
+
+  Bot name sources (primary docs verified 2026-04-24):
+    - OpenAI: GPTBot, OAI-SearchBot, ChatGPT-User (platform.openai.com/docs/gptbot)
+    - Anthropic: ClaudeBot, Claude-User, Claude-SearchBot (support.claude.com, Feb 2026 three-bot framework)
+    - Perplexity: PerplexityBot, Perplexity-User (docs.perplexity.ai)
+    - Google AI training: Google-Extended
+    - Apple AI training: Applebot-Extended
+    - Common Crawl: CCBot
+    - Meta AI: FacebookBot, meta-externalagent
+    - You.com, Amazon, ByteDance, Cohere, AI2, Bing: named for parity
+{%- endcomment -%}
+{%- for group in robots.default_groups -%}
+  {{- group.user_agent }}
+  {%- for rule in group.rules -%}
+    {{ rule }}
+  {%- endfor -%}
+  {%- if group.sitemap != blank -%}
+    {{ group.sitemap }}
+  {%- endif %}
+{% endfor %}
+
+# AI crawlers: explicit allows
+# Added 2026-04-24. Mirrors Shopify's default `*` permissions.
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: AI2Bot
+Allow: /
+
+User-agent: Bingbot
+Allow: /

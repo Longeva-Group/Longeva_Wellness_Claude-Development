@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-local-area",
+      "settings": {
+        "eyebrow": "Travel clinic",
+        "show_map": true
+      }
+    }
+  },
+  "order": ["main"]
+}

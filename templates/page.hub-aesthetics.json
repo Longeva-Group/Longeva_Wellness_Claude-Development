@@ -1,0 +1,67 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hub": {
+      "type": "longeva-category-hub",
+      "blocks": {
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
+        "badge_2": { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 123456" } },
+        "badge_3": { "type": "trust_badge", "settings": { "primary": "Pharmacist-led", "secondary": "Conservatively dosed" } },
+        "badge_4": { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "Same-day where appropriate" } },
+        "faq_safety": {
+          "type": "faq",
+          "settings": {
+            "question": "Are aesthetic treatments at Longeva safe?",
+            "answer": "<p>Every aesthetic service is delivered by a trained clinician working to written clinical protocols, after a face-to-face consultation with a pharmacist. We use UK-licensed products from MHRA-authorised wholesalers. Adverse events are reportable under the MHRA Yellow Card scheme.</p>"
+          }
+        },
+        "faq_reversibility": {
+          "type": "faq",
+          "settings": {
+            "question": "Can dermal filler results be reversed?",
+            "answer": "<p>Hyaluronic-acid fillers can be dissolved with hyaluronidase. Anti-wrinkle injection effects are not reversible but wear off in three to four months. We talk you through reversibility and longevity in the consultation before any treatment.</p>"
+          }
+        },
+        "faq_skincare": {
+          "type": "faq",
+          "settings": {
+            "question": "Do I need to change my skincare routine before treatment?",
+            "answer": "<p>For most aesthetic treatments we ask you to pause retinoids and acids for 48 to 72 hours and avoid exfoliating treatments for two weeks before. The pharmacist will give you treatment-specific instructions in writing when you book.</p>"
+          }
+        },
+        "faq_results": {
+          "type": "faq",
+          "settings": {
+            "question": "How soon will I see results?",
+            "answer": "<p>Anti-wrinkle effects develop over 7 to 14 days. Dermal fillers settle over two weeks. Skin boosters and microneedling work cumulatively over a course. Realistic timelines are explained in your consultation, with a written follow-up plan.</p>"
+          }
+        },
+        "cta_1": { "type": "cta", "settings": { "heading": "Ready to book?", "subhead": "Same-day appointments available. A pharmacist sees every patient." } }
+      },
+      "block_order": [
+        "badge_1", "badge_2", "badge_3", "badge_4",
+        "faq_safety", "faq_reversibility", "faq_skincare", "faq_results",
+        "cta_1"
+      ],
+      "settings": {
+        "eyebrow": "Aesthetics",
+        "featured_heading": "",
+        "view_all_label": "View all aesthetic treatments",
+        "faq_heading": "Aesthetics: frequently asked questions",
+        "related_heading": "Related categories",
+        "book_label": "Book a Consultation",
+        "book_url": "/pages/book",
+        "directory_url": "/pages/services-manchester"
+      }
+    }
+  },
+  "order": ["hub"]
+}

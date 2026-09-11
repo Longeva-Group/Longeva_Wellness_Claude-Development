@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-404",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

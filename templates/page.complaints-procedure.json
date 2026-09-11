@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "complaints": {
+      "type": "longeva-complaints-page",
+      "settings": {
+        "eyebrow": "Complaints"
+      }
+    }
+  },
+  "order": ["complaints"]
+}

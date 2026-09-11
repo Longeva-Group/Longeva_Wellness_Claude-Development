@@ -1,0 +1,190 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "longeva-hero",
+      "settings": {
+        "eyebrow": "GPhC REGISTERED · MHRA WHOLESALE-LICENSED · MANCHESTER",
+        "heading": "Clinical services in Manchester, delivered with precision.",
+        "subhead": "Every treatment starts with a clinical assessment. Pharmacist-led. Evidence-based. Same-day appointments in Rochdale.",
+        "cta_primary_label": "Browse treatments",
+        "cta_primary_link": "shopify://pages/services-manchester",
+        "cta_secondary_label": "Book a Consultation",
+        "cta_secondary_link": "/pages/book",
+        "trust_line": "",
+        "image": "shopify://shop_images/image-desktop.avif",
+        "image_mobile": "shopify://shop_images/image-mobile-landscape-longeva.png"
+      }
+    },
+    "trust_strip": {
+      "type": "longeva-trust-strip",
+      "settings": {
+        "cell_3_primary": "Same-day",
+        "cell_3_sub": "Appointments available",
+        "cell_4_primary": "Pharmacist-led",
+        "cell_4_sub": "Clinical governance"
+      }
+    },
+    "aesthetics_grid": {
+      "type": "longeva-aesthetics-grid",
+      "blocks": {
+        "anti_wrinkle": {
+          "type": "treatment",
+          "settings": {
+            "name": "Anti-Wrinkle",
+            "summary": "Soften dynamic facial lines, conservatively dosed.",
+            "from_price": "£220",
+            "duration_minutes": "30",
+            "link": "/pages/anti-wrinkle-injections-manchester"
+          }
+        },
+        "dermal_fillers": {
+          "type": "treatment",
+          "settings": {
+            "name": "Dermal Fillers",
+            "summary": "Restore lost volume and refine facial contours.",
+            "from_price": "£295",
+            "duration_minutes": "45",
+            "link": "/pages/dermal-fillers-manchester"
+          }
+        },
+        "skin_boosters": {
+          "type": "treatment",
+          "settings": {
+            "name": "Skin Boosters",
+            "summary": "Deep hydration and improved skin quality.",
+            "from_price": "£300",
+            "duration_minutes": "30",
+            "link": "/pages/skin-boosters-manchester"
+          }
+        },
+        "chemical_peels": {
+          "type": "treatment",
+          "settings": {
+            "name": "Chemical Peels",
+            "summary": "Resurface tone and texture with controlled exfoliation.",
+            "from_price": "£120",
+            "duration_minutes": "30",
+            "link": "/pages/chemical-peels-manchester"
+          }
+        },
+        "microneedling": {
+          "type": "treatment",
+          "settings": {
+            "name": "Microneedling",
+            "summary": "Stimulate collagen via controlled micro-injuries.",
+            "from_price": "£180",
+            "duration_minutes": "60",
+            "link": "/pages/microneedling-manchester"
+          }
+        },
+        "thread_lifts": {
+          "type": "treatment",
+          "settings": {
+            "name": "Thread Lifts",
+            "summary": "Subtle lift and contour without surgery.",
+            "from_price": "£750",
+            "duration_minutes": "60",
+            "link": "/pages/thread-lift-treatment-manchester"
+          }
+        }
+      },
+      "block_order": [
+        "anti_wrinkle",
+        "dermal_fillers",
+        "skin_boosters",
+        "chemical_peels",
+        "microneedling",
+        "thread_lifts"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Aesthetics treatments",
+        "view_all_label": "All aesthetics",
+        "view_all_url": "/pages/aesthetics-manchester",
+        "price_prefix": "From",
+        "duration_unit": "min"
+      }
+    },
+    "vaccine_finder": {
+      "type": "longeva-vaccine-finder",
+      "settings": {
+        "heading": "Find travel vaccines for your destination",
+        "intro": "Travelling soon? Choose your destination to see the vaccines we usually recommend and book a pharmacist consultation.",
+        "compact": true
+      }
+    },
+    "cta_band": {
+      "type": "longeva-cta-band",
+      "settings": {
+        "heading": "Ready to book?",
+        "subhead": "Same-day and same-week appointments. No account required.",
+        "cta_label": "Book a Consultation",
+        "cta_link": "/pages/book"
+      }
+    },
+    "journey": {
+      "type": "longeva-treatment-journey",
+      "blocks": {
+        "step_1": {
+          "type": "step",
+          "settings": {
+            "title": "Book online or walk in",
+            "body": "Choose your service, pick a time, or visit our Manchester clinic for same-day appointments where clinically appropriate."
+          }
+        },
+        "step_2": {
+          "type": "step",
+          "settings": {
+            "title": "Clinical consultation",
+            "body": "A GPhC-registered pharmacist reviews your history, assesses suitability, and explains options before any treatment begins."
+          }
+        },
+        "step_3": {
+          "type": "step",
+          "settings": {
+            "title": "Treatment and follow-up",
+            "body": "Treatment delivered by trained clinicians with clear aftercare guidance and ongoing support where needed."
+          }
+        }
+      },
+      "block_order": [
+        "step_1",
+        "step_2",
+        "step_3"
+      ],
+      "settings": {
+        "heading": "How it works",
+        "cta_label": "Book a Consultation",
+        "cta_link": "/pages/book"
+      }
+    },
+    "journal": {
+      "type": "longeva-journal-preview",
+      "settings": {
+        "heading": "From the Journal",
+        "view_all_label": "All articles",
+        "blog": "journal",
+        "limit": 3,
+        "use_article_image": false
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "trust_strip",
+    "aesthetics_grid",
+    "vaccine_finder",
+    "cta_band",
+    "journey",
+    "journal"
+  ]
+}

@@ -1,0 +1,341 @@
+{%- comment -%}
+  Longeva Yellow Fever Vaccination Centre page.
+
+  A clinical service hub page for /pages/yellow-fever-vaccination-centre
+  (template suffix: yellow-fever). Establishes the registered YFVC
+  credential, explains who needs the vaccine, when proof of vaccination
+  may be required, the International Certificate of Vaccination or
+  Prophylaxis (ICVP) process, and the booking route. Links down to the
+  destination pages where yellow fever may be relevant, grouped by
+  whether vaccination is recommended (in-country risk) or a certificate
+  may be required (entry or transit requirement). Those destination
+  pages link back via a callout in longeva-destination-detail.liquid.
+
+  Clinical claims are sourced (UKHSA Green Book chapter 35, NaTHNaC,
+  WHO, NHS). British English. Reuses the brand primitives from
+  longeva-destinations.css plus longeva-yellow-fever.css. The regulatory
+  footer is global via footer-group.json, so it is not repeated here.
+
+  Layout (top to bottom):
+    1. Breadcrumb
+    2. Hero            H1 + credential + booking CTA
+    3. Who needs it
+    4. When proof may be required (two reasons)
+    5. The ICVP        10 days to validity, lifetime validity
+    6. Destinations    grouped links to relevant destination guides
+    7. Booking CTA band (primary action)
+    8. FAQ
+    9. Further guidance (NHS, NaTHNaC, WHO references, quiet)
+   10. Clinical review footer
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-destinations.css' | asset_url | stylesheet_tag }}
+{{ 'longeva-yellow-fever.css' | asset_url | stylesheet_tag }}
+{% render 'longeva-yellow-fever-jsonld' %}
+
+{%- liquid
+  assign book_label = 'Book a consultation'
+  assign book_url = settings.longeva_book_cta_url | default: '/pages/book'
+  assign reviewed_human = section.settings.last_reviewed | default: '30 May 2026'
+  assign reviewer = section.settings.reviewed_by | default: 'the Longeva pharmacy team'
+
+  comment
+    Pull all destinations once, then split into the two clinical groups
+    by the yellow_fever_category field. Quietly renders nothing if no
+    destinations carry the field yet.
+  endcomment
+  assign all_destinations = shop.metaobjects.destination.values
+-%}
+
+<article class="longeva-destination longeva-yf">
+
+  <nav class="longeva-yf__breadcrumb longeva-container" aria-label="Breadcrumb">
+    <ol class="longeva-yf__crumbs">
+      <li><a href="/">Home</a></li>
+      <li><a href="/pages/travel-vaccinations">Travel vaccinations</a></li>
+      <li aria-current="page">Yellow Fever Vaccination Centre</li>
+    </ol>
+  </nav>
+
+  <header class="longeva-yf__hero longeva-container longeva-section">
+    <p class="longeva-eyebrow longeva-yf__eyebrow">Travel vaccinations</p>
+    <h1 class="longeva-display longeva-yf__h1" id="longeva-yf-heading">
+      Yellow Fever Vaccination Centre in Rochdale, Greater Manchester
+    </h1>
+    <p class="longeva-yf__lead">
+      We are a registered Yellow Fever Vaccination Centre, authorised to give the yellow fever vaccine and to issue the International Certificate of Vaccination or Prophylaxis (ICVP). Yellow fever is a serious viral infection spread by mosquitoes in parts of Africa and Central and South America, and some countries ask for proof of vaccination before they will let you enter.
+    </p>
+    <p class="longeva-yf__lead">
+      You will see a trained clinician who checks your travel plans, confirms whether the vaccine is suitable for you, and where appropriate gives the vaccination and completes your certificate in the same visit.
+    </p>
+    <p class="longeva-yf__lead">
+      As a registered centre we can also record diphtheria, tetanus and polio (DTP) vaccination on an International Certificate of Vaccination or Prophylaxis where proof is required, for example polio certification when travelling from or to an affected country.
+    </p>
+    <div class="longeva-yf__hero-actions">
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+    <ul class="longeva-yf__credentials" aria-label="What designation means">
+      <li><span class="longeva-yf__cred-key">Centre number</span><span class="longeva-yf__cred-val">UKYFVC9851</span></li>
+      <li><span class="longeva-yf__cred-key">Designated centre</span><span class="longeva-yf__cred-val">Only registered centres may give the vaccine and issue the ICVP</span></li>
+      <li><span class="longeva-yf__cred-key">Trained clinician</span><span class="longeva-yf__cred-val">Vaccine given by a registered healthcare professional</span></li>
+      <li><span class="longeva-yf__cred-key">Certificate in clinic</span><span class="longeva-yf__cred-val">Your ICVP is completed at the appointment</span></li>
+      <li><span class="longeva-yf__cred-key">Near Manchester</span><span class="longeva-yf__cred-val">Rochdale, Greater Manchester</span></li>
+    </ul>
+  </header>
+
+  <section class="longeva-yf__block longeva-container longeva-section" aria-labelledby="longeva-yf-who">
+    <h2 id="longeva-yf-who" class="longeva-display longeva-yf__h2">Who needs the yellow fever vaccine</h2>
+    <div class="longeva-prose">
+      <p>
+        The yellow fever vaccine is recommended from nine months of age if you are travelling to, or sometimes through, an area where yellow fever is found. These areas are mainly in sub-Saharan Africa and parts of Central and South America. Whether you need it depends on your destination, the regions within it, and your own health and medical history.
+      </p>
+      <p>
+        The vaccine is not suitable for everyone. A clinician will assess your age, pregnancy or breastfeeding status, immune system, allergies (including to eggs) and any long-term conditions before recommending it. People aged 60 and over, those who are pregnant or breastfeeding, and those with a weakened immune system need an individual assessment, because the balance of risk is different. Book a consultation and we will tell you whether the vaccine is right for you, or discuss your options if it is not.
+      </p>
+    </div>
+  </section>
+
+  <section class="longeva-yf__block longeva-container longeva-section" aria-labelledby="longeva-yf-proof">
+    <h2 id="longeva-yf-proof" class="longeva-display longeva-yf__h2">When you may need proof of vaccination</h2>
+    <div class="longeva-prose">
+      <p>There are two separate reasons a country may ask about yellow fever, and it helps to keep them apart.</p>
+      <p>
+        The first is your own protection. If yellow fever is present at your destination, the vaccine is recommended to protect your health, whether or not anyone asks to see a certificate.
+      </p>
+      <p>
+        The second is a legal entry requirement. Under the International Health Regulations, some countries require an International Certificate of Vaccination or Prophylaxis as a condition of entry, mainly to stop the disease being carried across borders. This can apply even where there is no yellow fever at your destination, if you are arriving from, or in some cases only transiting through, a country where yellow fever is present. Two travellers heading to the same place can face different requirements depending on the route they took to get there.
+      </p>
+      <p>
+        Because the rules turn on your exact itinerary, a clinician will check both your destination and every country you pass through before advising you.
+      </p>
+    </div>
+  </section>
+
+  <section class="longeva-yf__block longeva-container longeva-section" aria-labelledby="longeva-yf-icvp">
+    <h2 id="longeva-yf-icvp" class="longeva-display longeva-yf__h2">Your International Certificate of Vaccination (ICVP)</h2>
+    <div class="longeva-prose">
+      <p>
+        If you are vaccinated, the clinician completes your International Certificate of Vaccination or Prophylaxis (ICVP). The certificate becomes valid 10 days after vaccination, so plan your appointment well ahead of departure.
+      </p>
+      <p>
+        Since 11 July 2016, a single dose is treated as giving protection for life for the purposes of the certificate, and the certificate is valid for the life of the person vaccinated. Most travellers will not be asked for a booster at borders that follow this rule. A small number of people, for example some who were vaccinated while pregnant or with a weakened immune system, may be advised to have a further dose, and a clinician will confirm what applies to you.
+      </p>
+      <p>
+        Keep the certificate safe and carry it with your passport when you travel, because some borders check it on arrival.
+      </p>
+    </div>
+  </section>
+
+  {%- comment -%}
+    Destinations where yellow fever may be relevant. Split into the two
+    clinical groups by the destination metaobject field
+    yellow_fever_category ("recommended" or "certificate"). Only active
+    destinations carrying the field appear. Each links to its guide;
+    each guide links back here via the callout in
+    longeva-destination-detail.liquid.
+  {%- endcomment -%}
+  {%- liquid
+    assign yf_recommended = ''
+    assign yf_certificate = ''
+    for d in all_destinations
+      assign cat = d.yellow_fever_category | strip | downcase
+      if cat == blank
+        continue
+      endif
+      comment
+        Only surface published destinations. system.url is blank for
+        draft entries (Pakistan is held in draft until ICVP capability
+        is confirmed), so this skips them and avoids an indexed page
+        linking to an unlisted one.
+      endcomment
+      assign d_url = d.system.url
+      if d_url == blank
+        continue
+      endif
+      if cat == 'recommended'
+        assign yf_recommended = yf_recommended | append: d_url | append: ',' | append: d.country | append: '|'
+      elsif cat == 'certificate'
+        assign yf_certificate = yf_certificate | append: d_url | append: ',' | append: d.country | append: '|'
+      endif
+    endfor
+    assign yf_rec_list = yf_recommended | split: '|' | sort
+    assign yf_cert_list = yf_certificate | split: '|' | sort
+  -%}
+
+  {%- if yf_rec_list.size > 0 or yf_cert_list.size > 0 -%}
+    <section class="longeva-yf__block longeva-container longeva-section" aria-labelledby="longeva-yf-destinations">
+      <h2 id="longeva-yf-destinations" class="longeva-display longeva-yf__h2">Travelling to a yellow fever risk area</h2>
+      <p class="longeva-yf__dest-intro">
+        Check the guide for where you are going. Each one lists the vaccines our pharmacist team would discuss with you, including yellow fever where it applies.
+      </p>
+
+      {%- if yf_rec_list.size > 0 -%}
+        <div class="longeva-yf__dest-group">
+          <h3 class="longeva-yf__h3">Where vaccination is usually recommended</h3>
+          <p class="longeva-yf__dest-note">Yellow fever is present in parts of these countries, so the vaccine is recommended to protect your health.</p>
+          <ul class="longeva-yf__dest-list">
+            {%- for item in yf_rec_list -%}
+              {%- assign parts = item | split: ',' -%}
+              {%- assign dest_url = parts[0] -%}
+              {%- assign name = parts[1] -%}
+              {%- if dest_url != blank and name != blank -%}
+                <li>
+                  <a class="longeva-yf__dest-link" href="{{ dest_url }}">
+                    {{ name | escape }} {% render 'longeva-arrow', size: 15 %}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if yf_cert_list.size > 0 -%}
+        <div class="longeva-yf__dest-group">
+          <h3 class="longeva-yf__h3">Where a certificate may be required on entry</h3>
+          <p class="longeva-yf__dest-note">These countries have no yellow fever themselves, but may ask for proof of vaccination if you arrive from, or have travelled through, a country where yellow fever is present.</p>
+          <ul class="longeva-yf__dest-list">
+            {%- for item in yf_cert_list -%}
+              {%- assign parts = item | split: ',' -%}
+              {%- assign dest_url = parts[0] -%}
+              {%- assign name = parts[1] -%}
+              {%- if dest_url != blank and name != blank -%}
+                <li>
+                  <a class="longeva-yf__dest-link" href="{{ dest_url }}">
+                    {{ name | escape }} {% render 'longeva-arrow', size: 15 %}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      <p class="longeva-yf__dest-note">
+        Travelling for Hajj or Umrah? See our <a href="/pages/hajj-and-umrah-vaccinations">Hajj and Umrah vaccinations</a> page for the requirements set by the Kingdom of Saudi Arabia.
+      </p>
+
+      <p class="longeva-yf__dest-all">
+        <a href="/pages/travel-vaccinations">See all travel destinations {% render 'longeva-arrow', size: 15 %}</a>
+      </p>
+    </section>
+  {%- endif -%}
+
+  <section class="longeva-destination__cta-band longeva-container longeva-section" aria-labelledby="longeva-yf-cta-heading">
+    <div class="longeva-destination__cta-inner">
+      <h2 id="longeva-yf-cta-heading" class="longeva-display longeva-destination__cta-heading">
+        Book your yellow fever consultation
+      </h2>
+      <p class="longeva-destination__cta-sub">
+        Yellow fever vaccination is a private clinical service. Book as early as you can, and ideally several weeks before you travel, because the certificate only becomes valid 10 days after vaccination and you may need other travel vaccines too. We confirm the fee with you when you book.
+      </p>
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </section>
+
+  <section class="longeva-yf__block longeva-container longeva-section" aria-labelledby="longeva-yf-faq">
+    <h2 id="longeva-yf-faq" class="longeva-display longeva-yf__h2">Frequently asked questions</h2>
+    <div class="longeva-yf__faqs">
+      <details class="longeva-yf__faq">
+        <summary class="longeva-yf__faq-q">Is the yellow fever certificate valid for life?</summary>
+        <div class="longeva-yf__faq-a">
+          <p>For most travellers, yes. Since 11 July 2016 a single dose is treated as protecting you for life for certificate purposes, and the certificate is valid for the life of the person vaccinated. A small number of people, for example some who were vaccinated while pregnant or with a weakened immune system, may be advised to have a further dose. A clinician will confirm what applies to you.</p>
+        </div>
+      </details>
+      <details class="longeva-yf__faq">
+        <summary class="longeva-yf__faq-q">How long before travel should I be vaccinated?</summary>
+        <div class="longeva-yf__faq-a">
+          <p>The certificate becomes valid 10 days after vaccination, so you need to be vaccinated at least 10 days before you arrive at a country that requires it. We recommend booking several weeks ahead where possible, in case you need other travel vaccines too.</p>
+        </div>
+      </details>
+      <details class="longeva-yf__faq">
+        <summary class="longeva-yf__faq-q">Do I need the vaccine or certificate if I am only transiting?</summary>
+        <div class="longeva-yf__faq-a">
+          <p>Sometimes. Certain countries require proof of vaccination from travellers who have recently passed through a country where yellow fever is present, even on a brief stop. Because it depends on your exact route and how long you stop, bring your full itinerary to your consultation and a clinician will check it.</p>
+        </div>
+      </details>
+      <details class="longeva-yf__faq">
+        <summary class="longeva-yf__faq-q">Can I have the vaccine if I am pregnant or breastfeeding?</summary>
+        <div class="longeva-yf__faq-a">
+          <p>The yellow fever vaccine is a live vaccine and is not usually recommended during pregnancy or breastfeeding, though it may be considered where the risk of infection is high and travel cannot be avoided. This needs an individual assessment, so please raise it at your consultation.</p>
+        </div>
+      </details>
+      <details class="longeva-yf__faq">
+        <summary class="longeva-yf__faq-q">Can I have the vaccine if I am over 60?</summary>
+        <div class="longeva-yf__faq-a">
+          <p>Yellow fever vaccination is still given to older travellers when needed, but the risk of certain rare side effects is higher with increasing age, so a clinician will weigh the risk of the disease against the risk of the vaccine for you personally. Book a consultation and we will talk it through.</p>
+        </div>
+      </details>
+      <details class="longeva-yf__faq">
+        <summary class="longeva-yf__faq-q">Is yellow fever vaccination available on the NHS?</summary>
+        <div class="longeva-yf__faq-a">
+          <p>No. Yellow fever vaccination is a private travel health service and a fee applies. We will confirm the fee before you book.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  {%- comment -%}
+    Further guidance. Authoritative references placed below the booking
+    CTA as quiet reference (consistent with the destination pages,
+    Anthony 31 May 2026). Outbound to NHS, NaTHNaC and WHO.
+  {%- endcomment -%}
+  <section class="longeva-destination__sources longeva-container longeva-section" aria-labelledby="longeva-yf-sources">
+    <h2 id="longeva-yf-sources" class="longeva-display longeva-destination__h2">Further guidance</h2>
+    <ul class="longeva-destination__source-list">
+      <li>
+        <a class="longeva-destination__source-link" href="https://www.nhs.uk/conditions/yellow-fever/" rel="noopener external" target="_blank">
+          Yellow fever (NHS)
+          <span class="longeva-destination__source-host">nhs.uk</span>
+        </a>
+      </li>
+      <li>
+        <a class="longeva-destination__source-link" href="https://travelhealthpro.org.uk/factsheet/18/yellow-fever" rel="noopener external" target="_blank">
+          Yellow fever factsheet (NaTHNaC)
+          <span class="longeva-destination__source-host">travelhealthpro.org.uk</span>
+        </a>
+      </li>
+      <li>
+        <a class="longeva-destination__source-link" href="https://www.who.int/news-room/fact-sheets/detail/yellow-fever" rel="noopener external" target="_blank">
+          Yellow fever fact sheet (WHO)
+          <span class="longeva-destination__source-host">who.int</span>
+        </a>
+      </li>
+      <li>
+        <a class="longeva-destination__source-link" href="https://www.gov.uk/foreign-travel-advice" rel="noopener external" target="_blank">
+          FCDO travel advice by country
+          <span class="longeva-destination__source-host">gov.uk</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <footer class="longeva-destination__review longeva-container">
+    <p class="longeva-destination__review-text">
+      Last reviewed {{ reviewed_human }} by {{ reviewer | escape }}, GPhC-registered pharmacist team. Clinical information drawn from the UKHSA Green Book chapter 35, NaTHNaC and the World Health Organization.
+    </p>
+  </footer>
+
+</article>
+
+{% schema %}
+{
+  "name": "Yellow fever page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "last_reviewed",
+      "label": "Last reviewed (human readable)",
+      "default": "30 May 2026"
+    },
+    {
+      "type": "text",
+      "id": "reviewed_by",
+      "label": "Reviewed by",
+      "default": "the Longeva pharmacy team"
+    }
+  ],
+  "enabled_on": { "templates": ["page"] }
+}
+{% endschema %}

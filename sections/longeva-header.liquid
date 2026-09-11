@@ -1,0 +1,1758 @@
+{%- comment -%}
+  Longeva header section. Sticky, 80px desktop and 64px mobile. Breakpoint 768px.
+  All visible labels editable via section settings with theme-level defaults.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign menu_handle = section.settings.menu | default: 'main-menu'
+  assign menu = linklists[menu_handle]
+  assign cta_label = section.settings.cta_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign cta_link = section.settings.cta_link | default: settings.longeva_book_cta_url | default: '/pages/book'
+  assign phone = settings.longeva_phone | default: ''
+  assign nav_aria = section.settings.nav_aria_label | default: 'Primary navigation'
+  assign open_menu = section.settings.menu_toggle_aria_label | default: 'Open menu'
+  assign close_menu = section.settings.close_drawer_aria_label | default: 'Close menu'
+  assign phone_aria = section.settings.phone_aria_label | default: 'Call Longeva pharmacy'
+  assign drawer_book_label = section.settings.drawer_book_label | default: 'Book a consultation'
+  assign drawer_need_label = section.settings.drawer_need_label | default: 'By need'
+  assign drawer_clinic_label = section.settings.drawer_clinic_label | default: 'Inside the clinic'
+  assign drawer_trust_line = section.settings.drawer_trust_line | default: 'GPhC 9012378 · MHRA WDA(H) 59619'
+  assign intent_aesthetics = section.settings.intent_aesthetics | default: 'Look better'
+  assign intent_skin = section.settings.intent_skin | default: 'Clearer skin'
+  assign intent_weight = section.settings.intent_weight | default: 'Manage weight'
+  assign intent_vaccinations = section.settings.intent_vaccinations | default: 'Travel and vaccines'
+
+  # Logo cascade: section-level upload wins, then global Theme Setting
+  # logo, then the bundled longeva-wordmark.svg as a final fallback so
+  # the header never renders empty by accident. show_logo lets admin
+  # remove the wordmark entirely (a text-only brand link replaces it
+  # so the home anchor and screen-reader name are preserved).
+  assign show_logo = section.settings.show_logo
+  assign custom_logo = section.settings.logo | default: settings.logo
+  assign logo_alt = section.settings.logo_alt | default: shop.name
+  assign logo_width = section.settings.logo_width | default: 140
+  assign logo_height = section.settings.logo_height | default: 32
+-%}
+
+<header class="longeva-header" data-longeva-header role="banner">
+  <div class="longeva-header__inner longeva-container">
+    <button
+      type="button"
+      class="longeva-header__burger"
+      aria-label="{{ open_menu | escape }}"
+      aria-expanded="false"
+      aria-controls="longeva-header-drawer"
+      data-longeva-header-toggle
+      data-open-label="{{ open_menu | escape }}"
+      data-close-label="{{ close_menu | escape }}"
+    >
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+
+    <a class="longeva-header__brand" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }} home">
+      {%- if show_logo -%}
+        {%- if custom_logo != blank -%}
+          {%- comment -%}
+            Admin-uploaded logo (section override or theme setting).
+            Served via Shopify CDN with image_url so srcset renders crisp
+            on Retina without a manual @2x asset upload.
+          {%- endcomment -%}
+          {%- assign logo_2x = logo_width | times: 2 -%}
+          <img
+            class="longeva-header__wordmark"
+            src="{{ custom_logo | image_url: width: logo_2x }}"
+            srcset="{{ custom_logo | image_url: width: logo_width }} 1x, {{ custom_logo | image_url: width: logo_2x }} 2x"
+            alt="{{ logo_alt | escape }}"
+            width="{{ logo_width }}"
+            height="{{ logo_height }}"
+            loading="eager"
+          >
+        {%- else -%}
+          {%- comment -%}
+            Bundled wordmark fallback. Vector, no upload needed.
+            Source-of-truth for first-launch installs.
+          {%- endcomment -%}
+          <img
+            class="longeva-header__wordmark"
+            src="{{ 'longeva-wordmark.svg' | asset_url }}"
+            alt="{{ logo_alt | escape }}"
+            width="{{ logo_width }}"
+            height="{{ logo_height }}"
+            loading="eager"
+          >
+        {%- endif -%}
+      {%- else -%}
+        {%- comment -%}
+          Logo hidden via section toggle. Replace with text-only
+          wordmark so the home anchor stays clickable and the
+          screen-reader experience is preserved.
+        {%- endcomment -%}
+        <span class="longeva-header__brand-text">{{ shop.name | escape }}</span>
+      {%- endif -%}
+    </a>
+
+    {% if menu and menu.links.size > 0 %}
+      <nav class="longeva-header__nav" aria-label="{{ nav_aria | escape }}">
+        <ul class="longeva-header__links" role="list">
+          {% for link in menu.links %}
+            {%- assign link_title_down = link.title | downcase -%}
+            {% if link_title_down == 'book' or link_title_down == 'book now' %}
+              {%- comment -%}Book rendered as CTA button in right cluster.{%- endcomment -%}
+            {% elsif link_title_down == 'clinicians' %}
+              {%- comment -%}
+                Clinicians removed from desktop nav 2026-05-07
+                (Varsha review v2 2.NEW-a): the link is already
+                accessible via the footer trust strip and the footer
+                "Useful links" column. Two surfaces is enough; three
+                clutters the primary nav.
+              {%- endcomment -%}
+            {% elsif link.links.size > 0 %}
+              <li class="longeva-header__item longeva-header__item--has-children">
+                <a
+                  class="longeva-header__link"
+                  href="{{ link.url }}"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  aria-controls="longeva-header-dropdown-{{ forloop.index }}"
+                >
+                  {{ link.title | escape }}
+                  <svg class="longeva-header__chevron" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                    <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                {%- comment -%}
+                  Detect L3 grandchildren. If any L2 child has its own
+                  child links, render the dropdown as a multi-column
+                  mega-menu (each L2 = column heading, L3 = links).
+                  Otherwise fall back to single-column flat list.
+                  Used by Vaccinations: Travel vaccines column +
+                  Routine vaccines column.
+                {%- endcomment -%}
+                {%- assign has_grandchildren = false -%}
+                {%- for child in link.links -%}
+                  {%- if child.links.size > 0 -%}
+                    {%- assign has_grandchildren = true -%}
+                    {%- break -%}
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {% if has_grandchildren %}
+                  <ul class="longeva-header__dropdown longeva-header__dropdown--mega" role="list" id="longeva-header-dropdown-{{ forloop.index }}">
+                    {%- comment -%}
+                      "All [category]" pinned to the top of the mega-menu
+                      so users do not have to scroll past every child column
+                      to reach it (Varsha review 2026-05-04: "All Vaccinations
+                      hard to find at the bottom"). Banner spans all columns.
+                    {%- endcomment -%}
+                    <li class="longeva-header__dropdown-col longeva-header__dropdown-col--all-top">
+                      <a class="longeva-header__dropdown-link longeva-header__dropdown-link--all" href="{{ link.url }}">View all {{ link.title | escape | downcase }}{% render 'longeva-arrow' %}</a>
+                    </li>
+                    {% for child_group in link.links %}
+                      {% if child_group.links.size > 0 %}
+                        <li class="longeva-header__dropdown-col">
+                          {%- comment -%}
+                            Column heading links to its own landing page when the
+                            menu item has a real URL (e.g. Travel by destination ->
+                            /pages/travel-vaccinations), so the key landing page is
+                            reachable from the nav and gains an internal link.
+                            Falls back to plain text when the heading is a label
+                            with no destination ('#' or blank).
+                          {%- endcomment -%}
+                          {%- assign col_url = child_group.url | default: '' -%}
+                          {%- if col_url != '' and col_url != '#' -%}
+                            <p class="longeva-header__dropdown-col-heading">
+                              <a class="longeva-header__dropdown-col-heading-link" href="{{ col_url }}">{{ child_group.title | escape }}</a>
+                            </p>
+                          {%- else -%}
+                            <p class="longeva-header__dropdown-col-heading">{{ child_group.title | escape }}</p>
+                          {%- endif -%}
+                          <ul class="longeva-header__dropdown-col-list" role="list">
+                            {%- assign sorted_grand = child_group.links | sort: 'title' -%}
+                            {% for grand in sorted_grand %}
+                              {%- assign grand_clean = grand.title | split: ' (£' | first -%}
+                              <li>
+                                <a class="longeva-header__dropdown-link" href="{{ grand.url }}">{{ grand_clean | escape }}</a>
+                              </li>
+                            {% endfor %}
+                          </ul>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                {% else %}
+                  {%- comment -%}
+                    Count visible children (excluding any "All ..." item)
+                    so long flat dropdowns (e.g. Minor Ailments, 14 items)
+                    render in two columns instead of one over-long list
+                    (Varsha 28 May).
+                  {%- endcomment -%}
+                  {%- assign visible_child_count = 0 -%}
+                  {%- for vc in link.links -%}
+                    {%- assign vc4 = vc.title | downcase | slice: 0, 4 -%}
+                    {%- unless vc4 == 'all ' -%}{%- assign visible_child_count = visible_child_count | plus: 1 -%}{%- endunless -%}
+                  {%- endfor -%}
+                  <ul class="longeva-header__dropdown{% if visible_child_count > 6 %} longeva-header__dropdown--two-col{% endif %}" role="list" id="longeva-header-dropdown-{{ forloop.index }}">
+                    {%- comment -%}
+                      Pin "View all [category]" to the top of the dropdown.
+                      Markup matches the mega-menu banner exactly (same
+                      wrapper LI class, same link class) so a single CSS
+                      rule renders both variants identically. Reopened
+                      2026-05-07: Vaccinations banner read different to
+                      other categories due to divergent class chain.
+                    {%- endcomment -%}
+                    <li class="longeva-header__dropdown-col--all-top">
+                      <a class="longeva-header__dropdown-link longeva-header__dropdown-link--all" href="{{ link.url }}">View all {{ link.title | escape | downcase }}{% render 'longeva-arrow' %}</a>
+                    </li>
+                    {%- assign sorted_children = link.links | sort: 'title' -%}
+                    {% for child in sorted_children %}
+                      {%- assign child_clean = child.title | split: ' (£' | first -%}
+                      {%- assign child_first4 = child_clean | downcase | slice: 0, 4 -%}
+                      {% unless child_first4 == 'all ' %}
+                        <li>
+                          <a class="longeva-header__dropdown-link" href="{{ child.url }}">{{ child_clean | escape }}</a>
+                        </li>
+                      {% endunless %}
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </li>
+            {% else %}
+              <li class="longeva-header__item">
+                <a class="longeva-header__link" href="{{ link.url }}">{{ link.title | escape }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+
+    <div class="longeva-header__right">
+      {%- comment -%}
+        Tap-to-call phone in mobile header. Renders only when
+        settings.longeva_phone is set in Theme Settings (no hardcoded
+        fallback per PROJECT_RULES §7.4: never ship unverified contact details
+        on a regulated pharmacy site).
+      {%- endcomment -%}
+      {%- if phone != blank -%}
+        {%- comment -%}
+          Phone collapses to an icon; the number reveals on click
+          (Varsha 28 May). Uses a native <details> disclosure so it
+          is keyboard accessible with no JS dependency for the reveal
+          itself. The number stays in the DOM at render time so it
+          remains crawlable. Close-on-outside-click handled in the
+          header script.
+        {%- endcomment -%}
+        {%- assign phone_tel = phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' -%}
+        <details class="longeva-header__phone-details" data-longeva-phone>
+          <summary class="longeva-header__phone longeva-header__phone-summary" aria-label="{{ phone_aria | escape }}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.86 19.86 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </summary>
+          <a class="longeva-header__phone-reveal" href="tel:{{ phone_tel }}">{{ phone | escape }}</a>
+        </details>
+      {%- endif -%}
+      {%- comment -%}
+        Search opens Horizon's predictive-search modal (Varsha 28 May:
+        "no search bar"). Button targets the inner <dialog> via
+        showModal() for a real overlay search. Falls back to the
+        /search page if the dialog API is unavailable.
+      {%- endcomment -%}
+      <a class="longeva-header__icon-btn longeva-header__icon-btn--search" href="{{ routes.search_url }}" aria-label="Search" aria-haspopup="dialog" data-longeva-search-toggle>
+        {% render 'icon', icon: 'search' %}
+      </a>
+      <a class="longeva-header__icon-btn longeva-header__icon-btn--account" href="{{ routes.account_url }}" aria-label="Account">
+        {% render 'icon', icon: 'account' %}
+      </a>
+      {%- comment -%}
+        Cart icon swapped 2026-05-08 from shopping-bag to a calendar
+        glyph with a brass dot. The site sells consultations and
+        appointments, not retail goods, so "basket" and bag iconography
+        carry the wrong cognitive frame. The calendar reads as "your
+        appointments" universally (NHS / Calendly precedent matches the
+        sentence-case house style Anthony chose). The single brass dot
+        on the body is the only brass moment in the otherwise mono
+        brand-dark header, a small brand mark in a piece of UI that
+        reads dozens of times a day. aria-label updated from "Basket"
+        to "Your selection" so screen readers carry the same framing.
+      {%- endcomment -%}
+      {%- comment -%}
+        BK-01 (Varsha May 2026): old calendar-with-dot icon read as
+        "schedule something new", so landing on the cart page (renamed
+        per BK-02 to "Your bookings") felt unintuitive. New icon:
+        calendar-with-checkmark. Calendar metaphor retained for
+        familiarity, brass tick (the brand's single header accent)
+        now sits inside the calendar grid signalling "this slot is
+        confirmed". aria-label + title aligned to BK-02 rename.
+      {%- endcomment -%}
+      <a class="longeva-header__icon-btn longeva-header__icon-btn--cart" href="{{ routes.cart_url }}" aria-label="Your bookings, {{ cart.item_count }} item{{ cart.item_count | pluralize: '', 's' }}" title="Your bookings">
+        <svg class="longeva-header__cart-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="16" rx="2"/>
+          <path d="M8 3v4M16 3v4M3 9h18"/>
+          <path class="longeva-header__cart-icon-tick" d="M9.2 15.1l2.2 2.2 4.4-4.8" stroke="var(--longeva-accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        {% if cart.item_count > 0 %}
+          <span class="longeva-header__cart-count">{{ cart.item_count }}</span>
+        {% endif %}
+      </a>
+      <a class="longeva-header__cta longeva-btn longeva-btn--primary-on-light" href="{{ cta_link }}">{{ cta_label | escape }}</a>
+    </div>
+  </div>
+  {%- comment -%}Longeva: persistent inline search row{%- endcomment -%}
+  <div class="longeva-header__search-row">
+    {% render 'predictive-search-styles' %}
+    {% render 'search', style: 'inline' %}
+  </div>
+  <button
+    type="button"
+    class="longeva-header__drawer-backdrop"
+    aria-label="{{ close_menu | escape }}"
+    data-longeva-header-backdrop
+    data-longeva-header-toggle
+    tabindex="-1"
+    hidden
+  ></button>
+
+  <nav
+    id="longeva-header-drawer"
+    class="longeva-header__drawer"
+    aria-label="{{ nav_aria | escape }}"
+    aria-hidden="true"
+    inert
+  >
+    <div class="longeva-header__drawer-top">
+      <span class="longeva-header__drawer-brand">Longeva</span>
+      <button
+        type="button"
+        class="longeva-header__drawer-close"
+        aria-label="{{ close_menu | escape }}"
+        data-longeva-header-toggle
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    {%- comment -%} Zone A: primary action. Book CTA is the ONE thing the
+    drawer is asking for. Phone link is the subordinate fallback. {%- endcomment -%}
+    <div class="longeva-header__drawer-action" style="--i: 0;">
+      <a class="longeva-header__drawer-cta" href="{{ cta_link }}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+        <span>{{ drawer_book_label | escape }}</span>
+      </a>
+      {% if phone != blank %}
+        <a class="longeva-header__drawer-phonelink" href="tel:{{ phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' }}" aria-label="{{ phone_aria | escape }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.86 19.86 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>{{ phone | escape }}</span>
+        </a>
+      {% endif %}
+    </div>
+
+    {% if menu and menu.links.size > 0 %}
+
+      {%- comment -%} Zone B: by-need (services). Filters menu to handles
+      we recognise as service categories and prepends an intent eyebrow
+      so the user reads needs first, categories second. {%- endcomment -%}
+      <div class="longeva-header__drawer-zone">
+        <p class="longeva-header__drawer-zone-label">{{ drawer_need_label | escape }}</p>
+        <ul class="longeva-header__drawer-list" role="list">
+          {% assign zone_b_index = 0 %}
+          {% for link in menu.links %}
+            {%- assign h = link.handle | downcase -%}
+            {%- assign t = link.title | downcase -%}
+            {%- assign intent = '' -%}
+            {%- if h contains 'aesthetic' or t contains 'aesthetic' -%}
+              {%- assign intent = intent_aesthetics -%}
+            {%- elsif h contains 'skin' or t contains 'skin' -%}
+              {%- assign intent = intent_skin -%}
+            {%- elsif h contains 'weight' or t contains 'weight' -%}
+              {%- assign intent = intent_weight -%}
+            {%- elsif h contains 'vaccin' or t contains 'vaccin' -%}
+              {%- assign intent = intent_vaccinations -%}
+            {%- endif -%}
+            {% if intent != '' %}
+              {% assign zone_b_index = zone_b_index | plus: 1 %}
+              <li class="longeva-header__drawer-item" style="--i: {{ zone_b_index }};">
+                {% if link.links.size > 0 %}
+                  <div class="longeva-header__accordion" data-longeva-accordion>
+                    <button
+                      type="button"
+                      class="longeva-header__drawer-need"
+                      aria-expanded="false"
+                      data-longeva-accordion-trigger
+                    >
+                      <span class="longeva-header__drawer-need-text">
+                        <span class="longeva-header__drawer-intent">{{ intent | escape }}</span>
+                        <span class="longeva-header__drawer-cat">{{ link.title | escape }}</span>
+                      </span>
+                      <svg class="longeva-header__drawer-chev" width="12" height="8" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <div class="longeva-header__accordion-panel" data-longeva-accordion-panel>
+                      <ul class="longeva-header__drawer-sub" role="list">
+                        {%- comment -%}
+                          If L2 children themselves have children (mega-menu
+                          mode), render each L2 as a sub-heading followed by
+                          its sorted L3 links. Otherwise flat alphabetical.
+                        {%- endcomment -%}
+                        {%- assign drawer_has_grandchildren = false -%}
+                        {%- for c in link.links -%}
+                          {%- if c.links.size > 0 -%}
+                            {%- assign drawer_has_grandchildren = true -%}
+                            {%- break -%}
+                          {%- endif -%}
+                        {%- endfor -%}
+
+                        {% if drawer_has_grandchildren %}
+                          {%- assign sub_group_index = 0 -%}
+                          {% for child_group in link.links %}
+                            {% if child_group.links.size > 0 %}
+                              {%- assign sub_group_index = sub_group_index | plus: 1 -%}
+                              {%- assign is_first_subgroup = false -%}
+                              {%- if sub_group_index == 1 -%}{%- assign is_first_subgroup = true -%}{%- endif -%}
+                              <li class="longeva-header__drawer-subgroup" data-longeva-subaccordion>
+                                <button
+                                  type="button"
+                                  class="longeva-header__drawer-subhead"
+                                  aria-expanded="{% if is_first_subgroup %}true{% else %}false{% endif %}"
+                                  data-longeva-subaccordion-trigger
+                                >
+                                  <span>{{ child_group.title | escape }}</span>
+                                  <svg class="longeva-header__drawer-subchev" width="10" height="6" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <div class="longeva-header__drawer-subgroup-panel" data-longeva-subaccordion-panel>
+                                  <ul role="list" class="longeva-header__drawer-subgroup-list">
+                                    {%- assign drawer_sorted_grand = child_group.links | sort: 'title' -%}
+                                    {% for grand in drawer_sorted_grand %}
+                                      {%- assign grand_clean = grand.title | split: ' (£' | first -%}
+                                      <li><a class="longeva-header__drawer-sublink" href="{{ grand.url }}">{{ grand_clean | escape }}</a></li>
+                                    {% endfor %}
+                                  </ul>
+                                </div>
+                              </li>
+                            {% endif %}
+                          {% endfor %}
+                        {% else %}
+                          {%- assign drawer_sorted_children = link.links | sort: 'title' -%}
+                          {% for child in drawer_sorted_children %}
+                            {%- assign child_clean = child.title | split: ' (£' | first -%}
+                            {%- assign child_first4 = child_clean | downcase | slice: 0, 4 -%}
+                            {% unless child_first4 == 'all ' %}
+                              <li><a class="longeva-header__drawer-sublink" href="{{ child.url }}">{{ child_clean | escape }}</a></li>
+                            {% endunless %}
+                          {% endfor %}
+                        {% endif %}
+                        <li><a class="longeva-header__drawer-sublink longeva-header__drawer-sublink--all" href="{{ link.url }}">All {{ link.title | escape | downcase }}</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                {% else %}
+                  <a class="longeva-header__drawer-need longeva-header__drawer-need--leaf" href="{{ link.url }}">
+                    <span class="longeva-header__drawer-need-text">
+                      <span class="longeva-header__drawer-intent">{{ intent | escape }}</span>
+                      <span class="longeva-header__drawer-cat">{{ link.title | escape }}</span>
+                    </span>
+                    {% render 'longeva-arrow' %}
+                  </a>
+                {% endif %}
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      {%- comment -%} Zone C: clinic. Anything that's not a service category and not the Book CTA. {%- endcomment -%}
+      <div class="longeva-header__drawer-zone">
+        <p class="longeva-header__drawer-zone-label">{{ drawer_clinic_label | escape }}</p>
+        <ul class="longeva-header__drawer-list" role="list">
+          {% assign zone_c_index = 0 %}
+          {% for link in menu.links %}
+            {%- assign h = link.handle | downcase -%}
+            {%- assign t = link.title | downcase -%}
+            {%- assign is_service = false -%}
+            {%- if h contains 'aesthetic' or t contains 'aesthetic' or h contains 'skin' or t contains 'skin' or h contains 'weight' or t contains 'weight' or h contains 'vaccin' or t contains 'vaccin' -%}
+              {%- assign is_service = true -%}
+            {%- endif -%}
+            {%- assign is_book = false -%}
+            {%- if t == 'book' or t == 'book now' -%}
+              {%- assign is_book = true -%}
+            {%- endif -%}
+            {% unless is_service or is_book %}
+              {% assign zone_c_index = zone_c_index | plus: 1 %}
+              <li class="longeva-header__drawer-item" style="--i: {{ zone_c_index | plus: 6 }};">
+                <a class="longeva-header__drawer-clink" href="{{ link.url }}">
+                  <span>{{ link.title | escape }}</span>
+                  {% render 'longeva-arrow' %}
+                </a>
+              </li>
+            {% endunless %}
+          {% endfor %}
+        </ul>
+      </div>
+
+    {% endif %}
+
+    <p class="longeva-header__drawer-trust">{{ drawer_trust_line | escape }}</p>
+  </nav>
+</header>
+
+{%- comment -%}
+  Predictive search modal (Horizon snippet). Rendered once, outside the
+  sticky header so the dialog overlay is not trapped in the header
+  stacking context. Opened by the header search icon. Varsha 28 May.
+{%- endcomment -%}
+{% render 'search-modal' %}
+
+<script>
+  (function () {
+    var header = document.querySelector('[data-longeva-header]');
+    if (!header) return;
+    var toggles = document.querySelectorAll('[data-longeva-header-toggle]');
+    var drawer = document.getElementById('longeva-header-drawer');
+    var backdrop = document.querySelector('[data-longeva-header-backdrop]');
+    var primaryToggle = header.querySelector('.longeva-header__burger');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function focusable(scope) {
+      return Array.prototype.slice.call(scope.querySelectorAll(
+        'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
+      ));
+    }
+
+    var trapHandler = null;
+
+    function setOpen(isOpen) {
+      if (!drawer || !primaryToggle) return;
+      if (isOpen) {
+        drawer.removeAttribute('inert');
+        if (backdrop) backdrop.hidden = false;
+        // Force reflow so the backdrop transition fires
+        // eslint-disable-next-line no-unused-expressions
+        if (backdrop) backdrop.offsetHeight;
+        drawer.classList.add('is-open');
+        if (backdrop) backdrop.classList.add('is-open');
+        drawer.setAttribute('aria-hidden', 'false');
+      } else {
+        drawer.classList.remove('is-open');
+        if (backdrop) backdrop.classList.remove('is-open');
+        drawer.setAttribute('aria-hidden', 'true');
+        // After the transition finishes, mark inert + hide backdrop. If
+        // reduced-motion is set the transition is 0ms so we still wait one
+        // frame to keep the order consistent.
+        var afterClose = function () {
+          drawer.setAttribute('inert', '');
+          if (backdrop) backdrop.hidden = true;
+        };
+        if (reduceMotion.matches) {
+          afterClose();
+        } else {
+          setTimeout(afterClose, 320);
+        }
+      }
+      primaryToggle.setAttribute('aria-expanded', String(isOpen));
+      primaryToggle.setAttribute(
+        'aria-label',
+        isOpen ? primaryToggle.getAttribute('data-close-label') : primaryToggle.getAttribute('data-open-label')
+      );
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+
+      if (trapHandler) {
+        document.removeEventListener('keydown', trapHandler);
+        trapHandler = null;
+      }
+      if (isOpen) {
+        var items = focusable(drawer);
+        if (items.length) items[0].focus();
+        trapHandler = function (e) {
+          if (e.key === 'Escape') { setOpen(false); primaryToggle.focus(); return; }
+          if (e.key !== 'Tab') return;
+          var list = focusable(drawer);
+          if (!list.length) return;
+          var first = list[0];
+          var last = list[list.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        };
+        document.addEventListener('keydown', trapHandler);
+      }
+    }
+
+    toggles.forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var expanded = primaryToggle.getAttribute('aria-expanded') === 'true';
+        setOpen(!expanded);
+      });
+    });
+
+    // Accordion: button + panel pattern, JS-driven max-height, one-at-a-time.
+    // Outer panels with sub-accordions inside open to a generous max-height
+    // so inner toggles can grow the content without clipping against the
+    // outer max-height ceiling.
+    var triggers = drawer ? drawer.querySelectorAll('[data-longeva-accordion-trigger]') : [];
+    var OUTER_OPEN_MAX = '4000px';
+    triggers.forEach(function (btn) {
+      var panel = btn.nextElementSibling;
+      if (!panel) return;
+      panel.style.maxHeight = '0px';
+      var hasSubAcc = panel.querySelector('[data-longeva-subaccordion-trigger]');
+      btn.addEventListener('click', function () {
+        var isOpen = btn.getAttribute('aria-expanded') === 'true';
+        triggers.forEach(function (other) {
+          if (other === btn) return;
+          if (other.getAttribute('aria-expanded') === 'true') {
+            other.setAttribute('aria-expanded', 'false');
+            var op = other.nextElementSibling;
+            if (op) op.style.maxHeight = '0px';
+          }
+        });
+        if (isOpen) {
+          btn.setAttribute('aria-expanded', 'false');
+          panel.style.maxHeight = '0px';
+        } else {
+          btn.setAttribute('aria-expanded', 'true');
+          panel.style.maxHeight = hasSubAcc ? OUTER_OPEN_MAX : panel.scrollHeight + 'px';
+        }
+      });
+    });
+
+    // Sub-accordion: same toggle pattern, but scoped to siblings within
+    // the same parent subgroup container. First sub-accordion opens by
+    // default; tapping a closed one closes any open sibling first.
+    var subTriggers = drawer ? drawer.querySelectorAll('[data-longeva-subaccordion-trigger]') : [];
+    subTriggers.forEach(function (btn) {
+      var panel = btn.nextElementSibling;
+      if (!panel) return;
+      var startOpen = btn.getAttribute('aria-expanded') === 'true';
+      // Closed default: clamp height. Open default: leave natural height
+      // so the parent's scrollHeight on first open includes this panel.
+      panel.style.maxHeight = startOpen ? 'none' : '0px';
+
+      btn.addEventListener('click', function () {
+        var isOpen = btn.getAttribute('aria-expanded') === 'true';
+        var parent = btn.closest('[data-longeva-accordion-panel]');
+        var siblings = parent
+          ? parent.querySelectorAll('[data-longeva-subaccordion-trigger]')
+          : [btn];
+
+        siblings.forEach(function (other) {
+          if (other === btn) return;
+          if (other.getAttribute('aria-expanded') === 'true') {
+            var op = other.nextElementSibling;
+            if (op) {
+              // Re-pin to current natural height so the close transition runs
+              if (op.style.maxHeight === 'none') {
+                op.style.maxHeight = op.scrollHeight + 'px';
+                op.offsetHeight; // force reflow
+              }
+              op.style.maxHeight = '0px';
+            }
+            other.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        if (isOpen) {
+          if (panel.style.maxHeight === 'none') {
+            panel.style.maxHeight = panel.scrollHeight + 'px';
+            panel.offsetHeight;
+          }
+          panel.style.maxHeight = '0px';
+          btn.setAttribute('aria-expanded', 'false');
+        } else {
+          panel.style.maxHeight = panel.scrollHeight + 'px';
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      // After the open transition, release max-height so future inner
+      // changes can grow naturally without re-measurement.
+      panel.addEventListener('transitionend', function (e) {
+        if (e.propertyName !== 'max-height') return;
+        if (btn.getAttribute('aria-expanded') === 'true' && panel.style.maxHeight !== '0px') {
+          panel.style.maxHeight = 'none';
+        }
+      });
+    });
+
+    // Scroll shadow
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(function () {
+          header.classList.toggle('longeva-header--scrolled', window.pageYOffset > 4);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    // Close drawer on resize above breakpoint
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 1200 && drawer && drawer.classList.contains('is-open')) setOpen(false);
+    });
+
+    // Desktop nav: parent links navigate to their category page on
+    // click (matching Slough Travel Clinic / Boots / Lloyds pattern).
+    // Hover continues to open the dropdown for browsing. The previous
+    // implementation (Varsha review 2026-05-04) blocked navigation to
+    // force users through the pinned "View all" link, but that broke
+    // the expected mega-menu interaction model. Reversed 28 May 2026
+    // per Varsha's latest review. Blur on click so :focus-within
+    // releases and a sibling dropdown does not stay stuck open.
+    var parentNavLinks = header.querySelectorAll('.longeva-header__item--has-children > .longeva-header__link');
+    parentNavLinks.forEach(function (a) {
+      a.addEventListener('click', function () {
+        // Defer blur to next tick so click navigation lifecycle
+        // completes first; otherwise some browsers re-focus the link.
+        setTimeout(function () { a.blur(); }, 0);
+      });
+    });
+
+    // When the cursor enters a different parent, force any other parent's
+    // :focus-within to release. Belt-and-braces against keyboard-driven
+    // focus that mouse hover would otherwise leave dangling.
+    var navParents = header.querySelectorAll('.longeva-header__item--has-children');
+    navParents.forEach(function (parentEl) {
+      parentEl.addEventListener('mouseenter', function () {
+        navParents.forEach(function (other) {
+          if (other === parentEl) return;
+          if (other.contains(document.activeElement)) {
+            document.activeElement.blur();
+          }
+        });
+        // Sync aria-expanded for screen readers: the dropdown is
+        // visually open via :hover, so aria should match.
+        var trigger = parentEl.querySelector(':scope > .longeva-header__link');
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+      });
+      parentEl.addEventListener('mouseleave', function () {
+        var trigger = parentEl.querySelector(':scope > .longeva-header__link');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      });
+      // Keyboard parity: focusin opens, focusout (when focus leaves the
+      // entire parent subtree) closes.
+      parentEl.addEventListener('focusin', function () {
+        var trigger = parentEl.querySelector(':scope > .longeva-header__link');
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+      });
+      parentEl.addEventListener('focusout', function (e) {
+        // relatedTarget is the element receiving focus next. If it's
+        // outside this parent, collapse aria.
+        if (!parentEl.contains(e.relatedTarget)) {
+          var trigger = parentEl.querySelector(':scope > .longeva-header__link');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    // Delegated click handler on header: replaces 30+ per-link
+    // listeners. When any dropdown link is clicked we blur the active
+    // element after the click event lifecycle so the source dropdown
+    // does not flash open during the next page paint.
+    header.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!target || !target.closest) return;
+      if (target.closest('.longeva-header__dropdown-link, .longeva-header__dropdown-link--all')) {
+        setTimeout(function () {
+          try {
+            if (document.activeElement && document.activeElement.blur) {
+              document.activeElement.blur();
+            }
+          } catch (err) { /* no-op */ }
+        }, 0);
+      }
+    });
+
+    // WCAG 2.2 SC 1.4.13 Content on Hover or Focus: hover-disclosed
+    // content must be dismissible without moving the pointer. Esc
+    // collapses any open desktop dropdown by blurring the focused
+    // element inside its parent and releasing aria-expanded. Mobile
+    // drawer Esc handled by trapHandler above.
+    //
+    // Scoped to fire only when focus is inside the header OR an open
+    // dropdown is detectable, so Esc keypresses anywhere else on the
+    // page (search inputs, modals) are not intercepted.
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (window.innerWidth < 1200) return;
+      var focusInHeader = header.contains(document.activeElement);
+      var hasOpen = !!header.querySelector('.longeva-header__item--has-children > [aria-expanded="true"]');
+      if (!focusInHeader && !hasOpen) return;
+      navParents.forEach(function (parentEl) {
+        if (parentEl.contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+        var trigger = parentEl.querySelector(':scope > .longeva-header__link');
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Defensive same-tab guard. The theme markup never renders
+    // target="_blank" on internal nav links, but if admin tooling or a
+    // shipped Horizon override injects it, strip on first paint so all
+    // primary-nav items behave consistently (Varsha review 2026-05-04:
+    // "only Clinicians opens in a new tab"). Uses URL host comparison
+    // (not substring) so phishing-style hosts that contain the
+    // storefront's name as a substring cannot be misclassified internal.
+    var navAnchors = header.querySelectorAll('.longeva-header__nav a, .longeva-header__drawer a');
+    navAnchors.forEach(function (a) {
+      var href = a.getAttribute('href') || '';
+      var isExternal = false;
+      if (/^(?:https?:)?\/\//i.test(href)) {
+        try {
+          var u = new URL(href, window.location.href);
+          isExternal = u.host !== window.location.host;
+        } catch (err) {
+          // Malformed URL: treat as external and skip the strip.
+          isExternal = true;
+        }
+      }
+      if (!isExternal && a.getAttribute('target') === '_blank') {
+        a.removeAttribute('target');
+        // Also drop the noopener/noreferrer-only rel that paired with it
+        var rel = a.getAttribute('rel');
+        if (rel && /^(?:noopener\s*|noreferrer\s*)+$/i.test(rel.trim())) {
+          a.removeAttribute('rel');
+        }
+      }
+    });
+
+    // Search icon opens the predictive-search modal overlay. The
+    // anchor keeps its /search href as a no-JS fallback; when the
+    // <dialog> is available we intercept and open the overlay instead.
+    var searchToggle = header.querySelector('[data-longeva-search-toggle]');
+    if (searchToggle) {
+      searchToggle.addEventListener('click', function (e) {
+        var modal = document.getElementById('search-modal');
+        if (!modal) return;
+        var dlg = modal.querySelector('dialog') || (modal.tagName === 'DIALOG' ? modal : null);
+        if (dlg && typeof dlg.showModal === 'function') {
+          e.preventDefault();
+          try {
+            dlg.showModal();
+            var input = dlg.querySelector('input[type="search"], input[name="q"]');
+            if (input) { setTimeout(function () { input.focus(); }, 50); }
+          } catch (err) {
+            window.location.href = searchToggle.getAttribute('href');
+          }
+        }
+      });
+    }
+
+    // Phone disclosure: close on outside click and on Escape.
+    var phoneDetails = header.querySelector('[data-longeva-phone]');
+    if (phoneDetails) {
+      document.addEventListener('click', function (e) {
+        if (phoneDetails.open && !phoneDetails.contains(e.target)) phoneDetails.open = false;
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && phoneDetails.open) phoneDetails.open = false;
+      });
+    }
+  })();
+</script>
+
+{% stylesheet %}
+  .longeva-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--longeva-bg);
+    border-block-end: 1px solid var(--longeva-border);
+    transition: box-shadow 0.2s ease;
+  }
+  .longeva-header--scrolled {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.04);
+  }
+  .longeva-header--scrolled {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.04);
+  }
+  .longeva-header__inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    height: 80px;
+    gap: 32px;
+  }
+
+  .longeva-header__brand { color: var(--longeva-text); display: inline-flex; align-items: center; }
+  /* shape-rendering: geometricPrecision keeps thin strokes crisp at the
+     small display height (was reading as soft on 1x screens). Integer
+     pixel height avoids sub-pixel rasterisation softness. */
+  .longeva-header__wordmark {
+    display: block;
+    height: 28px;
+    width: auto;
+    shape-rendering: geometricPrecision;
+  }
+  /* Text fallback when section.settings.show_logo is unchecked.
+     Display-font wordmark sized to match the bundled SVG height so
+     the header inner-grid layout does not shift when admin toggles. */
+  .longeva-header__brand-text {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--longeva-text);
+    line-height: 1;
+  }
+
+  /* min-width: 0 lets the 1fr nav column shrink below its min-content if a
+     pathologically narrow viewport hits, rather than overflow the grid track
+     and push the right cluster off the viewport. Last-resort guard; the
+     breakpoint cascade below is the primary fit strategy. */
+  .longeva-header__nav { justify-self: center; min-width: 0; }
+  /* gap tightened from 32px to fit eight top-level items (Women's Health
+     and Men's Health added, Alicia 3 June) without overflowing the bar. */
+  .longeva-header__links { display: flex; gap: 22px; list-style: none; padding: 0; margin: 0; }
+  .longeva-header__item { position: relative; }
+  .longeva-header__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--longeva-text);
+    text-decoration: none;
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    font-weight: 400;
+    padding-block: 4px;
+    border-block-end: 1.5px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+  .longeva-header__link:hover,
+  .longeva-header__link:focus-visible {
+    border-block-end-color: var(--longeva-primary);
+    outline: none;
+  }
+  .longeva-header__chevron { transition: transform 0.2s ease; }
+  .longeva-header__item--has-children:hover .longeva-header__chevron,
+  .longeva-header__item--has-children:focus-within .longeva-header__chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Invisible bridge so the cursor can travel from the nav link down
+     into the dropdown without losing :hover in the visual gap. */
+  .longeva-header__item--has-children::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 14px;
+    pointer-events: none;
+  }
+  .longeva-header__item--has-children:hover::after,
+  .longeva-header__item--has-children:focus-within::after {
+    pointer-events: auto;
+  }
+  .longeva-header__dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translate(-50%, 0);
+    background: var(--longeva-bg);
+    border-top: 1px solid var(--longeva-primary);
+    border-inline: 1px solid var(--longeva-border);
+    border-bottom: 1px solid var(--longeva-border);
+    border-radius: 2px;
+    list-style: none;
+    padding: 6px 0;
+    margin: 0;
+    min-width: 260px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  .longeva-header__item--has-children:hover .longeva-header__dropdown,
+  .longeva-header__item--has-children:focus-within .longeva-header__dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+  }
+  /* Close-on-exit delay so brief cursor slips do not collapse the menu. */
+  .longeva-header__item--has-children .longeva-header__dropdown {
+    transition-delay: 0.12s;
+  }
+  .longeva-header__item--has-children:hover .longeva-header__link,
+  .longeva-header__item--has-children:focus-within .longeva-header__link {
+    aria-expanded: true;
+  }
+  .longeva-header__dropdown-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 6px 20px;
+    color: var(--longeva-text);
+    text-decoration: none;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    border-inline-start: 3px solid transparent;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, padding-inline-start 0.15s ease;
+  }
+  .longeva-header__dropdown-link:hover,
+  .longeva-header__dropdown-link:focus-visible {
+    background: rgba(185, 145, 87, 0.08);
+    color: var(--longeva-primary);
+    border-inline-start-color: var(--longeva-accent);
+    padding-inline-start: 24px;
+    outline: none;
+  }
+
+  /* Mega-menu variant: triggered when an L2 link itself has child
+     links (admin nav nested two deep). Used by Vaccinations to spread
+     Travel by destination, Travel by traveller type, Plan and book and
+     Routine vaccines across four columns. The panel is centred on its
+     trigger, so it is capped to the viewport width to prevent bleed
+     off-screen when Vaccinations sits near an edge. */
+  .longeva-header__dropdown--mega {
+    display: grid;
+    /* auto-fit so the panel carries four or five columns cleanly. The
+       Vaccinations menu gained a fifth column (Travel Health, Alicia
+       3 June). */
+    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    gap: 0 24px;
+    padding: 20px 24px;
+    min-width: 900px;
+    max-width: min(1140px, calc(100vw - 32px));
+    align-items: start;
+  }
+  .longeva-header__dropdown-col {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .longeva-header__dropdown-col-heading {
+    font-family: var(--longeva-font-display);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--longeva-accent);
+    margin: 0 0 6px;
+    padding: 0 0 6px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .longeva-header__dropdown-col-heading-link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .longeva-header__dropdown-col-heading-link:hover,
+  .longeva-header__dropdown-col-heading-link:focus-visible {
+    text-decoration: underline;
+  }
+  .longeva-header__dropdown-col-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .longeva-header__dropdown--mega .longeva-header__dropdown-link {
+    padding: 4px 0;
+    min-height: 32px;
+    font-size: 13.5px;
+    border-inline-start: 0;
+  }
+  .longeva-header__dropdown--mega .longeva-header__dropdown-link:hover,
+  .longeva-header__dropdown--mega .longeva-header__dropdown-link:focus-visible {
+    background: transparent;
+    color: var(--longeva-primary);
+    border-inline-start: 0;
+    padding-inline-start: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--longeva-accent);
+  }
+  .longeva-header__dropdown-col--all {
+    grid-column: 1 / -1;
+    padding-block-start: 12px;
+    margin-block-start: 8px;
+    border-block-start: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  /* Pinned-top variant: sits above the columns as a banner row, brass
+     underline as the visual lead. Used so "View all [category]" is the
+     first target users meet on hover, not the last (Varsha 2026-05-04).
+     Padding normalised across mega and single-column variants
+     (10/20/12) so the banner reads consistently regardless of dropdown
+     density. */
+  .longeva-header__dropdown-col--all-top {
+    grid-column: 1 / -1;
+    padding: 10px 20px 12px;
+    margin-block: 4px 4px;
+    border-block-start: 0;
+    border-block-end: 1px solid rgba(185, 145, 87, 0.35);
+  }
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-inline: 0;
+    min-height: 28px;
+    color: var(--longeva-primary);
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all svg {
+    transition: transform 0.18s var(--longeva-ease, ease);
+  }
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all:hover,
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all:focus-visible {
+    color: var(--longeva-accent);
+    text-decoration: none;
+  }
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all:hover svg,
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all:focus-visible svg {
+    transform: translateX(3px);
+  }
+  /* Single-column "View all" banner: wrapper LI now uses the same
+     .longeva-header__dropdown-col--all-top class as the mega variant,
+     so the same rule above governs padding, border and margin. The
+     link inside inherits the same .longeva-header__dropdown-link--all
+     hover treatment defined above. The orphaned --all-top selector
+     was removed 2026-05-07 (Varsha review v2 2.NEW-b) so the two
+     variants render identically. */
+
+  .longeva-header__right { display: flex; align-items: center; gap: 8px; }
+  .longeva-header__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--longeva-text);
+    text-decoration: none;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    padding: 0 12px;
+    border-inline-end: 1px solid var(--longeva-border);
+    min-height: 44px;
+  }
+  .longeva-header__phone:hover,
+  .longeva-header__phone:focus-visible { color: var(--longeva-primary); outline: none; }
+  /* Phone click-to-reveal disclosure (Varsha 28 May). The summary is
+     the icon affordance; the number pops below on open. */
+  .longeva-header__phone-details {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .longeva-header__phone-summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .longeva-header__phone-summary::-webkit-details-marker { display: none; }
+  .longeva-header__phone-summary::marker { content: ''; }
+  .longeva-header__phone-reveal {
+    position: absolute;
+    inset-block-start: calc(100% + 8px);
+    inset-inline-end: 0;
+    background: var(--longeva-bg, #ffffff);
+    border: 1px solid var(--longeva-border);
+    border-top: 2px solid var(--longeva-primary);
+    border-radius: 2px;
+    padding: 10px 16px;
+    white-space: nowrap;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: var(--longeva-text);
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    z-index: 60;
+  }
+  .longeva-header__phone-reveal:hover,
+  .longeva-header__phone-reveal:focus-visible { color: var(--longeva-primary); outline: none; }
+  .longeva-header__icon-btn {
+    width: 44px; height: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--longeva-text); text-decoration: none; position: relative;
+  }
+  .longeva-header__icon-btn:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring); outline-offset: 2px; border-radius: var(--longeva-radius-card);
+  }
+  .longeva-header__cart-count {
+    position: absolute; top: 6px; right: 4px;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--longeva-primary); color: var(--longeva-primary-ivory);
+    font-family: var(--longeva-font-body); font-size: 11px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .longeva-header__cta { min-height: 44px; padding: 0 20px; font-size: 14px; margin-inline-start: 8px; }
+
+  .longeva-header__burger {
+    display: none;
+    background: none; border: 0; padding: 0;
+    width: 44px; height: 44px;
+    flex-direction: column; gap: 4px; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--longeva-text);
+  }
+  .longeva-header__burger span {
+    width: 22px; height: 1.5px; background: currentColor; display: block;
+  }
+
+  /* Backdrop overlay. Sits behind the drawer, fades in/out. */
+  .longeva-header__drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 12, 6, 0.5);
+    border: 0;
+    padding: 0;
+    z-index: 55;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .longeva-header__drawer-backdrop[hidden] { display: none; }
+  .longeva-header__drawer-backdrop.is-open { opacity: 1; }
+
+  /* Drawer panel. Slides in from left with a brass-inset hairline. */
+  .longeva-header__drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: min(86vw, 360px);
+    background: linear-gradient(180deg, #2D190E 0%, #261408 100%);
+    color: var(--longeva-primary-ivory);
+    z-index: 60;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transform: translateX(-100%);
+    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .longeva-header__drawer.is-open { transform: translateX(0); }
+  /* Brass hairline accent on the inner edge */
+  .longeva-header__drawer::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(185, 145, 87, 0) 0%, rgba(185, 145, 87, 0.4) 50%, rgba(185, 145, 87, 0) 100%);
+    pointer-events: none;
+  }
+
+  .longeva-header__drawer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-block-end: 1px solid rgba(245, 241, 234, 0.10);
+  }
+  .longeva-header__drawer-brand {
+    font-family: var(--longeva-font-display);
+    font-size: 22px;
+    letter-spacing: -0.005em;
+  }
+  .longeva-header__drawer-close {
+    width: 44px; height: 44px;
+    background: none; border: 0; color: inherit; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: color 0.15s ease;
+  }
+  .longeva-header__drawer-close:hover { color: var(--longeva-accent); }
+  .longeva-header__drawer-close:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Stagger reveal for drawer items: each item gets style="--i: N" and
+     animates in slightly after the previous one. */
+  .longeva-header__drawer-item,
+  .longeva-header__drawer-action {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.32s cubic-bezier(0.32, 0.72, 0, 1), transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    transition-delay: calc(140ms + var(--i, 0) * 30ms);
+  }
+  .longeva-header__drawer.is-open .longeva-header__drawer-item,
+  .longeva-header__drawer.is-open .longeva-header__drawer-action {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Zone A: action block. Brass CTA + ivory phone link. */
+  .longeva-header__drawer-action {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 20px 20px;
+    border-block-end: 1px solid rgba(245, 241, 234, 0.10);
+  }
+  .longeva-header__drawer-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 20px;
+    background: var(--longeva-primary-ivory);
+    color: var(--longeva-primary);
+    border-radius: 999px;
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  }
+  .longeva-header__drawer-cta:hover,
+  .longeva-header__drawer-cta:focus-visible {
+    background: var(--longeva-accent);
+    color: var(--longeva-primary-ivory);
+    outline: none;
+    transform: translateY(-1px);
+  }
+  .longeva-header__drawer-phonelink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    color: rgba(245, 241, 234, 0.80);
+    font-family: var(--longeva-font-body);
+    font-size: 13.5px;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .longeva-header__drawer-phonelink:hover { color: var(--longeva-accent); }
+
+  /* Zone separators (label + list) */
+  .longeva-header__drawer-zone {
+    padding: 18px 0 6px;
+    border-block-end: 1px solid rgba(245, 241, 234, 0.06);
+  }
+  .longeva-header__drawer-zone:last-of-type { border-block-end: 0; }
+  .longeva-header__drawer-zone-label {
+    margin: 0 20px 6px;
+    font-family: var(--longeva-font-body);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.85);
+  }
+  .longeva-header__drawer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .longeva-header__drawer-item {
+    position: relative;
+    padding: 0;
+  }
+  .longeva-header__drawer-item::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 0;
+    background: var(--longeva-accent);
+    transition: width 0.18s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .longeva-header__drawer-item:hover::before,
+  .longeva-header__drawer-item:focus-within::before {
+    width: 3px;
+  }
+
+  /* Zone B: by-need item. Eyebrow + category title + chevron/arrow. */
+  .longeva-header__drawer-need {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 60px;
+    padding: 8px 20px;
+    background: none;
+    border: 0;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: start;
+    text-decoration: none;
+    transition: padding-inline-start 0.18s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .longeva-header__drawer-need:hover,
+  .longeva-header__drawer-need:focus-visible {
+    outline: none;
+    padding-inline-start: 26px;
+  }
+  .longeva-header__drawer-need-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .longeva-header__drawer-intent {
+    font-family: var(--longeva-font-body);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.95);
+  }
+  .longeva-header__drawer-cat {
+    font-family: var(--longeva-font-display);
+    font-size: 22px;
+    line-height: 1.1;
+    color: var(--longeva-primary-ivory);
+    letter-spacing: -0.005em;
+  }
+  .longeva-header__drawer-chev {
+    flex: 0 0 auto;
+    color: rgba(245, 241, 234, 0.65);
+    transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  [data-longeva-accordion-trigger][aria-expanded="true"] .longeva-header__drawer-chev {
+    transform: rotate(180deg);
+    color: var(--longeva-accent);
+  }
+
+  .longeva-header__accordion-panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .longeva-header__drawer-sub {
+    list-style: none;
+    margin: 0;
+    padding: 4px 20px 14px 36px;
+  }
+  .longeva-header__drawer-sublink {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 6px 0;
+    color: rgba(245, 241, 234, 0.78);
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.15s ease, padding-inline-start 0.15s ease;
+  }
+  .longeva-header__drawer-sublink:hover,
+  .longeva-header__drawer-sublink:focus-visible {
+    color: var(--longeva-primary-ivory);
+    padding-inline-start: 4px;
+    outline: none;
+  }
+  /* Mega-menu drawer subgroups: nested accordions inside the parent
+     L1 accordion. Each subgroup heading is a tap target that toggles
+     its panel; one-at-a-time within the parent. First subgroup opens
+     by default so the panel always shows content on entry. */
+  .longeva-header__drawer-subgroup { list-style: none; margin: 0 0 4px; padding: 0; }
+  .longeva-header__drawer-subgroup:last-child { margin-block-end: 0; }
+  .longeva-header__drawer-subhead {
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    margin: 0;
+    font-family: var(--longeva-font-display);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--longeva-accent);
+    text-align: start;
+  }
+  .longeva-header__drawer-subhead:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  .longeva-header__drawer-subchev {
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+  }
+  .longeva-header__drawer-subhead[aria-expanded="true"] .longeva-header__drawer-subchev {
+    transform: rotate(180deg);
+  }
+  .longeva-header__drawer-subgroup-panel {
+    overflow: hidden;
+    transition: max-height 0.28s ease;
+  }
+  .longeva-header__drawer-subgroup-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0 8px;
+  }
+  .longeva-header__drawer-sublink--all {
+    color: var(--longeva-accent);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    margin-block-start: 4px;
+    border-block-start: 1px solid rgba(245, 241, 234, 0.08);
+    padding-block-start: 12px;
+  }
+
+  /* Zone C: clinic links (single-line, plain) */
+  .longeva-header__drawer-clink {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 20px;
+    color: rgba(245, 241, 234, 0.92);
+    font-family: var(--longeva-font-body);
+    font-size: 15px;
+    text-decoration: none;
+    transition: padding-inline-start 0.18s cubic-bezier(0.32, 0.72, 0, 1), color 0.15s ease;
+  }
+  .longeva-header__drawer-clink:hover,
+  .longeva-header__drawer-clink:focus-visible {
+    color: var(--longeva-primary-ivory);
+    padding-inline-start: 26px;
+    outline: none;
+  }
+
+  /* Footer trust signature inside the drawer */
+  .longeva-header__drawer-trust {
+    margin: auto 20px 18px;
+    padding-block-start: 18px;
+    font-family: var(--longeva-font-body);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.40);
+    border-block-start: 1px solid rgba(245, 241, 234, 0.08);
+  }
+
+  /* Honour reduced motion: zero transitions on drawer-related elements.
+     Higher specificity (.longeva-header ancestor) wins over the originals
+     without needing !important. */
+  @media (prefers-reduced-motion: reduce) {
+    .longeva-header .longeva-header__drawer,
+    .longeva-header .longeva-header__drawer-backdrop,
+    .longeva-header .longeva-header__drawer-item,
+    .longeva-header .longeva-header__drawer-action,
+    .longeva-header .longeva-header__accordion-panel,
+    .longeva-header .longeva-header__drawer-chev,
+    .longeva-header .longeva-header__drawer-need,
+    .longeva-header .longeva-header__drawer-clink,
+    .longeva-header .longeva-header__drawer-cta,
+    .longeva-header .longeva-header__drawer-item::before {
+      transition-duration: 0ms;
+    }
+  }
+
+  /* Prevent multi-word nav labels from wrapping ("Skin Health", "Weight Management"). */
+  .longeva-header__link { white-space: nowrap; }
+
+  /* Desktop tightening + shedding (>=1200px). PERMANENT, not just narrow.
+     Why permanent: .longeva-header__inner inherits .longeva-container's
+     1280px max-width cap and 80px padding-inline at >=1280px, so the
+     content area is fixed at 1120px at every viewport >=1280px (1920px,
+     1558px, 1366px all have the same 1120px budget). The full nav +
+     full right cluster never fits in that budget, regardless of how wide
+     the viewport is. Inner row aligns with body container -- canonical
+     pharmacy-peer pattern (Boots, Bupa, Sk:n, Harley Street, London
+     Clinic all use full-bleed bar with constrained inner row).
+
+     Empirical math (DevTools measured CTA at 182.52px with default 0 20px
+     padding + 1.5px border x 2; "Book a consultation" text node = 139.52px
+     in Poppins 14/400):
+
+       Logo  140
+       gap   18
+       Nav   606  (5 links + chevrons = 518, plus 4 inter-link gaps x 22)
+       gap   18
+       Right 274.5  (phone-icon 44 + 4 + cart 44 + 4 + 4 cta-margin
+                     + CTA 174.5 = 32 padding + 139.52 text + 3 border)
+       -----
+       Total 1056.5px inside 1120px cap -> 63.5px buffer.
+
+     Shedding rationale:
+     1. Search + account icon buttons hidden. They are broken-rendered
+        in the current build -- snippets/icon.liquid outputs an orphan
+        SVG <path> that needs a wrapping <svg> the header markup doesn't
+        provide (every other call site in the theme wraps; the header
+        was missed). Already hidden at <1200px via the mobile block;
+        extending the hide to all viewports makes the markup dead code
+        slated for separate removal.
+     2. Phone collapses to icon-only on desktop. Tap-to-call retained
+        via the surrounding <a href="tel:..."> wrapper. The visible
+        phone number text belongs in the announcement bar (utility
+        row) per UK clinical convention -- Sk:n, Harley Street and
+        London Clinic all show the number in the thin strip above the
+        main nav, not inside the nav row. Follow-up: wire phone into
+        sections/longeva-announcement-bar.liquid.
+     3. CTA pill is sacred and never sheds. Padding tightened to 16px
+        (from 20px) and margin to 4px (from 8px), but the pill itself
+        and its label remain. */
+  @media (min-width: 1200px) {
+    /* Seven top-level items, now Aesthetics, Skin Health, Weight
+       Management, Vaccinations, Minor Ailments, Health Services and
+       Clinicians (Alicia 3 June). "Health Services" is far wider than
+       the old "About"/"Contact" it effectively replaces, so the centred
+       nav overflowed the 1120px inner (logo touching Aesthetics, the
+       seventh item dropping). Reclaim the inner side padding (80px to
+       48px) for ~64px more budget and tighten the link gap to 8px so all
+       seven fit with a buffer. Budget at 13px / 8px link gap: nav ~692,
+       logo 158, right ~274, inner gaps 20 within a 1184px inner, leaving
+       ~40px buffer. */
+    .longeva-header__inner { gap: 10px; padding-inline: 48px; }
+    .longeva-header__links { gap: 8px; }
+    .longeva-header__link { font-size: 13px; }
+    .longeva-header__right { gap: 4px; }
+    /* Account icon stays hidden on desktop (accounts are not the
+       primary flow). Search is now an icon that opens the predictive
+       modal, so it stays visible: this resolves Varsha's "no search
+       bar" report (the icon was previously display:none here). */
+    .longeva-header__icon-btn--account {
+      display: none;
+    }
+    /* Phone is already an icon-only disclosure via the summary; no
+       label to hide. Keep the touch target square. */
+    .longeva-header__phone-summary {
+      flex: 0 0 44px;
+      width: 44px;
+      min-width: 44px;
+      padding: 0;
+      gap: 0;
+      border-inline-end: 0;
+      justify-content: center;
+    }
+    .longeva-header__cta {
+      padding: 0 16px;
+      margin-inline-start: 4px;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    .longeva-header__inner { height: 64px; gap: 16px; }
+    .longeva-header__nav { display: none; }
+    .longeva-header__burger { display: inline-flex; }
+    .longeva-header__brand {
+      justify-self: center;
+      grid-column: 2;
+    }
+    .longeva-header__right { gap: 4px; }
+    .longeva-header__icon-btn--account { display: none; }
+    /* PR #123 Option D: keep tap-to-call phone visible on mobile but
+       icon-only (label hidden). 88% of UK healthcare bookings happen
+       by phone (Invoca 2025); a tap-to-call affordance in the mobile
+       header is the highest-leverage trust signal we can add. */
+    .longeva-header__phone {
+      display: inline-flex;
+      flex: 0 0 44px;
+      min-width: 44px;
+      width: 44px;
+      min-height: 44px;
+      padding: 0;
+      gap: 0;
+      border-inline-end: 0;
+      align-items: center;
+      justify-content: center;
+      color: var(--longeva-text);
+    }
+    .longeva-header__phone-label { display: none; }
+    /* Lock right-cluster items so they don't flex-shrink below the
+       44px touch target when phone is added. */
+    .longeva-header__icon-btn,
+    .longeva-header__phone {
+      flex-shrink: 0;
+    }
+    /* Drop search icon on mobile: PR #123 research found Longeva's
+       small (~24-service) catalog doesn't justify search; pharmacy
+       peers with large catalog do, aesthetic-clinic peers don't.
+       Frees ~32px in the right cluster for the phone icon. */
+    .longeva-header__icon-btn[aria-label="Search"] {
+      display: none;
+    }
+    .longeva-header__cta {
+      min-height: 38px;
+      padding: 0 14px;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+    /* PR #126 Option A: drop the header brass Book pill on mobile.
+       Two parallel audit agents converged: 5/5 premium clinics
+       (Harley Street, The London Clinic, HCA, Bupa, Cosmetic Skin
+       Clinic) carry a SINGLE Book CTA above the mobile fold; 6/6
+       volume clinics (Therapie, Sk:n, Hims, Manual, Numan, Ro)
+       double up. Dual brass pill = commodity tell, opposite of
+       Anthony's "Harley-Street class, not beauty-flash" brief. The
+       hero already carries the primary Book CTA; the drawer Zone A
+       carries the menu Book; the phone icon now reads as the
+       header's unambiguous primary action. Desktop still shows the
+       brass pill (more room, no double-pill problem). */
+    .longeva-header__cta {
+      display: none;
+    }
+  }
+  /* Longeva: inline search row */
+.longeva-header__search-row {
+  position: relative;
+  z-index: 1;
+  background: var(--longeva-bg);
+  border-block-end: 1px solid var(--longeva-border);
+  padding-block: 8px;
+  padding-inline: 48px;
+}
+
+@media (max-width: 1199px) {
+  .longeva-header__search-row {
+    padding-inline: 20px;
+  }
+}
+/* Longeva: hide native search icon — inline bar replaces it */
+[data-longeva-search-toggle] {
+  display: none !important;
+}
+
+/* Longeva: hide results wrapper until typing */
+.longeva-header__search-row .predictive-search-form__content-wrapper,
+.longeva-header__search-row .predictive-search-form__footer {
+  display: none !important;
+}
+
+.longeva-header__search-row .predictive-search--inline:has(.predictive-search__reset-button:not([hidden])) .predictive-search-form__content-wrapper {
+  display: flex !important;
+  flex-direction: column;
+}
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva header",
+  "tag": "section",
+  "class": "longeva-header-section",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Main menu", "default": "main-menu" },
+    { "type": "header", "content": "Logo" },
+    { "type": "checkbox", "id": "show_logo", "label": "Show logo", "default": true, "info": "Untick to hide the logo and show the shop name as a text wordmark instead." },
+    { "type": "image_picker", "id": "logo", "label": "Header logo (overrides theme setting)", "info": "Leave blank to inherit the global Theme Settings logo. If both are blank, the bundled Longeva wordmark is used." },
+    { "type": "text", "id": "logo_alt", "label": "Logo alt text", "info": "Defaults to the shop name. Used by screen readers and search engines." },
+    { "type": "range", "id": "logo_width", "label": "Logo width (px)", "min": 80, "max": 280, "step": 4, "default": 140 },
+    { "type": "range", "id": "logo_height", "label": "Logo height (px)", "min": 16, "max": 80, "step": 2, "default": 32 },
+    { "type": "header", "content": "CTA (overrides theme setting)" },
+    { "type": "text", "id": "cta_label", "label": "CTA label" },
+    { "type": "url", "id": "cta_link", "label": "CTA URL" },
+    { "type": "header", "content": "Mobile drawer (intent-led)" },
+    { "type": "text", "id": "drawer_book_label", "label": "Drawer Book button", "default": "Book a consultation" },
+    { "type": "text", "id": "drawer_need_label", "label": "By-need section label", "default": "By need" },
+    { "type": "text", "id": "drawer_clinic_label", "label": "Inside-the-clinic label", "default": "Inside the clinic" },
+    { "type": "text", "id": "drawer_trust_line", "label": "Drawer trust footer", "default": "GPhC 9012378 · MHRA WDA(H) 59619" },
+    { "type": "text", "id": "intent_aesthetics", "label": "Intent: Aesthetics", "default": "Look better" },
+    { "type": "text", "id": "intent_skin", "label": "Intent: Skin Health", "default": "Clearer skin" },
+    { "type": "text", "id": "intent_weight", "label": "Intent: Weight Management", "default": "Manage weight" },
+    { "type": "text", "id": "intent_vaccinations", "label": "Intent: Vaccinations", "default": "Travel and vaccines" },
+    { "type": "header", "content": "Accessibility labels" },
+    { "type": "text", "id": "nav_aria_label", "label": "Nav aria-label", "default": "Primary navigation" },
+    { "type": "text", "id": "menu_toggle_aria_label", "label": "Hamburger aria-label", "default": "Open menu" },
+    { "type": "text", "id": "close_drawer_aria_label", "label": "Drawer close aria-label", "default": "Close menu" },
+    { "type": "text", "id": "phone_aria_label", "label": "Phone link aria-label", "default": "Call Longeva pharmacy" }
+  ]
+}
+{% endschema %}

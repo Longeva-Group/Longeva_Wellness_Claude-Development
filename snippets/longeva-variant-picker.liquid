@@ -1,0 +1,238 @@
+{%- comment -%}
+  Longeva variant picker.
+
+  Renders a radio-card fieldset so patients can choose between product
+  variants (e.g. dose tier, medicine form, age group) on service pages.
+  Returns nothing when the product has fewer than 2 variants, so all
+  single-variant service pages remain visually unchanged.
+
+  Parameters:
+    product  A Shopify product object (e.g. linked via custom.linked_product
+             metafield). Required. When blank the snippet exits silently.
+
+  JS hook (assets/longeva-variant-picker.js):
+    - On radio change: dispatches a change event on every <input name="id">
+      inside [data-sesami-cart-form] so Sesami's cached form reads the new
+      variant id (not a silent property write).
+    - Updates .longeva-service-page__meta-price and .longeva-service-page__sticky-meta-price
+      text from data-variant-price-money.
+    - Announces selection in the aria-live region.
+
+  Stylesheet block (at file end) is at the SNIPPET TOP LEVEL, never nested
+  inside an {% if %}, because Shopify rejects nested {% stylesheet %} tags
+  with "stylesheet tag must not be nested inside other tags" and silently
+  refuses to publish the snippet (verified live 2026-05-12; this exact bug
+  blocked PR #223's deploy for hours until found).
+{%- endcomment -%}
+
+{%- if product != blank and product.variants.size > 1 -%}
+  {%- liquid
+    # Use product.options_with_values[0].name (object form) rather than
+    # product.options[0] (string form). For product_reference metafields
+    # the string form returns empty on the storefront even though the
+    # variants resolve correctly. Object form works in both contexts.
+    # Verified live on /pages/typhoid-vaccination-manchester 2026-05-12:
+    # product.options[0] -> ""; product.options_with_values[0].name -> "Medicine/Drug form".
+    assign first_option = product.options_with_values | first
+    assign option_name = first_option.name | default: 'option' | strip
+    assign option_label = 'Choose your ' | append: option_name | downcase
+    assign default_variant = product.selected_or_first_available_variant
+  -%}
+  <div class="longeva-variant-picker">
+    <fieldset class="longeva-variant-picker__fieldset">
+      <legend class="longeva-variant-picker__legend">{{ option_label | escape }}</legend>
+      {%- comment -%}
+        No role="radiogroup" on the inner div: <fieldset> + named <input type="radio">
+        is already a native radiogroup, so a manual role would double-announce.
+      {%- endcomment -%}
+      <div class="longeva-variant-picker__cards">
+        {%- for variant in product.variants -%}
+          {%- assign is_checked = false -%}
+          {%- if variant.id == default_variant.id -%}{%- assign is_checked = true -%}{%- endif -%}
+          {%- assign card_classes = 'longeva-variant-picker__card' -%}
+          {%- unless variant.available -%}
+            {%- assign card_classes = card_classes | append: ' longeva-variant-picker__card--unavailable' -%}
+          {%- endunless -%}
+          <label
+            class="{{ card_classes }}"
+            data-variant-id="{{ variant.id }}"
+            data-variant-price-money="{{ variant.price | money_without_trailing_zeros | escape }}"
+            data-variant-title="{{ variant.title | escape }}"
+          >
+            <input
+              class="longeva-variant-picker__radio"
+              type="radio"
+              name="longeva-variant"
+              value="{{ variant.id }}"
+              {% if is_checked %}checked{% endif %}
+              {% unless variant.available %}disabled{% endunless %}
+              aria-label="{{ variant.title | escape }}, {{ variant.price | money_without_trailing_zeros | escape }}{% unless variant.available %} (unavailable){% endunless %}"
+            >
+            <span class="longeva-variant-picker__dot" aria-hidden="true"></span>
+            <span class="longeva-variant-picker__label">{{ variant.title | escape }}</span>
+            <span class="longeva-variant-picker__price">{{ variant.price | money_without_trailing_zeros }}</span>
+          </label>
+        {%- endfor -%}
+      </div>
+    </fieldset>
+    <p
+      class="longeva-sr-only"
+      aria-live="polite"
+      aria-atomic="true"
+      id="longeva-variant-picker-announce"
+    ></p>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  /* Variant picker.
+     - Border swap uses an inset box-shadow ring on selected (no border width
+       change, no padding compensation, no layout shift on selection).
+     - Selected state is driven by :has(:checked) only; JS does not toggle a
+       class. Browsers without :has() (sub-1% of UK traffic in 2026) fall
+       back to a non-highlighted card but the picker still works functionally.
+     - Focus ring uses :has(:focus-visible) so mouse clicks do not trigger it.
+     - Radio is visually hidden via the standard 1x1 clip pattern so the
+       accessibility tree still exposes the radio (not zero-size, which can
+       collapse AT bounds). */
+
+  .longeva-variant-picker {
+    margin: 24px 0;
+  }
+  .longeva-variant-picker__fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  .longeva-variant-picker__legend {
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(45, 25, 14, 0.65);
+    padding: 0;
+    margin: 0 0 10px;
+    display: block;
+    width: 100%;
+  }
+  .longeva-variant-picker__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .longeva-variant-picker__card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid rgba(185, 145, 87, 0.45);
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    transition: box-shadow 0.16s ease, background 0.16s ease;
+    position: relative;
+  }
+  .longeva-variant-picker__card:hover {
+    background: rgba(185, 145, 87, 0.08);
+  }
+  .longeva-variant-picker__card:has(.longeva-variant-picker__radio:checked) {
+    box-shadow: inset 0 0 0 2px var(--longeva-accent, #B99157);
+    background: rgba(185, 145, 87, 0.10);
+  }
+  .longeva-variant-picker__card:has(.longeva-variant-picker__radio:focus-visible) {
+    outline: 2px solid var(--longeva-accent, #B99157);
+    outline-offset: 2px;
+  }
+  .longeva-variant-picker__card--unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .longeva-variant-picker__card--unavailable .longeva-variant-picker__label::after {
+    content: ' (unavailable)';
+    color: rgba(45, 25, 14, 0.55);
+    font-weight: 400;
+  }
+  .longeva-variant-picker__radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .longeva-variant-picker__dot {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--longeva-accent, #B99157);
+    background: transparent;
+    box-sizing: border-box;
+    transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+  }
+  .longeva-variant-picker__card:has(.longeva-variant-picker__radio:checked) .longeva-variant-picker__dot {
+    background: var(--longeva-accent, #B99157);
+    border-color: var(--longeva-accent, #B99157);
+    box-shadow: inset 0 0 0 3px #FFFFFF;
+  }
+  .longeva-variant-picker__label {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--longeva-primary, #2D190E);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .longeva-variant-picker__price {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--longeva-primary, #2D190E);
+    white-space: nowrap;
+    margin-inline-start: auto;
+    flex: 0 0 auto;
+  }
+  @media (max-width: 749px) {
+    .longeva-variant-picker__card {
+      padding: 10px 14px;
+    }
+  }
+  /* Respect prefers-reduced-motion: kill the card and dot transitions. */
+  @media (prefers-reduced-motion: reduce) {
+    .longeva-variant-picker__card,
+    .longeva-variant-picker__dot {
+      transition: none;
+    }
+  }
+  /* Forced-colors (Windows high-contrast): use system tokens so selected
+     vs unselected remains distinguishable without colour. */
+  @media (forced-colors: active) {
+    .longeva-variant-picker__card {
+      border: 1px solid ButtonBorder;
+    }
+    .longeva-variant-picker__card:has(.longeva-variant-picker__radio:checked) {
+      box-shadow: inset 0 0 0 2px Highlight;
+      background: Canvas;
+    }
+    .longeva-variant-picker__dot {
+      forced-color-adjust: none;
+      border-color: ButtonText;
+    }
+    .longeva-variant-picker__card:has(.longeva-variant-picker__radio:checked) .longeva-variant-picker__dot {
+      background: Highlight;
+      border-color: Highlight;
+    }
+  }
+  /* No need to print a form that the patient cannot interact with. */
+  @media print {
+    .longeva-variant-picker {
+      display: none;
+    }
+  }
+{% endstylesheet %}

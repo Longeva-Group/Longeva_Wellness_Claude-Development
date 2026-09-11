@@ -1,0 +1,29 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "vaccine_finder": {
+      "type": "longeva-vaccine-finder",
+      "settings": {
+        "heading": "Find vaccines for your destination",
+        "intro": "Choose where you are travelling to see the vaccines we usually recommend, the main travel health risks, and a link to the full guide."
+      }
+    },
+    "destinations_index": {
+      "type": "longeva-destinations-index",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "heading": "Travel vaccinations by destination",
+        "intro": "<p>Find recommended vaccines by where you are going. Each destination guide lists the vaccines our pharmacist team would discuss with you at a travel consultation, plus links to the FCDO and NaTHNaC for the latest country guidance.</p>"
+      }
+    }
+  },
+  "order": ["vaccine_finder", "destinations_index"]
+}

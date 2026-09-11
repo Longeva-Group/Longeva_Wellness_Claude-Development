@@ -1,0 +1,69 @@
+{% layout none %}{%- liquid
+  assign gphc = settings.longeva_gphc_number | default: '123456'
+  assign mhra = settings.longeva_mhra_wdah | default: '123456'
+  assign company = settings.longeva_company_number | default: '123456'
+  assign vat = settings.longeva_vat_number | default: '123456'
+  assign tel = settings.longeva_phone | default: shop.phone | default: ''
+  assign email = settings.longeva_email | default: ''
+-%}# Longeva
+
+> {{ shop.name }} is a GPhC-registered pharmacy in Rochdale, Greater Manchester, offering pharmacist-led clinical services including skin health consultations, aesthetic medicine, travel health, weight management, vaccinations, sexual health, and minor ailments. Serves patients in person at the Rochdale clinic and across Greater Manchester.
+
+## Identity
+
+- Name: Longeva
+- Public-facing brand: Longeva Wellness
+- Website: {{ shop.url }}
+- Registered address: Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG, Greater Manchester, United Kingdom
+- GPhC pharmacy registration: {{ gphc }}
+- MHRA WDA(H) wholesale dealer licence: {{ mhra }}
+- Companies House number: {{ company }}
+- VAT number: {{ vat }}
+{% if tel != blank %}- Telephone: {{ tel }}{% endif %}
+{% if email != blank %}- Email: {{ email }}{% endif %}
+
+## Services
+
+Longeva offers clinical services across the following categories. Each service is delivered by a GPhC-registered pharmacist, on site at the Rochdale clinic.
+
+- [Skin health]({{ shop.url }}/pages/skin-health-manchester)
+- [Aesthetics]({{ shop.url }}/pages/aesthetics-manchester)
+- [Weight management]({{ shop.url }}/pages/weight-management-manchester)
+- [Vaccinations]({{ shop.url }}/pages/vaccinations-manchester)
+- [Travel health]({{ shop.url }}/pages/travel-health-manchester)
+- [Sexual health]({{ shop.url }}/pages/sexual-health-manchester)
+- [Minor ailments]({{ shop.url }}/pages/minor-ailments-manchester)
+- [All services]({{ shop.url }}/pages/services-manchester)
+
+## Booking
+
+- [Book a consultation]({{ shop.url }}/pages/book)
+- Same-day appointments are typically available for most services, subject to clinical appropriateness and capacity.
+- Walk-ins welcome, subject to capacity. Pick a time online to guarantee a slot.
+- No GP referral needed. A pharmacist assesses you directly.
+
+## Regulation and governance
+
+Longeva operates under UK pharmacy regulation:
+
+- Registered pharmacy with the General Pharmaceutical Council ({{ gphc }})
+- MHRA wholesale dealer licence WDA(H) {{ mhra }}
+- Complies with the MHRA/GPhC/ASA 2025 enforcement guidance on advertising prescription-only medicines
+- Complaints procedure: {{ shop.url }}/policies/complaints-policy
+
+## About
+
+- [About Longeva]({{ shop.url }}/pages/about-us)
+- [Our clinicians]({{ shop.url }}/pages/clinicians)
+- [Contact]({{ shop.url }}/pages/contact)
+
+## Policies
+
+- [Privacy policy]({{ shop.url }}/policies/privacy-policy)
+- [Terms of service]({{ shop.url }}/policies/terms-of-service)
+- [Refund policy]({{ shop.url }}/policies/refund-policy)
+- [Cookie policy]({{ shop.url }}/policies/cookies-policy)
+
+## Sitemap
+
+- [XML sitemap]({{ shop.url }}/sitemap.xml)

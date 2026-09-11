@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-hajj-umrah",
+      "settings": {
+        "last_reviewed": "31 May 2026",
+        "reviewed_by": "the Longeva pharmacy team"
+      }
+    }
+  },
+  "order": ["main"]
+}

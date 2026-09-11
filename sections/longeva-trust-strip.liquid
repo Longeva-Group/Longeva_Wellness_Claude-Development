@@ -1,0 +1,142 @@
+{% comment %}
+  Longeva trust strip. Horizontal 72px strip, 4 text-based badges, 1px
+  borders top and bottom. Mobile collapses to 2x2 grid.
+
+  Hidden on the homepage (template == 'index') per Anthony 2026-04-28:
+  the announcement bar plus the hero masthead aside (desktop) and the
+  hero trust-meta line (mobile) already cover the GPhC/MHRA mentions.
+  Repeating it in a 4-cell band three times above the fold reads as
+  trying too hard. Section continues to render on every other template.
+{% endcomment %}
+
+{% if template.name == 'index' %}{% comment %}early-return for homepage{% endcomment %}{% else %}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign cell_1_sub = section.settings.cell_1_sub | default: 'Registered pharmacy'
+  assign cell_2_sub = section.settings.cell_2_sub | default: 'MHRA wholesale-licensed'
+  assign cell_3_primary = section.settings.cell_3_primary | default: 'UK-licensed medicines'
+  assign cell_3_sub = section.settings.cell_3_sub | default: 'Sourced from MHRA-licensed wholesalers'
+  assign cell_4_primary = section.settings.cell_4_primary | default: 'Pharmacist-led'
+  assign cell_4_sub = section.settings.cell_4_sub | default: 'Trained clinicians'
+-%}
+
+<section class="longeva-trust-strip" aria-label="Trust and accreditation">
+  <div class="longeva-container longeva-trust-strip__inner" data-longeva-stagger="80">
+    <div class="longeva-trust-strip__item" data-longeva-reveal>
+      <span class="longeva-trust-strip__primary">GPhC {{ settings.longeva_gphc_number | default: '9012378' }}</span>
+      <span class="longeva-trust-strip__sub">{{ cell_1_sub | escape }}</span>
+    </div>
+    <div class="longeva-trust-strip__divider" aria-hidden="true"></div>
+    <div class="longeva-trust-strip__item" data-longeva-reveal>
+      <span class="longeva-trust-strip__primary">WDA(H) {{ settings.longeva_mhra_wdah | default: '59619' }}</span>
+      <span class="longeva-trust-strip__sub">{{ cell_2_sub | escape }}</span>
+    </div>
+    <div class="longeva-trust-strip__divider" aria-hidden="true"></div>
+    <div class="longeva-trust-strip__item" data-longeva-reveal>
+      <span class="longeva-trust-strip__primary">{{ cell_3_primary | escape }}</span>
+      <span class="longeva-trust-strip__sub">{{ cell_3_sub | escape }}</span>
+    </div>
+    <div class="longeva-trust-strip__divider" aria-hidden="true"></div>
+    <div class="longeva-trust-strip__item" data-longeva-reveal>
+      <span class="longeva-trust-strip__primary">{{ cell_4_primary | escape }}</span>
+      <span class="longeva-trust-strip__sub">{{ cell_4_sub | escape }}</span>
+    </div>
+  </div>
+</section>
+
+{% endif %}{% comment %}end homepage guard{% endcomment %}
+
+{% stylesheet %}
+  .longeva-trust-strip {
+    background: #FAFAF7;
+    border-block: 1px solid rgba(0, 0, 0, 0.08);
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+  }
+  .longeva-trust-strip__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 16px;
+    padding-block: 14px;
+    width: 100%;
+  }
+  .longeva-trust-strip__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+  }
+  .longeva-trust-strip__primary {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #1A1A1A;
+  }
+  .longeva-trust-strip__rating-number {
+    font-weight: 500;
+    letter-spacing: 0;
+    color: #2D190E;
+  }
+  .longeva-trust-strip__stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    color: #B99157;
+    vertical-align: -2px;
+  }
+  .longeva-trust-strip__sub {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: rgba(26, 26, 26, 0.60);
+    letter-spacing: 0.02em;
+  }
+  .longeva-trust-strip__divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.12);
+  }
+
+  @media (max-width: 749px) {
+    .longeva-trust-strip { min-height: 0; }
+    .longeva-trust-strip__inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 16px;
+      padding-block: 20px;
+    }
+    .longeva-trust-strip__divider { display: none; }
+    .longeva-trust-strip__primary { font-size: 12px; }
+    .longeva-trust-strip__sub { font-size: 11px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva trust strip",
+  "tag": "section",
+  "class": "longeva-trust-strip-section",
+  "settings": [
+    { "type": "paragraph", "content": "Primary numbers in cells 1-2 are bound to GPhC and MHRA WDA(H) settings (Theme Settings → Longeva). Sub-labels and cells 3-4 are editable below." },
+    { "type": "header", "content": "Cell 1 (GPhC)" },
+    { "type": "text", "id": "cell_1_sub", "label": "Cell 1 sub", "default": "Registered pharmacy" },
+    { "type": "header", "content": "Cell 2 (MHRA)" },
+    { "type": "text", "id": "cell_2_sub", "label": "Cell 2 sub", "default": "MHRA wholesale-licensed" },
+    { "type": "header", "content": "Cell 3" },
+    { "type": "text", "id": "cell_3_primary", "label": "Cell 3 primary", "default": "Same-day" },
+    { "type": "text", "id": "cell_3_sub", "label": "Cell 3 sub", "default": "Appointments available" },
+    { "type": "header", "content": "Cell 4" },
+    { "type": "text", "id": "cell_4_primary", "label": "Cell 4 primary", "default": "Pharmacist-led" },
+    { "type": "text", "id": "cell_4_sub", "label": "Cell 4 sub", "default": "Clinical governance" }
+  ],
+  "presets": [
+    { "name": "Longeva trust strip" }
+  ]
+}
+{% endschema %}

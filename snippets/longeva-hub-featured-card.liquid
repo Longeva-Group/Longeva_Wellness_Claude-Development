@@ -1,0 +1,58 @@
+{% comment %}
+  Hub featured service card.
+
+  Accepts:
+    pg       Page object.
+    attrs    Optional Shopify block attributes string.
+{% endcomment %}
+
+{%- liquid
+  assign display_name = pg.title | remove: ' Manchester'
+  assign raw_lede = pg.metafields.custom.lede | default: ''
+  # Lede clean-up: the bulk lede metafield was capped at ~130 chars by a
+  # prior populate script and often ends mid-sentence. Strip any trailing
+  # fragment after the last full stop so the card reads cleanly.
+  assign last_char = raw_lede | slice: -1, 1
+  assign clean_lede = raw_lede
+  if last_char != '.' and last_char != '!' and last_char != '?'
+    assign parts = raw_lede | split: '.'
+    assign cap = parts.size | minus: 1
+    assign rebuilt = ''
+    for i in (0..cap)
+      if forloop.last
+        continue
+      endif
+      assign rebuilt = rebuilt | append: parts[i] | append: '.'
+    endfor
+    assign clean_lede = rebuilt | strip
+  endif
+
+  assign price_raw = pg.metafields.custom.price_from | default: ''
+  assign price_norm = price_raw | strip | downcase
+  assign price_is_placeholder = false
+  if price_norm == '' or price_norm == 'enquire' or price_norm == 'enquiry' or price_norm == 'tbc' or price_norm == 'tba'
+    assign price_is_placeholder = true
+  endif
+  assign duration = pg.metafields.custom.duration_minutes | default: ''
+-%}
+
+<li class="longeva-hub__featured-card" data-longeva-reveal {{ attrs }}>
+  <a class="longeva-hub__featured-link" href="{{ pg.url }}">
+    <h3 class="longeva-display longeva-hub__featured-title">{{ display_name | escape }}</h3>
+    {% if clean_lede != blank %}
+      <p class="longeva-hub__featured-lede">{{ clean_lede | escape }}</p>
+    {% endif %}
+    <p class="longeva-hub__featured-meta">
+      {% if price_is_placeholder %}
+        <span class="longeva-hub__featured-price longeva-hub__featured-price--placeholder">Assessed at consultation</span>
+      {% else %}
+        <span class="longeva-hub__featured-price">From {{ price_raw | escape }}</span>
+      {% endif %}
+      {% if duration != blank %}
+        <span class="longeva-hub__featured-dot" aria-hidden="true">·</span>
+        <span class="longeva-hub__featured-duration">{{ duration }} min</span>
+      {% endif %}
+    </p>
+    <span class="longeva-hub__featured-arrow">{% render 'longeva-arrow', size: 22 %}</span>
+  </a>
+</li>

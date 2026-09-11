@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "book": {
+      "type": "longeva-book-page",
+      "settings": {}
+    }
+  },
+  "order": ["book"]
+}

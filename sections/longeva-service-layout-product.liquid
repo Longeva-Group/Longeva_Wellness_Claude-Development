@@ -1,0 +1,1433 @@
+{%- comment -%}
+  Longeva service layout, PRODUCT variant. Fork of longeva-service-layout.liquid
+  that reads from the PRODUCT (product.title, product.price, product.description,
+  product.metafields.custom.*) instead of the page, so the MMR-style layout
+  renders on a /products/ URL. Used by templates/product.vaccine.json for the
+  4 deposit-model vaccine products. Adrenaline / Jet Lag / Thrush stay on the
+  older product.service.json layout and are NOT affected by this section.
+
+  Renders above the product description body:
+    1. Hero row: H1 (Manchester suffix stripped), lede, price + duration + clinician meta, deposit disclosure, primary Sesami CTA.
+    2. Trust aside: 4 short regulatory / service claims.
+  Then product.description as the clinical content block.
+  Then after the body:
+    3. Three-step process.
+    4. Final CTA band.
+    5. Related services row, sourced from the Vaccinations hub.
+  Plus a sticky mobile booking bar at all times.
+
+  Price: product.price is the 25% booking deposit; the headline shows the full
+  price (deposit x 4) and a deposit line states the amount due to book. Booking
+  uses the shared consultation Sesami service id + the product's own variant.
+  category is hardcoded 'Vaccinations'. No page.* reads. CSS keeps scoped BEM specificity, no dashes.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{%- comment -%} longeva-schema-service self-gates to page templates (emits nothing on a product). Product-aware JSON-LD is a follow-up SEO item. {%- endcomment -%}
+<script src="{{ 'longeva-sticky-cta.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign display_title = product.title | remove: ' Manchester'
+  assign lede = product.metafields.custom.lede
+  comment
+    Product price is the 25% booking deposit; the headline "Fees from" price
+    is the FULL treatment price (deposit x 4), matching the page-based vaccine
+    pages. The 25% deposit is disclosed in the deposit-terms strap below.
+    Never hardcode a price: both come from product.price via | money.
+  endcomment
+  assign full_money = product.price | times: 4 | money
+  assign price_from = full_money
+  assign duration = product.metafields.custom.duration_minutes
+  assign clinician = product.metafields.custom.clinician_name | default: 'Longeva clinical team'
+  assign book_url = product.metafields.custom.booking_url | default: '/pages/travel-health-consultation-manchester'
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  # Stopgap: per-vaccine variants are not registered in Sesami, so the inline widget 404s on availability and shows "Something went wrong".
+  # Until the vaccine products are made bookable in the Sesami dashboard, book via the consultation page. Blank service id makes the
+  # booking buttons render as links to book_url (the consultation booking page).
+  assign sesami_service_id = ''
+  assign category = 'Vaccinations'
+  assign category_slug = category | handleize
+  assign hub_handle = category_slug | append: '-manchester'
+  assign hub_page = pages[hub_handle]
+  assign process_heading = section.settings.process_heading | default: 'How it works'
+  assign faq_heading = section.settings.faq_heading | default: settings.longeva_hub_faq_heading | default: 'General FAQs'
+  assign cta_heading = section.settings.cta_heading | default: settings.longeva_hub_cta_heading | default: 'Ready to book?'
+  assign cta_subhead = section.settings.cta_subhead | default: settings.longeva_hub_cta_subhead
+  assign related_heading = section.settings.related_heading | default: 'You may also like'
+  assign reassurance_line = section.settings.reassurance_line | default: "If treatment isn't right, the consultation fee covers written advice."
+  assign cta_secondary_label = section.settings.cta_secondary_label | default: 'Not sure? Book a free call first'
+  assign cta_secondary_link = section.settings.cta_secondary_link | default: '/pages/contact'
+  assign use_treatment_named_cta = section.settings.use_treatment_named_cta
+  assign bottom_cta_label = book_label
+  if use_treatment_named_cta and display_title != blank
+    assign bottom_cta_label = 'Book ' | append: display_title
+  endif
+  assign sticky_button_label = section.settings.sticky_button_label | default: 'Book a consultation'
+
+  assign price_norm = price_from | strip | downcase
+  assign price_is_placeholder = false
+  if price_norm == '' or price_norm == 'enquire' or price_norm == 'enquiry' or price_norm == 'tbc' or price_norm == 'tba'
+    assign price_is_placeholder = true
+  endif
+
+  assign last_reviewed = product.metafields.custom.last_reviewed
+  assign reviewer = product.metafields.custom.reviewed_by.value
+  assign reviewer_display = ''
+  if reviewer
+    assign reviewer_display = reviewer.name
+    if reviewer.title != blank
+      assign reviewer_display = reviewer_display | append: ', ' | append: reviewer.title
+    endif
+  endif
+
+  comment
+    Booking: the product's own single deposit variant feeds the Sesami /cart
+    form. product.selected_or_first_available_variant.id already returns the
+    numeric id in Liquid (no gid stripping). No linked_product picker path:
+    the 4 vaccine products are single-variant.
+  endcomment
+  assign sesami_variant_id = product.selected_or_first_available_variant.id
+  assign linked_product = blank
+  assign linked_variant_price = ''
+  assign effective_variant_id = sesami_variant_id
+-%}
+
+<script src="{{ 'longeva-sesami-redirect.js' | asset_url }}" defer></script>
+<script src="{{ 'longeva-sesami-calendar-enhance.js' | asset_url }}" defer></script>
+<script src="{{ 'longeva-service-faq-rename.js' | asset_url }}" defer></script>
+
+<article class="longeva-service-page" aria-labelledby="longeva-service-heading">
+  <header class="longeva-service-page__hero longeva-container">
+    <div class="longeva-service-page__hero-inner">
+      <div class="longeva-service-page__hero-main">
+        {%- comment -%}
+          Back button removed PR #137: duplicates the breadcrumb's
+          parent-hub link (clicking "Aesthetics" in the breadcrumb
+          goes to the same place). Premium clinical convention
+          (Sk:n, Cosmetic Skin Clinic, Harley Street, Bupa) is
+          breadcrumb-only. Saved ~40px above-the-fold vertical
+          space. Markup kept commented in case Anthony wants to
+          reinstate later.
+
+          {% if hub_page %}
+            <a class="longeva-service-page__backlink" href="{{ hub_page.url }}">
+              {% render 'longeva-arrow', direction: 'left' %}
+              <span>{{ hub_page.title | remove: ' in Manchester' | remove: ' Manchester' | escape }}</span>
+            </a>
+          {% endif %}
+        {%- endcomment -%}
+        {% if category != blank %}
+          <p class="longeva-eyebrow longeva-service-page__eyebrow">{{ category | escape }}</p>
+        {% endif %}
+        <h1 id="longeva-service-heading" class="longeva-display longeva-service-page__heading">{{ display_title | escape }} <span class="longeva-service-page__heading-loc">in Manchester</span></h1>
+        {%- comment -%}
+          Trust strap under H1: regulator anchor + practitioner identity.
+          Lives above the lede so a buyer dropped from a Google ad sees
+          a clinical signal before any price (CRO audit 2026-05-05:
+          25-44 healthcare buyer needs the GPhC digit + pharmacist tag
+          above the fold). The trust aside in the right-hand column
+          already carries this information on desktop, but is hidden
+          below 900px: this strap fills that mobile gap.
+        {%- endcomment -%}
+        <p class="longeva-service-page__trust-strap" aria-label="Regulatory and clinician anchors">
+          <span class="longeva-service-page__trust-strap-anchor">GPhC {{ settings.longeva_gphc_number | default: '9012378' }}</span>
+          <span aria-hidden="true">·</span>
+          <span>Pharmacist-led</span>
+        </p>
+        {%- comment -%}
+          UX-02 (Alicia + Varsha May 2026): age-gate banner.
+          Renders prominently on every service page above the booking CTA.
+          Default: visible on every treatment page (most services are
+          adults-only by clinical policy). Override per-page via
+          `custom.age_minimum` metafield where the gate differs (e.g.
+          paediatric travel vaccines could set this to "5").
+        {%- endcomment -%}
+        {%- comment -%} Alicia (6 June): vaccine pages state the BOOKING-age rule "you must be 18 to book a consultation". This is the booking requirement, not a per-vaccine clinical age, which is decided at the consultation (most vaccines have no age limit of their own). 18 is the default; custom.age_minimum can override the figure. Per-vaccine clinical ages from Alicia to be added as a separate note when her list arrives. {%- endcomment -%}
+        {%- assign age_minimum = product.metafields.custom.age_minimum | default: 18 -%}
+        {%- if age_minimum != 0 -%}
+          <p class="longeva-service-page__age-gate" role="note" aria-label="Booking age requirement">
+            <span class="longeva-service-page__age-gate-badge" aria-hidden="true">{{ age_minimum }}+</span>
+            <span class="longeva-service-page__age-gate-text">You must be {{ age_minimum }} or over to book a consultation. Most vaccines have no age restriction of their own, and suitability is confirmed with you at the consultation.</span>
+          </p>
+        {%- endif -%}
+        {% if lede != blank %}
+          <p class="longeva-service-page__lede">{{ lede | escape }}</p>
+        {% endif %}
+        <ul class="longeva-service-page__meta" role="list">
+          <li class="longeva-service-page__meta-item longeva-service-page__meta-item--price">
+            <span class="longeva-service-page__meta-label">Fees from</span>
+            <span class="longeva-service-page__meta-price longeva-service-page__meta-value">
+              {% if price_is_placeholder %}
+                Assessed at consultation
+              {% elsif linked_variant_price != '' %}
+                {{ linked_variant_price | escape }}
+              {% else %}
+                {{ price_from | escape }}
+              {% endif %}
+            </span>
+          </li>
+          {% if duration != blank %}
+            <li class="longeva-service-page__meta-item">
+              <span class="longeva-service-page__meta-label">Duration</span>
+              <span class="longeva-service-page__meta-value">{{ duration }} min</span>
+            </li>
+          {% endif %}
+          {% if clinician != blank %}
+            <li class="longeva-service-page__meta-item">
+              <span class="longeva-service-page__meta-label">Delivered by</span>
+              <span class="longeva-service-page__meta-value">{{ clinician | escape }}</span>
+            </li>
+          {% endif %}
+        </ul>
+        {%- comment -%}
+          Deposit disclosure at the number. The "Fees from" headline is the
+          full treatment price, but the cart charges the 25% deposit, so state
+          the actual amount due to book and the balance, both computed from
+          product.price via | money (no hardcoded price).
+        {%- endcomment -%}
+        {%- if product.price > 0 and price_is_placeholder != true -%}
+          <p class="longeva-service-page__deposit-amount" role="note">Booked through a travel health consultation, which confirms exactly what you need. Your vaccination is given and settled at the appointment.</p>
+        {%- endif -%}
+        {% if reassurance_line != blank %}
+          <p class="longeva-service-page__reassurance">{{ reassurance_line | escape }}</p>
+        {% endif %}
+        {%- comment -%}
+          BK-05 / BK-06 / BK-07 (Varsha May 2026): payment terms must be
+          surfaced BEFORE checkout. State explicitly that booking holds the
+          slot with a non-refundable, non-transferable deposit (25% of the
+          treatment cost where applicable), balance settled at the
+          appointment. Default copy below is admin-tunable via the
+          new `deposit_terms` setting.
+        {%- endcomment -%}
+        {%- assign deposit_terms = section.settings.deposit_terms | default: settings.longeva_deposit_terms | default: 'Booking holds your slot with a non-refundable, non-transferable deposit. The balance is settled at your appointment.' -%}
+        {%- if deposit_terms != blank -%}
+          <p class="longeva-service-page__deposit-terms" role="note">{{ deposit_terms | replace: '25%%', '25%' | escape }}</p>
+        {%- endif -%}
+        {%- if linked_product and linked_product.variants.size > 1 -%}
+          {% render 'longeva-variant-picker', product: linked_product %}
+          <script src="{{ 'longeva-variant-picker.js' | asset_url }}" defer></script>
+        {%- endif -%}
+        <div class="longeva-service-page__hero-cta">
+          {% render 'longeva-sesami-button',
+             service_id: sesami_service_id,
+             variant_id: effective_variant_id,
+             label: book_label,
+             variant: 'primary',
+             prop_name: 'Vaccine',
+             prop_value: display_title,
+             fallback_url: book_url,
+             classes: 'longeva-service-page__cta-primary' %}
+          {%- comment -%}
+            Secondary action rendered as a brass-underlined text link
+            (not a ghost-bordered button) per Harley-Street tier
+            convention: London Clinic / Spire / Nuffield use one
+            primary CTA + a typographic secondary, never two equally-
+            weighted pill+ghost buttons (that pattern reads as SaaS
+            pricing-page, not clinical). Copy "Speak to a pharmacist"
+            replaces the chatty "Ask a question".
+          {%- endcomment -%}
+          <a class="longeva-service-page__cta-secondary-text" href="/pages/contact">Speak to a pharmacist</a>
+        </div>
+      </div>
+      <aside class="longeva-service-page__hero-trust" aria-label="Trust and regulation">
+        <div class="longeva-service-page__trust-row">
+          <span class="longeva-service-page__trust-label">GPhC</span>
+          <span class="longeva-service-page__trust-value">{{ settings.longeva_gphc_number | default: '9012378' }}</span>
+        </div>
+        <div class="longeva-service-page__trust-row">
+          <span class="longeva-service-page__trust-label">MHRA</span>
+          <span class="longeva-service-page__trust-value">WDA(H) {{ settings.longeva_mhra_wdah | default: '59619' }}</span>
+        </div>
+        <div class="longeva-service-page__trust-row">
+          <span class="longeva-service-page__trust-label">Clinic</span>
+          <span class="longeva-service-page__trust-value">Rochdale, Manchester</span>
+        </div>
+        <div class="longeva-service-page__trust-row">
+          <span class="longeva-service-page__trust-label">Consent</span>
+          <span class="longeva-service-page__trust-value">Written, every visit</span>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  {% if product.description != blank %}
+    <section class="longeva-service-page__body longeva-container" aria-label="Clinical information">
+      <div class="longeva-service-page__body-inner rte">
+        {{ product.description }}
+      </div>
+      {%- if last_reviewed != blank or reviewer_display != blank -%}
+        <p class="longeva-service-page__review-byline" aria-label="Clinical review">
+          {%- if reviewer_display != blank -%}
+            <span class="longeva-service-page__review-label">Clinically reviewed by</span>
+            <span class="longeva-service-page__review-value">{{ reviewer_display | escape }}</span>
+          {%- endif -%}
+          {%- if last_reviewed != blank -%}
+            <span class="longeva-service-page__review-label">Last reviewed</span>
+            <time class="longeva-service-page__review-value" datetime="{{ last_reviewed | date: '%Y-%m-%d' }}">{{ last_reviewed | date: '%-d %B %Y' }}</time>
+          {%- endif -%}
+        </p>
+      {%- endif -%}
+    </section>
+  {% endif %}
+
+  <section class="longeva-service-page__process longeva-container" aria-label="{{ process_heading | escape }}">
+    <h2 class="longeva-display longeva-service-page__section-heading">{{ process_heading | escape }}</h2>
+    <ol
+      class="longeva-service-page__process-list"
+      role="list"
+      data-longeva-stagger="90"
+      data-longeva-auto-carousel
+      data-interval="5500"
+    >
+      <li class="longeva-service-page__process-item" data-longeva-reveal>
+        <span class="longeva-service-page__process-num" aria-hidden="true">01</span>
+        <h3 class="longeva-service-page__process-title">Book or walk in</h3>
+        <p class="longeva-service-page__process-body">Pick a time online, or call for a same-day slot. Walk-ins welcome subject to capacity.</p>
+      </li>
+      <li class="longeva-service-page__process-item" data-longeva-reveal>
+        <span class="longeva-service-page__process-num" aria-hidden="true">02</span>
+        <h3 class="longeva-service-page__process-title">Clinical consultation</h3>
+        <p class="longeva-service-page__process-body">Our pharmacist takes your history, checks suitability, and explains options in plain English.</p>
+      </li>
+      <li class="longeva-service-page__process-item" data-longeva-reveal>
+        <span class="longeva-service-page__process-num" aria-hidden="true">03</span>
+        <h3 class="longeva-service-page__process-title">Treatment and aftercare</h3>
+        <p class="longeva-service-page__process-body">Where clinically appropriate, treatment is delivered on site with written aftercare and a clear follow-up plan.</p>
+      </li>
+    </ol>
+  </section>
+
+  {%- assign area_blocks = section.blocks | where: 'type', 'area_card' -%}
+  {% if area_blocks.size > 0 %}
+    <section class="longeva-service-page__areas longeva-container" aria-label="{{ section.settings.areas_heading | default: 'Areas treated' | escape }}">
+      <h2 class="longeva-display longeva-service-page__section-heading">{{ section.settings.areas_heading | default: 'Areas treated' | escape }}</h2>
+      {% if section.settings.areas_subhead != blank %}
+        <p class="longeva-service-page__areas-subhead">{{ section.settings.areas_subhead | escape }}</p>
+      {% endif %}
+      <ul class="longeva-service-page__areas-list" role="list" data-longeva-stagger="60">
+        {% for block in area_blocks %}
+          <li class="longeva-service-page__areas-item" data-longeva-reveal {{ block.shopify_attributes }}>
+            <span class="longeva-service-page__areas-name">{{ block.settings.name | escape }}</span>
+            {% if block.settings.body != blank %}
+              <span class="longeva-service-page__areas-body">{{ block.settings.body | escape }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {%- assign price_rows = section.blocks | where: 'type', 'price_row' -%}
+  {% if price_rows.size > 0 %}
+    <section class="longeva-service-page__pricing longeva-container" aria-label="{{ section.settings.pricing_heading | default: 'Pricing' | escape }}">
+      <h2 class="longeva-display longeva-service-page__section-heading">{{ section.settings.pricing_heading | default: 'Pricing' | escape }}</h2>
+      {% if section.settings.pricing_subhead != blank %}
+        <p class="longeva-service-page__pricing-subhead">{{ section.settings.pricing_subhead | escape }}</p>
+      {% endif %}
+      <table class="longeva-service-page__pricing-table">
+        <caption class="longeva-sr-only">{{ section.settings.pricing_heading | default: 'Pricing' | escape }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Service</th>
+            <th scope="col">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for block in price_rows %}
+            <tr {{ block.shopify_attributes }}>
+              <td>
+                <span class="longeva-service-page__pricing-label">{{ block.settings.label | escape }}</span>
+                {% if block.settings.note != blank %}
+                  <span class="longeva-service-page__pricing-note">{{ block.settings.note | escape }}</span>
+                {% endif %}
+              </td>
+              <td class="longeva-service-page__pricing-amount">{{ block.settings.price | escape }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if section.settings.pricing_footer != blank %}
+        <p class="longeva-service-page__pricing-footer">{{ section.settings.pricing_footer | escape }}</p>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {%- comment -%}
+    UX-05 (Varsha May 2026): the section-level "General FAQs" block
+    rendered hardcoded preset questions ("Do I need a GP referral?",
+    "How do I book?", "What happens in the consultation?") on every
+    service page, plus a matching generic FAQPage JSON-LD. Two problems:
+    (1) duplicated the treatment-specific FAQs already in page.content
+    (relabelled "Treatment FAQs" client-side by longeva-service-faq-
+    rename.js), and (2) polluted every service URL's structured data
+    with the same boilerplate, diluting SERP rich-result eligibility.
+    Block schema retained below so existing template JSON does not
+    error; rendering is gone. Treatment-specific FAQs live in the
+    page body and surface FAQPage JSON-LD per page where present.
+  {%- endcomment -%}
+
+  <section class="longeva-service-page__cta-band" aria-label="{{ cta_heading | escape }}">
+    <div class="longeva-container longeva-service-page__cta-inner">
+      <h2 class="longeva-display longeva-service-page__cta-heading">{{ cta_heading | escape }}</h2>
+      {% if cta_subhead != blank %}
+        <p class="longeva-service-page__cta-subhead">{{ cta_subhead | escape }}</p>
+      {% endif %}
+      <div class="longeva-service-page__cta-buttons">
+        {% render 'longeva-sesami-button',
+           service_id: sesami_service_id,
+           variant_id: effective_variant_id,
+           label: bottom_cta_label,
+           variant: 'primary-on-dark',
+           prop_name: 'Vaccine',
+           prop_value: display_title,
+           fallback_url: book_url %}
+        {% if cta_secondary_label != blank %}
+          <a class="longeva-service-page__cta-secondary" href="{{ cta_secondary_link }}">{{ cta_secondary_label | escape }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if hub_page %}
+    {%- assign related_featured = hub_page.metafields.custom.hub_featured_services.value -%}
+    {% if related_featured != blank %}
+      <section class="longeva-service-page__related longeva-container" aria-label="{{ related_heading | escape }}">
+        <header class="longeva-service-page__related-head">
+          <p class="longeva-service-page__related-eyebrow">More in {{ hub_page.title | remove: ' in Manchester' | remove: ' Manchester' | downcase | escape }}</p>
+          <h2 class="longeva-display longeva-service-page__section-heading">{{ related_heading | escape }}</h2>
+        </header>
+        <ul
+          class="longeva-service-page__related-list"
+          role="list"
+          data-longeva-auto-carousel
+          data-interval="4000"
+        >
+          {% for pg in related_featured %}
+            {% if pg and pg.handle != product.handle %}
+              {%- liquid
+                assign rel_name = pg.title | remove: ' Manchester'
+                assign rel_lede_raw = pg.metafields.custom.lede | default: ''
+                # Same lede clean-up as longeva-hub-featured-card: drop a
+                # trailing fragment after the last full stop if the bulk
+                # populate script left the text mid-sentence.
+                assign rel_last_char = rel_lede_raw | slice: -1, 1
+                assign rel_lede = rel_lede_raw
+                if rel_last_char != '.' and rel_last_char != '!' and rel_last_char != '?'
+                  assign rel_parts = rel_lede_raw | split: '.'
+                  assign rel_cap = rel_parts.size | minus: 1
+                  assign rel_rebuilt = ''
+                  for i in (0..rel_cap)
+                    if forloop.last
+                      continue
+                    endif
+                    assign rel_rebuilt = rel_rebuilt | append: rel_parts[i] | append: '.'
+                  endfor
+                  assign rel_lede = rel_rebuilt | strip
+                endif
+                assign rel_price = pg.metafields.custom.price_from | default: ''
+                assign rel_price_norm = rel_price | strip | downcase
+                assign rel_price_placeholder = false
+                if rel_price_norm == '' or rel_price_norm == 'enquire' or rel_price_norm == 'enquiry' or rel_price_norm == 'tbc' or rel_price_norm == 'tba'
+                  assign rel_price_placeholder = true
+                endif
+                assign rel_duration = pg.metafields.custom.duration_minutes | default: ''
+              -%}
+              <li class="longeva-service-page__related-item">
+                <a class="longeva-service-page__related-link" href="{{ pg.url }}">
+                  <h3 class="longeva-service-page__related-name">{{ rel_name | escape }}</h3>
+                  {% if rel_lede != blank %}
+                    <span class="longeva-service-page__related-lede">{{ rel_lede | truncate: 100 | escape }}</span>
+                  {% endif %}
+                  <span class="longeva-service-page__related-foot">
+                    <span class="longeva-service-page__related-meta">
+                      {% if rel_price_placeholder %}
+                        <span class="longeva-service-page__related-price">Assessed at consultation</span>
+                      {% elsif rel_price != blank %}
+                        <span class="longeva-service-page__related-price">From {{ rel_price | escape }}</span>
+                      {% endif %}
+                      {% if rel_duration != blank and rel_price_placeholder == false %}
+                        <span class="longeva-service-page__related-sep" aria-hidden="true">·</span>
+                        <span class="longeva-service-page__related-duration">{{ rel_duration }} min</span>
+                      {% endif %}
+                    </span>
+                    <span class="longeva-service-page__related-arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+                  </span>
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+  {% endif %}
+</article>
+
+<aside class="longeva-service-page__sticky" aria-label="Quick book">
+  <div class="longeva-service-page__sticky-inner">
+    {%- assign sticky_show_meta = false -%}
+    {%- assign sticky_has_price = false -%}
+    {%- if price_is_placeholder != true -%}
+      {%- if price_from != blank or linked_variant_price != '' -%}
+        {%- assign sticky_show_meta = true -%}
+        {%- assign sticky_has_price = true -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- if duration != blank -%}{%- assign sticky_show_meta = true -%}{%- endif -%}
+    {% if sticky_show_meta %}
+      <div class="longeva-service-page__sticky-meta">
+        {%- if sticky_has_price -%}
+          <span class="longeva-service-page__sticky-meta-price">From {% if linked_variant_price != '' %}{{ linked_variant_price | escape }}{% else %}{{ price_from | escape }}{% endif %}</span>
+        {%- endif -%}
+        {%- if sticky_has_price and duration != blank -%}
+          <span class="longeva-service-page__sticky-meta-sep" aria-hidden="true">·</span>
+        {%- endif -%}
+        {%- if duration != blank -%}
+          <span class="longeva-service-page__sticky-meta-duration">{{ duration }} min</span>
+        {%- endif -%}
+      </div>
+    {% endif %}
+    {% render 'longeva-sesami-button',
+       service_id: sesami_service_id,
+       variant_id: effective_variant_id,
+       label: sticky_button_label,
+       variant: 'primary-on-light',
+       prop_name: 'Vaccine',
+       prop_value: display_title,
+       fallback_url: book_url,
+       classes: 'longeva-service-page__sticky-cta' %}
+  </div>
+</aside>
+
+{% render 'longeva-auto-carousel' %}
+
+{% stylesheet %}
+  .longeva-service-page { background: #FAFAF7; }
+  .longeva-service-page__hero {
+    padding-block: clamp(20px, 3vw, 40px);
+    border-block-end: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .longeva-service-page__hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 56px;
+    align-items: start;
+  }
+  .longeva-service-page__backlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(26, 26, 26, 0.70);
+    text-decoration: none;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    margin: 0 0 20px;
+    transition: color 0.15s ease;
+  }
+  .longeva-service-page__backlink:hover {
+    color: var(--longeva-primary);
+  }
+  .longeva-service-page__backlink:focus-visible {
+    color: var(--longeva-primary);
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  .longeva-service-page__eyebrow { margin: 0 0 12px; font-size: 12px; }
+  .longeva-service-page__heading {
+    font-size: var(--longeva-h1-desktop);
+    margin: 0 0 16px;
+    color: #1A1A1A;
+  }
+  .longeva-service-page__heading-loc {
+    font-size: 0.62em;
+    font-weight: 400;
+    color: rgba(26, 26, 26, 0.68);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .longeva-service-page__heading-suffix {
+    font-size: 0.55em;
+    font-weight: 400;
+    color: rgba(26, 26, 26, 0.62);
+    letter-spacing: 0.01em;
+    margin-inline-start: 6px;
+  }
+  .longeva-service-page__trust-strap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 10px;
+    margin: 0 0 16px;
+    padding: 0;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: rgba(26, 26, 26, 0.62);
+    letter-spacing: 0.01em;
+  }
+  .longeva-service-page__trust-strap span[aria-hidden="true"] {
+    color: rgba(26, 26, 26, 0.30);
+  }
+  .longeva-service-page__trust-strap-anchor {
+    color: var(--longeva-primary);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .longeva-service-page__lede {
+    margin: 0 0 24px;
+    font-family: var(--longeva-font-body);
+    font-size: 18px;
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.75);
+    max-width: 56ch;
+  }
+  .longeva-service-page__meta {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 28px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
+    gap: 24px 32px;
+  }
+  .longeva-service-page__meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .longeva-service-page__meta-label {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.68);
+  }
+  .longeva-service-page__meta-value {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    font-weight: 500;
+    color: #1A1A1A;
+  }
+  .longeva-service-page__deposit-amount {
+    margin: 0 0 12px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1A1A1A;
+    max-width: 46ch;
+  }
+  .longeva-service-page__sticky-meta-deposit {
+    font-family: var(--longeva-font-body);
+    color: rgba(26, 26, 26, 0.68);
+  }
+  .longeva-service-page__hero-cta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .longeva-service-page__cta-primary { min-height: 52px; padding: 0 28px; font-size: 15px; }
+  /* Secondary as text-link, not button. Persistent hairline underline at
+     35% brass thickens to full brass on hover. Min height keeps the tap
+     target ≥24x24 (WCAG 2.2 SC 2.5.8) without padding it into a button. */
+  .longeva-service-page__cta-secondary-text {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--longeva-accent, #B99157);
+    font-family: var(--longeva-font-body);
+    font-size: 14.5px;
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    text-decoration-color: rgba(185, 145, 87, 0.35);
+    transition: color 0.15s ease, text-decoration-color 0.15s ease, text-decoration-thickness 0.15s ease;
+  }
+  .longeva-service-page__cta-secondary-text:hover,
+  .longeva-service-page__cta-secondary-text:focus-visible {
+    color: var(--longeva-primary, #2D190E);
+    text-decoration-color: var(--longeva-accent, #B99157);
+    text-decoration-thickness: 1.5px;
+    outline: none;
+  }
+  .longeva-service-page__cta-secondary-text:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  .longeva-service-page__hero-trust {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 28px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    position: sticky;
+    top: calc(var(--header-group-height, 80px) + 16px);
+  }
+  .longeva-service-page__trust-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: baseline;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.45;
+    padding-block-end: 12px;
+    border-block-end: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .longeva-service-page__trust-row:last-child { border-block-end: 0; padding-block-end: 0; }
+  .longeva-service-page__trust-label {
+    color: rgba(26, 26, 26, 0.66);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .longeva-service-page__trust-value { color: #1A1A1A; font-weight: 500; text-align: left; }
+
+  .longeva-service-page__body {
+    padding-block: clamp(20px, 3vw, 40px);
+  }
+  /* Pattern B body alignment (audit 2026-04-30): body section uses full
+     .longeva-container width so its left edge matches the hero content
+     edge (NHS, Boots OD, LloydsPharmacy OD, Numan convention). The
+     reading-width cap moves to the inner wrapper, which is left-anchored
+     by default since it does not carry margin-inline: auto. 720px is
+     within NHS 70-80ch guidance and matches hero-main column width
+     (~704px) at 1280px container. */
+  .longeva-service-page__body-inner {
+    max-width: 720px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.65;
+    color: rgba(26, 26, 26, 0.85);
+  }
+  .longeva-service-page__body-inner h2 {
+    font-family: var(--longeva-font-display);
+    font-size: var(--longeva-h2-desktop);
+    margin: 40px 0 16px;
+    color: #1A1A1A;
+  }
+  .longeva-service-page__body-inner h3 {
+    font-family: var(--longeva-font-display);
+    font-size: var(--longeva-h3-desktop);
+    margin: 28px 0 12px;
+    color: #1A1A1A;
+  }
+  .longeva-service-page__body-inner p { margin: 0 0 16px; }
+  .longeva-service-page__body-inner a {
+    color: #2D190E;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .longeva-service-page__body-inner ul,
+  .longeva-service-page__body-inner ol { margin: 0 0 16px 20px; padding: 0; }
+
+  .longeva-service-page__review-byline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    align-items: baseline;
+    margin: 32px 0 0;
+    padding: 16px 0 0;
+    border-block-start: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.70);
+  }
+  .longeva-service-page__review-label {
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(26, 26, 26, 0.55);
+    margin-inline-end: 4px;
+  }
+  .longeva-service-page__review-value {
+    color: #1A1A1A;
+    font-weight: 500;
+    margin-inline-end: 16px;
+  }
+  .longeva-service-page__review-value:last-child { margin-inline-end: 0; }
+
+  .longeva-service-page__section-heading {
+    font-size: var(--longeva-h2-desktop);
+    margin: 0 0 28px;
+    color: #1A1A1A;
+  }
+
+  .longeva-service-page__process { padding-block: clamp(20px, 3vw, 40px); }
+  .longeva-service-page__process-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .longeva-service-page__process-item {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    padding: 28px 24px;
+  }
+  .longeva-service-page__process-num {
+    display: block;
+    font-family: var(--longeva-font-display);
+    font-size: 32px;
+    color: #B99157;
+    margin-bottom: 8px;
+  }
+  .longeva-service-page__process-title {
+    font-family: var(--longeva-font-display);
+    font-size: var(--longeva-h3-desktop);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+    margin: 0 0 10px;
+    color: #1A1A1A;
+  }
+  .longeva-service-page__process-body {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.70);
+    margin: 0;
+  }
+
+  .longeva-service-page__areas {
+    padding-block: clamp(20px, 3vw, 40px);
+  }
+  .longeva-service-page__areas-subhead {
+    margin: -16px 0 24px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.7);
+    max-width: 60ch;
+  }
+  .longeva-service-page__areas-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .longeva-service-page__areas-item {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .longeva-service-page__areas-name {
+    font-family: var(--longeva-font-display);
+    font-size: 17px;
+    color: #1A1A1A;
+  }
+  .longeva-service-page__areas-body {
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.7);
+  }
+  @media (max-width: 1023px) { .longeva-service-page__areas-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .longeva-service-page__areas-list { grid-template-columns: 1fr; } }
+
+  .longeva-service-page__pricing { padding-block: clamp(20px, 3vw, 40px); }
+  /* Pattern B: cap pricing children to 720px so they align flush left
+     under the hero content edge, instead of auto-centering the section. */
+  .longeva-service-page__pricing > .longeva-service-page__section-heading,
+  .longeva-service-page__pricing-subhead,
+  .longeva-service-page__pricing-table,
+  .longeva-service-page__pricing-footer {
+    max-width: 720px;
+  }
+  .longeva-service-page__pricing-subhead {
+    margin: -16px 0 24px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.7);
+  }
+  .longeva-service-page__pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--longeva-font-body);
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    overflow: hidden;
+  }
+  .longeva-service-page__pricing-table thead th {
+    text-align: start;
+    padding: 14px 20px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(26, 26, 26, 0.65);
+    background: #FAFAF7;
+    border-block-end: 1px solid rgba(0, 0, 0, 0.08);
+    font-weight: 600;
+  }
+  .longeva-service-page__pricing-table tbody td {
+    padding: 16px 20px;
+    border-block-end: 1px solid rgba(0, 0, 0, 0.06);
+    font-size: var(--longeva-body);
+    color: #1A1A1A;
+    vertical-align: top;
+  }
+  .longeva-service-page__pricing-table tbody tr:last-child td { border-block-end: 0; }
+  .longeva-service-page__pricing-label { display: block; font-weight: 500; }
+  .longeva-service-page__pricing-note {
+    display: block;
+    font-size: 13px;
+    color: rgba(26, 26, 26, 0.6);
+    margin-block-start: 2px;
+  }
+  .longeva-service-page__pricing-amount {
+    text-align: end;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .longeva-service-page__pricing-footer {
+    margin: 16px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.65);
+  }
+
+  .longeva-service-page__faq {
+    padding-block: clamp(20px, 3vw, 40px);
+  }
+  /* Pattern B: cap FAQ children to 720px so they align flush left under
+     the hero content edge, instead of auto-centering the section. */
+  .longeva-service-page__faq > .longeva-service-page__section-heading,
+  .longeva-service-page__faq-list {
+    max-width: 720px;
+  }
+  .longeva-service-page__faq-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .longeva-service-page__faq-item { border-block-end: 1px solid rgba(0, 0, 0, 0.12); }
+  .longeva-service-page__faq-question {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    font-weight: 500;
+    padding: 18px 32px 18px 0;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+  }
+  .longeva-service-page__faq-question::-webkit-details-marker { display: none; }
+  .longeva-service-page__faq-question::after {
+    content: "+";
+    position: absolute;
+    inset-inline-end: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+  }
+  .longeva-service-page__faq-item[open] .longeva-service-page__faq-question::after { content: "\2212"; }
+  .longeva-service-page__faq-answer {
+    padding-block-end: 20px;
+    font-family: var(--longeva-font-body);
+    font-size: var(--longeva-body);
+    line-height: 1.65;
+    color: rgba(26, 26, 26, 0.80);
+  }
+
+  .longeva-service-page__reassurance {
+    margin: 0 0 24px;
+    padding: 12px 16px;
+    border-inline-start: 3px solid #B99157;
+    background: rgba(185, 145, 87, 0.06);
+    border-radius: 4px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(26, 26, 26, 0.78);
+    max-width: 56ch;
+  }
+
+  .longeva-service-page__cta-band {
+    background: #2D190E;
+    color: #F2E6DC;
+    margin-block-start: clamp(20px, 3vw, 40px);
+  }
+  .longeva-service-page__cta-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .longeva-service-page__cta-secondary {
+    color: #F2E6DC;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    opacity: 0.85;
+    transition: opacity 0.15s ease;
+  }
+  .longeva-service-page__cta-secondary:hover,
+  .longeva-service-page__cta-secondary:focus-visible {
+    opacity: 1;
+    outline: none;
+  }
+  .longeva-service-page__cta-secondary:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
+  .longeva-service-page__cta-inner {
+    padding-block: 56px;
+    text-align: center;
+  }
+  .longeva-service-page__cta-heading {
+    font-size: clamp(28px, 3vw, 36px);
+    margin: 0 0 12px;
+    color: #F2E6DC;
+  }
+  .longeva-service-page__cta-subhead {
+    font-family: var(--longeva-font-body);
+    font-size: 16px;
+    color: rgba(245, 241, 234, 0.85);
+    max-width: 48ch;
+    margin: 0 auto 24px;
+  }
+
+  /* Related services 10/10 v2: information-rich cards. Title + 1-line
+     differentiator + price/duration foot. No index numeral or EXPLORE
+     cue (decoration without information). Mirrors the hub-featured-card
+     pattern so the hub-treatment-related read as one design system. */
+  .longeva-service-page__related { padding-block: clamp(20px, 3vw, 40px); }
+  .longeva-service-page__related-head {
+    margin-block-end: 28px;
+  }
+  .longeva-service-page__related-eyebrow {
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.95);
+    margin: 0 0 6px;
+  }
+  .longeva-service-page__related-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .longeva-service-page__related-item { min-width: 0; }
+  .longeva-service-page__related-link {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px 24px 20px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--longeva-radius-card);
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+    min-height: 180px;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .longeva-service-page__related-link:hover,
+  .longeva-service-page__related-link:focus-visible {
+    border-color: #2D190E;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(45, 25, 14, 0.06);
+    outline: none;
+  }
+  .longeva-service-page__related-name {
+    font-family: var(--longeva-font-display);
+    font-size: 22px;
+    line-height: 1.15;
+    color: #1A1A1A;
+    letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .longeva-service-page__related-lede {
+    font-family: var(--longeva-font-body);
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: rgba(26, 26, 26, 0.62);
+    margin: 0;
+  }
+  .longeva-service-page__related-foot {
+    margin-top: auto;
+    padding-block-start: 14px;
+    border-block-start: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .longeva-service-page__related-meta {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: rgba(26, 26, 26, 0.65);
+  }
+  .longeva-service-page__related-price {
+    color: rgba(26, 26, 26, 0.92);
+    font-weight: 600;
+    letter-spacing: 0.005em;
+  }
+  .longeva-service-page__related-sep { opacity: 0.45; }
+  .longeva-service-page__related-arrow {
+    color: #B99157;
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.18s ease;
+  }
+  .longeva-service-page__related-link:hover .longeva-service-page__related-arrow,
+  .longeva-service-page__related-link:focus-visible .longeva-service-page__related-arrow { transform: translateX(3px); }
+
+  /* Sticky CTA bar.
+     Desktop = compact floating pill (bottom-center, contained
+     max-width, hairline brass border, brand-dark pill button). The
+     full-width bar pattern leaves awkward empty flanks on a 1400px
+     viewport with content centered, and reads SaaS not clinical.
+     The premium reference set (Lanserhof, Dr David Jack, The London
+     Clinic, Rakus Clinic, HCA UK) uses either an in-header CTA or
+     no persistent bottom CTA. We keep a sticky on desktop because
+     the header CTA links to /pages/book whereas the in-page sticky
+     drops the patient straight into the Sesami calendar inline.
+     A compact pill respects the brand DNA without swallowing the
+     viewport.
+     Mobile (<=1023px) = full-width bar pinned to thumb zone, where
+     the header CTA collapses into the burger menu. */
+  .longeva-service-page__sticky {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+    width: auto;
+    max-width: 460px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(185, 145, 87, 0.32);
+    border-radius: 999px;
+    box-shadow: 0 12px 32px -8px rgba(45, 25, 14, 0.16),
+                0 2px 6px rgba(45, 25, 14, 0.06);
+  }
+  .longeva-service-page__sticky.is-hidden {
+    transform: translateX(-50%) translateY(calc(100% + 32px));
+    opacity: 0;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .longeva-service-page__sticky { transition: none; }
+  }
+  .longeva-service-page__sticky-inner {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  @media (max-width: 1023px) {
+    .longeva-service-page__sticky {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform: none;
+      max-width: none;
+      width: auto;
+      padding: 12px 24px calc(12px + env(safe-area-inset-bottom));
+      border: 0;
+      border-block-start: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    }
+    .longeva-service-page__sticky.is-hidden {
+      transform: translateY(110%);
+    }
+    .longeva-service-page__sticky-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      justify-content: space-between;
+      gap: 16px;
+    }
+  }
+  @media (max-width: 749px) {
+    .longeva-service-page__sticky-inner {
+      gap: 12px;
+    }
+  }
+  .longeva-service-page__sticky-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: rgba(26, 26, 26, 0.65);
+    white-space: nowrap;
+  }
+  .longeva-service-page__sticky-meta-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1A1A1A;
+    letter-spacing: 0.005em;
+  }
+  .longeva-service-page__sticky-meta-sep { opacity: 0.45; }
+  .longeva-service-page__sticky-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 1 auto;
+    min-width: 180px;
+    max-width: 320px;
+    min-height: 48px;
+    padding: 0 24px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  /* Article bottom padding matches section rhythm so Related cards sit
+     naturally above the footer (whitespace audit 2026-04-30). */
+  .longeva-service-page { padding-block-end: clamp(20px, 3vw, 40px); }
+
+  @media (max-width: 1023px) {
+    /* Hero-inner grid collapses to single column. The 56px desktop column
+       gap becomes a row gap on mobile, which stacked with hero-trust's
+       margin-block-start: 24px produced an 80px void between the buttons
+       and the trust card. Override both. */
+    .longeva-service-page__hero-inner { grid-template-columns: 1fr; gap: 24px; }
+    .longeva-service-page__hero-trust {
+      position: static;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 20px;
+      padding: 20px;
+      margin-block-start: 0;
+    }
+    .longeva-service-page__hero-trust .longeva-service-page__trust-row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding-block-end: 0;
+      border-block-end: 0;
+      align-items: start;
+    }
+    .longeva-service-page__process-list { grid-template-columns: 1fr; }
+    .longeva-service-page__related-list { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 749px) {
+    .longeva-service-page__hero { padding-block: 24px; }
+    .longeva-service-page__heading { font-size: var(--longeva-h1-mobile); margin: 0 0 12px; }
+    .longeva-service-page__lede { margin: 0 0 16px; font-size: 16px; }
+    .longeva-service-page__meta { margin: 0 0 16px; gap: 12px 24px; }
+    .longeva-service-page__reassurance { margin: 0 0 16px; }
+    .longeva-service-page__hero-cta { gap: 12px; }
+    .longeva-service-page__sticky {
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    }
+    .longeva-service-page__sticky-inner { gap: 12px; }
+    .longeva-service-page__sticky-meta { font-size: 13px; gap: 6px; }
+    .longeva-service-page__sticky-meta-price { font-size: 14px; }
+    .longeva-service-page__sticky-cta {
+      min-width: 140px;
+      min-height: 44px;
+      padding: 0 18px;
+      font-size: 13px;
+    }
+
+    /* Process + related: convert to horizontal swipe carousel with
+       scroll-snap, auto-advanced via longeva-auto-carousel snippet. */
+    .longeva-service-page__process-list,
+    .longeva-service-page__related-list {
+      display: flex;
+      grid-template-columns: none;
+      flex-wrap: nowrap;
+      gap: 14px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: 16px;
+      padding-inline: 16px;
+      margin-inline: -16px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .longeva-service-page__process-list::-webkit-scrollbar,
+    .longeva-service-page__related-list::-webkit-scrollbar { display: none; }
+    .longeva-service-page__process-item,
+    .longeva-service-page__related-item {
+      flex: 0 0 80%;
+      min-width: 80%;
+      scroll-snap-align: start;
+    }
+  }
+  @media (max-width: 359px) {
+    /* Pre-iPhone-SE narrow Android: drop the duration cell to keep CTA prominent */
+    .longeva-service-page__sticky-meta-duration,
+    .longeva-service-page__sticky-meta-sep { display: none; }
+  }
+
+  /* Desktop sticky CTA: cap to a normal pill width. Without this the
+     Sesami host inherits width:100% from .longeva-service-page__sticky
+     .longeva-sesami (0,2,0) and max-width:100% from
+     sesami-experience.longeva-sesami (0,1,1), so the button stretches to
+     fill the full 1200px sticky-inner container (~1033px on a 1280px
+     viewport). The aside is a sibling of .longeva-service-page (not a
+     descendant), so qualify the selector with aside.* for (0,2,1)
+     specificity that beats both offending rules. */
+  @media (min-width: 750px) {
+    aside.longeva-service-page__sticky .longeva-sesami,
+    aside.longeva-service-page__sticky a.longeva-service-page__sticky-cta {
+      width: auto;
+      max-width: 280px;
+      flex: 0 0 auto;
+    }
+  }
+
+  /* BK-05/06/07 deposit terms (Varsha May 2026). Surfaced ABOVE the
+     booking CTA so patients see deposit + non-refundable + non-transferable
+     before they pay. Small, calm, brand-correct. */
+  .longeva-service-page__deposit-terms {
+    margin: 6px 0 14px;
+    padding: 8px 0 0;
+    border-top: 1px solid rgba(45, 25, 14, 0.08);
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(45, 25, 14, 0.72);
+    max-width: 54ch;
+  }
+
+  /* UX-02 age-gate banner. Brass hairline brand register: prominent
+     enough to read above the fold, restrained enough to not detonate
+     the clinical page. */
+  .longeva-service-page__age-gate {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 14px 0 18px;
+    padding: 10px 14px;
+    border: 1px solid #B99157;
+    background: rgba(185, 145, 87, 0.06);
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #2D190E;
+  }
+  .longeva-service-page__age-gate-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 28px;
+    padding: 0 8px;
+    background: #2D190E;
+    color: #F2E6DC;
+    font-family: 'Owners XWide', 'Poppins', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  .longeva-service-page__age-gate-text {
+    flex: 1 1 auto;
+  }
+  @media (max-width: 480px) {
+    .longeva-service-page__age-gate {
+      gap: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .longeva-service-page__age-gate-badge {
+      min-width: 32px;
+      font-size: 11px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Service layout (product)",
+  "tag": "section",
+  "class": "longeva-service-layout-section",
+  "enabled_on": { "templates": ["product"] },
+  "settings": [
+    { "type": "paragraph", "content": "Product variant. Reads title, lede, duration_minutes and the description from the product; price is the 25 percent deposit (full shown as deposit times four). Category is fixed to Vaccinations. Used by the product.vaccine template." },
+    { "type": "text", "id": "book_label", "label": "Book CTA label (overrides theme default)" },
+    { "type": "header", "content": "Reassurance and secondary CTA (Citadel brief §04)" },
+    { "type": "textarea", "id": "reassurance_line", "label": "Reassurance line", "default": "If treatment isn't right, the consultation fee covers written advice.", "info": "Brief §04 verbatim default. Leave blank to hide." },
+    { "type": "textarea", "id": "deposit_terms", "label": "Deposit + payment terms (above booking CTA)", "default": "Booking holds your slot with a non-refundable, non-transferable deposit. The balance is settled at your appointment.", "info": "BK-05/06/07, shown directly above the booking button on every service page." },
+    { "type": "checkbox", "id": "use_treatment_named_cta", "label": "Bottom CTA uses treatment-named label", "default": false, "info": "When enabled, the bottom Sesami button reads 'Book {Treatment}' (e.g. 'Book Dermal Fillers') per brief §04, derived from the page title with ' Manchester' stripped." },
+    { "type": "text", "id": "cta_secondary_label", "label": "Bottom CTA secondary label", "default": "Not sure? Book a free call first", "info": "Brief §04 verbatim default. Leave blank to hide." },
+    { "type": "url", "id": "cta_secondary_link", "label": "Bottom CTA secondary link", "info": "Defaults to /pages/contact when blank." },
+    { "type": "text", "id": "sticky_button_label", "label": "Sticky bar button label", "default": "Book a consultation", "info": "Brief §06 sticky CTA copy: 'From £X · Book a consultation'. Distinct from the hero/bottom CTA labels." },
+    { "type": "header", "content": "Areas treated (brief §04 Section 2)" },
+    { "type": "text", "id": "areas_heading", "label": "Areas heading", "default": "Areas treated" },
+    { "type": "textarea", "id": "areas_subhead", "label": "Areas subhead" },
+    { "type": "header", "content": "Pricing table (brief §04 Section 4)" },
+    { "type": "text", "id": "pricing_heading", "label": "Pricing heading", "default": "Pricing" },
+    { "type": "textarea", "id": "pricing_subhead", "label": "Pricing subhead", "default": "No hidden costs. Final cost confirmed at consultation." },
+    { "type": "textarea", "id": "pricing_footer", "label": "Pricing footer note" },
+    { "type": "header", "content": "Section headings (override theme defaults)" },
+    { "type": "text", "id": "process_heading", "label": "Process heading" },
+    { "type": "text", "id": "faq_heading", "label": "FAQ heading" },
+    { "type": "text", "id": "cta_heading", "label": "CTA band heading" },
+    { "type": "textarea", "id": "cta_subhead", "label": "CTA band subhead" },
+    { "type": "text", "id": "related_heading", "label": "Related heading" }
+  ],
+  "blocks": [
+    {
+      "type": "area_card",
+      "name": "Area treated",
+      "limit": 8,
+      "settings": [
+        { "type": "text", "id": "name", "label": "Area name", "info": "e.g. Lips, Cheeks, Jawline, Tear trough" },
+        { "type": "textarea", "id": "body", "label": "Body (optional)" }
+      ]
+    },
+    {
+      "type": "price_row",
+      "name": "Pricing row",
+      "limit": 12,
+      "settings": [
+        { "type": "text", "id": "label", "label": "Service label" },
+        { "type": "text", "id": "price", "label": "Price (e.g. £220)" },
+        { "type": "text", "id": "note", "label": "Note (optional)" }
+      ]
+    },
+    {
+      "type": "faq",
+      "name": "FAQ",
+      "limit": 10,
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question" },
+        { "type": "richtext", "id": "answer", "label": "Answer" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva service layout",
+      "blocks": [
+        { "type": "faq", "settings": { "question": "How do I book a consultation?", "answer": "<p>Pick a time online or call to arrange a same-day slot where available. Walk-ins are welcome subject to capacity.</p>" } },
+        { "type": "faq", "settings": { "question": "Do I need a GP referral?", "answer": "<p>No. Our pharmacist can assess and treat you directly for this service.</p>" } },
+        { "type": "faq", "settings": { "question": "What happens in the consultation?", "answer": "<p>The pharmacist reviews your history, confirms suitability, and explains options in plain English before any treatment begins.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

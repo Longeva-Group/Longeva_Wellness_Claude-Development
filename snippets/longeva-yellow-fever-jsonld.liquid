@@ -1,0 +1,86 @@
+{%- comment -%}
+  Longeva Yellow Fever page JSON-LD.
+
+  Emits MedicalWebPage (page wrapper, about a MedicalCondition) and a
+  FAQPage. Kept in a snippet so the section stays legible and the schema
+  can be validated in isolation. The FAQ questions and answers mirror
+  the visible FAQ in longeva-yellow-fever.liquid (FAQPage eligibility
+  requires the content to be visible on the page).
+{%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MedicalWebPage",
+  "name": "Yellow Fever Vaccination Centre",
+  "description": "A registered Yellow Fever Vaccination Centre in Rochdale, Greater Manchester. Yellow fever vaccination and International Certificate of Vaccination or Prophylaxis (ICVP), given as a private clinical service by a trained clinician.",
+  "about": {
+    "@type": "MedicalCondition",
+    "name": "Yellow fever",
+    "relevantSpecialty": "PublicHealth"
+  },
+  "lastReviewed": "2026-05-30",
+  "inLanguage": "en-GB",
+  "publisher": {
+    "@type": "Pharmacy",
+    "name": "Longeva Wellness",
+    "@id": "https://longevawellness.co.uk/#pharmacy"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en-GB",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is the yellow fever certificate valid for life?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For most travellers, yes. Since 11 July 2016 a single dose is treated as protecting you for life for certificate purposes, and the certificate is valid for the life of the person vaccinated. A small number of people, for example some who were vaccinated while pregnant or with a weakened immune system, may be advised to have a further dose. A clinician will confirm what applies to you."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long before travel should I be vaccinated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The certificate becomes valid 10 days after vaccination, so you need to be vaccinated at least 10 days before you arrive at a country that requires it. We recommend booking several weeks ahead where possible, in case you need other travel vaccines too."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need the vaccine or certificate if I am only transiting?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sometimes. Certain countries require proof of vaccination from travellers who have recently passed through a country where yellow fever is present, even on a brief stop. Because it depends on your exact route and how long you stop, bring your full itinerary to your consultation and a clinician will check it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I have the vaccine if I am pregnant or breastfeeding?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The yellow fever vaccine is a live vaccine and is not usually recommended during pregnancy or breastfeeding, though it may be considered where the risk of infection is high and travel cannot be avoided. This needs an individual assessment, so please raise it at your consultation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I have the vaccine if I am over 60?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yellow fever vaccination is still given to older travellers when needed, but the risk of certain rare side effects is higher with increasing age, so a clinician will weigh the risk of the disease against the risk of the vaccine for you personally. Book a consultation and we will talk it through."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is yellow fever vaccination available on the NHS?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Yellow fever vaccination is a private travel health service and a fee applies. We will confirm the fee before you book."
+      }
+    }
+  ]
+}
+</script>

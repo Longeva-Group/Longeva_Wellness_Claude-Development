@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "about": {
+      "type": "longeva-about-page",
+      "settings": {}
+    },
+    "cta_band": {
+      "type": "longeva-cta-band",
+      "settings": {
+        "heading": "Speak to a pharmacist.",
+        "subhead": "Free 10-minute assessment, no commitment.",
+        "cta_label": "Book a consultation",
+        "cta_link": "/pages/book"
+      }
+    }
+  },
+  "order": ["about", "cta_band"]
+}

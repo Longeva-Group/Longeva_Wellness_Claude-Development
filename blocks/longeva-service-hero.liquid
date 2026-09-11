@@ -1,0 +1,207 @@
+{% comment %}
+  Longeva service hero block.
+
+  Renders H1 (product title), short description and price-from from the
+  linked service metaobject (custom.service_ref), plus a regulatory line
+  and a primary CTA placeholder that Sesami's app block sits next to.
+
+  Falls back to product.title and product.description if no service_ref
+  is linked.
+{% endcomment %}
+
+{% liquid
+  assign service = product.metafields.custom.service_ref.value
+  assign heading = product.title
+  assign short_description = ''
+  assign regulatory_line = ''
+  if service
+    if service.name != blank
+      assign heading = service.name
+    endif
+    assign short_description = service.short_description
+    assign regulatory_line = service.regulatory_line
+  endif
+  comment
+    CTA label by product type. Vaccines book a "vaccination"; every other
+    service type (consultations, and minor ailments such as the adrenaline
+    nasal spray) books an "appointment". One shared template, two readings.
+  endcomment
+  assign cta_label = block.settings.cta_label
+  assign ptype = product.type | downcase
+  unless ptype contains 'vaccin'
+    if ptype != blank
+      assign cta_label = 'Book this appointment'
+    endif
+  endunless
+  comment
+    The product price IS the 25% booking deposit (not the full fee). The
+    full treatment price is shown as deposit x 4 so the 25% relationship
+    is always consistent and is computed live from the deposit price.
+  endcomment
+  assign full_money = product.price | times: 4 | money
+  comment
+    Booking. The top CTA opens the Sesami slot picker inline (no page
+    hop to /pages/book, which was the "book again" extra step Varsha
+    flagged 3 June). It carries this vaccine's own variant so the
+    deposit shown is the deposit booked, plus a Vaccine property so the
+    clinician sees which vaccine. Service id falls back to the travel
+    health consultation service used across the site; shop id resolves
+    from the global Sesami setting inside the snippet.
+  endcomment
+%}
+
+<div class="longeva-service-hero" {{ block.shopify_attributes }}>
+  <div class="longeva-service-hero__content">
+    <h1 class="longeva-service-hero__heading">{{ heading | escape }}</h1>
+
+    {% if short_description != blank %}
+      <p class="longeva-service-hero__description">{{ short_description | strip_html | strip }}</p>
+    {% endif %}
+
+    {%- comment -%}
+      The product price is the 25% booking deposit, not the full
+      treatment fee (Varsha 28 May: payable figure did not read as 25%).
+      Label it as a deposit and state the balance is settled on the day.
+    {%- endcomment -%}
+    {%- if product.price > 0 -%}
+    <p class="longeva-service-hero__price">
+      <span class="longeva-service-hero__price-label">Treatment price from</span>
+      <span class="longeva-service-hero__price-value">{{ full_money }}</span>
+    </p>
+    <p class="longeva-service-hero__price-note">Booked through a travel health consultation, which confirms exactly what you need. Your vaccination is given and settled at the appointment.</p>
+    {%- else -%}
+    <p class="longeva-service-hero__price">
+      <span class="longeva-service-hero__price-label longeva-service-hero__price-label--placeholder">Price assessed at consultation</span>
+    </p>
+    {%- endif -%}
+
+    {% if regulatory_line != blank %}
+      <p class="longeva-service-hero__regulatory">{{ regulatory_line }}</p>
+    {% endif %}
+
+    <div class="longeva-service-hero__cta">
+      {%- comment -%}
+        The per-vaccine variant is not registered in Sesami, so the
+        inline widget 404s on availability lookup and shows "Something
+        went wrong". Until the vaccine products are made bookable in the
+        Sesami dashboard, route booking to the consultation page (the
+        only registered Sesami service). Blank service id makes the
+        snippet render a link to fallback_url. cta_label carries its
+        schema default.
+      {%- endcomment -%}
+      {% render 'longeva-sesami-button',
+         service_id: '',
+         variant_id: product.selected_or_first_available_variant.id,
+         label: cta_label,
+         variant: 'primary',
+         prop_name: 'Vaccine',
+         prop_value: product.title,
+         fallback_url: '/pages/travel-health-consultation-manchester' %}
+    </div>
+
+    {%- comment -%}
+      Rich "what is this" body. The service metaobject rich fields are
+      still being populated, so product.description is the dependable
+      source. This surfaces the structured copy that the SEO meta already
+      carried but the page body was dropping.
+    {%- endcomment -%}
+    {% if product.description != blank %}
+      <div class="longeva-service-hero__about rte">{{ product.description }}</div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .longeva-service-hero {
+    padding-block: 1.5rem;
+  }
+  .longeva-service-hero__heading {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .longeva-service-hero__description {
+    margin: 0 0 1rem;
+    font-size: 1.125rem;
+    color: var(--color-foreground-subdued, currentColor);
+    line-height: 1.5;
+  }
+  .longeva-service-hero__price {
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .longeva-service-hero__price-label {
+    font-size: 0.875rem;
+    color: var(--color-foreground-subdued, currentColor);
+  }
+  .longeva-service-hero__price-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .longeva-service-hero__price-note {
+    margin: -0.5rem 0 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-foreground-subdued, currentColor);
+    max-width: 42ch;
+  }
+  .longeva-service-hero__regulatory {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+    color: var(--color-foreground-subdued, currentColor);
+    font-style: italic;
+  }
+  .longeva-service-hero__cta {
+    margin-top: 1rem;
+  }
+  .longeva-service-hero__cta-placeholder {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px dashed var(--color-border);
+    color: var(--color-foreground-subdued, currentColor);
+    font-size: 0.875rem;
+  }
+  .longeva-service-hero__about {
+    margin-top: 2rem;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .longeva-service-hero__about p {
+    margin: 0 0 1rem;
+  }
+  .longeva-service-hero__about strong {
+    font-weight: 600;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva service hero",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Reads from product.metafields.custom.service_ref. Falls back to product title and description when no service is linked."
+    },
+    {
+      "type": "text",
+      "id": "sesami_service_id",
+      "label": "Sesami service ID",
+      "info": "Numeric ID from Sesami admin. Leave blank to fall back to the URL below."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Book this vaccination"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "Fallback CTA URL"
+    }
+  ]
+}
+{% endschema %}

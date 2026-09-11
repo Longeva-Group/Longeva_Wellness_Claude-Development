@@ -1,0 +1,46 @@
+{%- comment -%}
+  Head-level robots control for pages that must not be indexed by default.
+
+  Why this lives in the head: a robots meta tag is only honoured inside
+  <head>. A section renders in <body>, so a section-level robots tag is
+  ignored by search engines. This snippet is rendered from
+  layout/theme.liquid head, alongside the longeva schema snippets.
+
+  Default-safe doorway-page guardrail (Brief v4 Section 12):
+  the local-area town pages (Rochdale, Manchester, Oldham, Bury, Bolton,
+  Blackburn, Salford, Near Me, Manchester Airport) are near-identical by
+  nature. Google treats a single clinic spinning up many "travel clinic
+  in [town]" pages as scaled/doorway content. So every page on the
+  local-area template is noindex by default, purely from the template
+  suffix (no per-page metafield needed to be safe).
+
+  Opt a page IN to indexing only once it carries genuinely unique local
+  content: set its page metafield custom.allow_index (boolean) to true.
+{%- endcomment -%}
+{%- liquid
+  assign noindex = false
+
+  comment
+    Local-area town pages: noindex by default (template), opt IN via
+    custom.allow_index. See above.
+  endcomment
+  if template.suffix == 'local-area'
+    assign noindex = true
+    if page.metafields.custom.allow_index.value == true
+      assign noindex = false
+    endif
+  endif
+
+  comment
+    Structural shells (Brief v4): a page is created published so navigation
+    resolves and the structure is testable, but carries custom.noindex = true
+    until its content lands, so an empty page is never indexed. Clear the
+    metafield (or set it false) once Alicia or Varsha have filled the page.
+  endcomment
+  if page.metafields.custom.noindex.value == true
+    assign noindex = true
+  endif
+-%}
+{%- if noindex -%}
+  <meta name="robots" content="noindex, follow">
+{%- endif -%}

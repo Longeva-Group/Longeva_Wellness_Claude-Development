@@ -1,0 +1,895 @@
+{%- comment -%}
+  Longeva cart page section. Replaces the Horizon `main-cart` block stack
+  with an on-brand layout that reads as a clinical service receipt rather
+  than a generic e-commerce basket.
+
+  Form posts to {{ routes.cart_url }} so /cart/update + /checkout
+  endpoints work without JS. assets/longeva-cart.js layers in live
+  qty updates via the cart/change.js endpoint when JS is available;
+  the form-post fallback covers the no-JS path.
+
+  Empty state is inlined here (not a separate template) so the
+  template/cart.json pointer stays single-section.
+
+  Settings exposed: eyebrow, heading, checkout label, trust line,
+  empty-state copy and CTA. Every visible string is admin-tunable.
+{%- endcomment -%}
+
+{%- liquid
+  assign gphc_num = settings.longeva_gphc_number | default: '9012378'
+-%}
+
+<script src="{{ 'longeva-cart.js' | asset_url }}" defer></script>
+
+<section class="longeva-cart longeva-page longeva-page--light">
+  <div class="longeva-container longeva-cart__inner">
+    {%- if cart.item_count == 0 -%}
+      <div class="longeva-cart__empty">
+        <p class="longeva-eyebrow longeva-cart__empty-eyebrow">{{ section.settings.empty_eyebrow | default: 'Your cart' | escape }}</p>
+        <h1 class="longeva-display longeva-cart__empty-heading">{{ section.settings.empty_heading | default: 'Nothing here yet' | escape }}</h1>
+        <p class="longeva-cart__empty-lede">{{ section.settings.empty_lede | default: 'Most consultations are booked through the booking flow rather than added to a basket. Browse services to find what you need.' | escape }}</p>
+        <div class="longeva-cart__empty-actions">
+          <a href="{{ section.settings.empty_cta_url | default: '/pages/services-manchester' }}" class="longeva-btn longeva-btn--primary-on-light longeva-cart__empty-cta">
+            <span>{{ section.settings.empty_cta_label | default: 'Browse services' | escape }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+          </a>
+          <a href="{{ section.settings.empty_secondary_url | default: '/pages/book' }}" class="longeva-cart__empty-link">
+            {{ section.settings.empty_secondary_label | default: 'Or book a consultation' | escape }}
+          </a>
+        </div>
+      </div>
+    {%- else -%}
+      <header class="longeva-cart__header">
+        <p class="longeva-eyebrow">{{ section.settings.eyebrow | default: 'Your selection' | escape }}</p>
+        <h1 class="longeva-display longeva-cart__title">
+          {{ section.settings.heading | default: 'Bookings' | escape }}
+          <span class="longeva-cart__count">{{ cart.item_count }} {%- if cart.item_count == 1 -%}item{%- else -%}items{%- endif -%}</span>
+        </h1>
+      </header>
+
+      {%- comment -%}
+        Polite live region for assistive-tech announcement after a
+        cart change. Filled by longeva-cart.js after the post-reload
+        paint when sessionStorage flag is set.
+      {%- endcomment -%}
+      <div role="status" aria-live="polite" aria-atomic="true" class="visually-hidden" data-longeva-cart-live></div>
+
+      <form action="{{ routes.cart_url }}" method="post" novalidate class="longeva-cart__form" id="LongevaCartForm" data-longeva-cart-form>
+        <div class="longeva-cart__body">
+          <ul class="longeva-cart__items" role="list">
+            {%- for item in cart.items -%}
+              <li class="longeva-cart__item" data-longeva-cart-item data-line-key="{{ item.key | escape }}">
+                {%- comment -%}
+                  BK-03 (Varsha feedback May 2026): for service / booking
+                  products, the featured image is out-of-context. Show a
+                  calendar glyph badge instead. Detection is broadened:
+                  template suffix, custom.is_service metafield, the
+                  sesami-service tag, the presence of Sesami booking
+                  properties on the cart line, OR product type containing
+                  "consultation" / "service" / "appointment". Standard
+                  retail products fall through to the photo.
+                {%- endcomment -%}
+                {%- assign _is_service = false -%}
+                {%- if item.product.template_suffix == 'service' or item.product.metafields.custom.is_service.value == true -%}
+                  {%- assign _is_service = true -%}
+                {%- elsif item.product.tags contains 'sesami-service' or item.product.tags contains 'booking' or item.product.tags contains 'consultation' -%}
+                  {%- assign _is_service = true -%}
+                {%- elsif item.properties['_reservation_token'] != blank or item.properties['Date'] != blank or item.properties['Time'] != blank -%}
+                  {%- assign _is_service = true -%}
+                {%- else -%}
+                  {%- assign _ptype = item.product.type | downcase -%}
+                  {%- if _ptype contains 'consult' or _ptype contains 'service' or _ptype contains 'appointment' or _ptype contains 'vaccine' or _ptype contains 'aesthetic' -%}
+                    {%- assign _is_service = true -%}
+                  {%- endif -%}
+                {%- endif -%}
+                <a class="longeva-cart__item-thumb {% if _is_service %}longeva-cart__item-thumb--service{% endif %}" href="{{ item.url }}" aria-label="{{ item.product.title | escape }}">
+                  {%- if _is_service -%}
+                    <span class="longeva-cart__item-thumb-glyph" aria-hidden="true">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="5" width="18" height="16" rx="2"/>
+                        <path d="M3 9h18M8 3v4M16 3v4"/>
+                      </svg>
+                    </span>
+                  {%- elsif item.image -%}
+                    <img
+                      src="{{ item.image | image_url: width: 240 }}"
+                      srcset="{{ item.image | image_url: width: 160 }} 160w, {{ item.image | image_url: width: 240 }} 240w, {{ item.image | image_url: width: 360 }} 360w"
+                      sizes="120px"
+                      alt="{{ item.image.alt | default: item.product.title | escape }}"
+                      loading="lazy"
+                      decoding="async"
+                      width="{{ item.image.width }}"
+                      height="{{ item.image.height }}"
+                    >
+                  {%- else -%}
+                    <span class="longeva-cart__item-thumb-placeholder" aria-hidden="true"></span>
+                  {%- endif -%}
+                </a>
+                <div class="longeva-cart__item-meta">
+                  <h2 class="longeva-cart__item-title">
+                    <a href="{{ item.url }}">{{ item.product.title | escape }}</a>
+                  </h2>
+                  {%- unless item.product.has_only_default_variant -%}
+                    <p class="longeva-cart__item-variant">{{ item.variant.title | escape }}</p>
+                  {%- endunless -%}
+                  {%- if item.selling_plan_allocation -%}
+                    <p class="longeva-cart__item-variant">{{ item.selling_plan_allocation.selling_plan.name | escape }}</p>
+                  {%- endif -%}
+                  {%- comment -%}
+                    Sesami booking confirmation. When a Sesami slot is
+                    reserved, the cart line carries `Date` (ISO yyyy-mm-dd),
+                    `Time` (24h HH:MM), and `_reservation_token` properties.
+                    Surface the slot prominently so patients see immediate
+                    confirmation that the time is held, not buried in a
+                    generic property key/value list. The brass tick is the
+                    only brass on the row, signalling "secured".
+                    Generic non-Sesami properties (custom monogram, gift
+                    note, etc.) still render via the fallback list below.
+                  {%- endcomment -%}
+                  {%- assign sesami_date = item.properties['Date'] -%}
+                  {%- assign sesami_time = item.properties['Time'] -%}
+                  {%- assign sesami_team = item.properties['Team Member'] -%}
+                  {%- assign sesami_token = item.properties['_reservation_token'] -%}
+                  {%- if sesami_date != blank and sesami_time != blank -%}
+                    {%- comment -%}
+                      Format the date as a human-friendly long form so
+                      patients read "Monday, 11 May 2026 at 11:00" not
+                      "2026-05-11 11:00". Liquid `date` filter accepts
+                      ISO strings.
+                    {%- endcomment -%}
+                    {%- assign date_long = sesami_date | date: '%A, %-d %B %Y' -%}
+                    {%- assign time_long = sesami_time -%}
+                    {%- if sesami_time contains ':' -%}
+                      {%- assign t_parts = sesami_time | split: ':' -%}
+                      {%- assign t_hour = t_parts[0] | times: 1 -%}
+                      {%- assign t_min = t_parts[1] | default: '00' -%}
+                      {%- if t_hour == 0 -%}
+                        {%- assign time_long = '12:' | append: t_min | append: ' am' -%}
+                      {%- elsif t_hour < 12 -%}
+                        {%- assign time_long = t_hour | append: ':' | append: t_min | append: ' am' -%}
+                      {%- elsif t_hour == 12 -%}
+                        {%- assign time_long = '12:' | append: t_min | append: ' pm' -%}
+                      {%- else -%}
+                        {%- assign t_disp = t_hour | minus: 12 -%}
+                        {%- assign time_long = t_disp | append: ':' | append: t_min | append: ' pm' -%}
+                      {%- endif -%}
+                    {%- endif -%}
+                    <div class="longeva-cart__booking" role="group" aria-label="Booking details">
+                      <p class="longeva-cart__booking-status">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>
+                        <span>Slot reserved</span>
+                      </p>
+                      <p class="longeva-cart__booking-when">{{ date_long | escape }} <span class="longeva-cart__booking-when-sep">at</span> {{ time_long | escape }}</p>
+                      {%- if sesami_team != blank -%}
+                        <p class="longeva-cart__booking-with">With {{ sesami_team | escape }}</p>
+                      {%- endif -%}
+                      {%- if sesami_token != blank -%}
+                        {%- comment -%}
+                          BK-08 (Varsha May 2026): Sesami's raw token varies
+                          in length/character set per booking. Normalise
+                          display to a consistent "BOOK-" prefix + first
+                          8 chars uppercased so every reservation reads
+                          as a structured reference. Raw token still
+                          travels via line-item properties for support.
+                        {%- endcomment -%}
+                        {%- assign sesami_token_clean = sesami_token | replace: '-', '' | replace: '_', '' | upcase | truncate: 8, '' -%}
+                        <p class="longeva-cart__booking-token">Reservation ref: <code>BOOK-{{ sesami_token_clean | escape }}</code></p>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                  {%- comment -%}
+                    Fallback: render any non-Sesami, non-private public
+                    properties (e.g. monogram text, custom gift note) as
+                    a plain key/value list.
+                  {%- endcomment -%}
+                  {%- if item.properties.size > 0 -%}
+                    {%- assign has_extra_props = false -%}
+                    {%- for property in item.properties -%}
+                      {%- assign p_key = property.first -%}
+                      {%- if p_key contains '_' or property.last == blank -%}{%- continue -%}{%- endif -%}
+                      {%- if p_key == 'Date' or p_key == 'Time' or p_key == 'Team Member' -%}{%- continue -%}{%- endif -%}
+                      {%- assign has_extra_props = true -%}
+                    {%- endfor -%}
+                    {%- if has_extra_props -%}
+                      <ul class="longeva-cart__item-props" role="list">
+                        {%- for property in item.properties -%}
+                          {%- assign p_key = property.first -%}
+                          {%- if p_key contains '_' or property.last == blank -%}{%- continue -%}{%- endif -%}
+                          {%- if p_key == 'Date' or p_key == 'Time' or p_key == 'Team Member' -%}{%- continue -%}{%- endif -%}
+                          <li><span>{{ p_key | escape }}:</span> {{ property.last | escape }}</li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+                  {%- endif -%}
+
+                  <div class="longeva-cart__item-actions">
+                    <div class="longeva-cart__qty" role="group" aria-label="Quantity for {{ item.product.title | escape }}">
+                      <button type="button" class="longeva-cart__qty-btn" data-longeva-qty-decrease aria-label="Decrease quantity">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+                      </button>
+                      <input
+                        type="number"
+                        name="updates[]"
+                        value="{{ item.quantity }}"
+                        min="0"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        class="longeva-cart__qty-input"
+                        data-longeva-qty-input
+                        aria-label="Quantity for {{ item.product.title | escape }}"
+                      >
+                      <button type="button" class="longeva-cart__qty-btn" data-longeva-qty-increase aria-label="Increase quantity">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg>
+                      </button>
+                    </div>
+                    <a class="longeva-cart__remove" href="{{ item.url_to_remove }}" data-longeva-cart-remove aria-label="Remove {{ item.product.title | escape }} from cart">Remove</a>
+                  </div>
+                </div>
+                <div class="longeva-cart__item-rail">
+                  <p class="longeva-cart__item-total" aria-label="Line total">{{ item.final_line_price | money }}</p>
+                  {%- if item.quantity > 1 -%}
+                    <p class="longeva-cart__item-each" aria-hidden="true">{{ item.final_price | money }} each</p>
+                  {%- endif -%}
+                  {%- comment -%}
+                    For service lines the price shown is the 25% deposit,
+                    not the full treatment fee. Label it so the figure is
+                    unambiguous at a glance (Varsha 28 May).
+                  {%- endcomment -%}
+                  {%- if _is_service -%}
+                    <p class="longeva-cart__item-deposit">deposit</p>
+                  {%- endif -%}
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+
+          {%- if section.settings.show_note -%}
+            <details class="longeva-cart__note">
+              <summary class="longeva-cart__note-summary">{{ section.settings.note_label | default: 'Add a note for the dispensing pharmacist' | escape }}</summary>
+              <label class="visually-hidden" for="LongevaCartNote">{{ section.settings.note_label | default: 'Add a note for the dispensing pharmacist' | escape }}</label>
+              <textarea id="LongevaCartNote" name="note" class="longeva-cart__note-input" rows="3" maxlength="5000" placeholder="{{ section.settings.note_placeholder | default: 'Allergies, repeat-prescription details, anything we should know.' | escape }}">{{ cart.note | escape }}</textarea>
+            </details>
+          {%- endif -%}
+
+          <noscript>
+            <button type="submit" name="update" class="longeva-cart__update-fallback">Update cart</button>
+          </noscript>
+        </div>
+
+        <aside class="longeva-cart__summary" aria-label="Order summary">
+          <div class="longeva-cart__summary-inner">
+            <h2 class="longeva-cart__summary-title">{{ section.settings.summary_heading | default: 'Summary' | escape }}</h2>
+            <dl class="longeva-cart__summary-list">
+              <div class="longeva-cart__summary-row">
+                <dt>Subtotal</dt>
+                <dd>{{ cart.items_subtotal_price | money }}</dd>
+              </div>
+              {%- if cart.cart_level_discount_applications.size > 0 -%}
+                {%- for discount in cart.cart_level_discount_applications -%}
+                  <div class="longeva-cart__summary-row longeva-cart__summary-row--discount">
+                    <dt>{{ discount.title | escape }}</dt>
+                    <dd>&minus;{{ discount.total_allocated_amount | money }}</dd>
+                  </div>
+                {%- endfor -%}
+              {%- endif -%}
+              <div class="longeva-cart__summary-row longeva-cart__summary-row--total">
+                <dt>Total</dt>
+                <dd>{{ cart.total_price | money }}</dd>
+              </div>
+            </dl>
+            {%- comment -%}
+              BK-05/06/07 on the cart page (Varsha May 2026). Deposit terms
+              surface ONE MORE TIME at the point of conversion so the
+              patient is clear on what they're paying before clicking
+              Continue to payment. Pulls from theme setting; safe
+              default below.
+            {%- endcomment -%}
+            {%- assign _cart_deposit_terms = settings.longeva_deposit_terms | default: section.settings.deposit_terms | default: 'A non-refundable, non-transferable deposit (25% of the treatment cost) holds your appointment. The balance is settled with the clinician on the day.' -%}
+            {%- if _cart_deposit_terms != blank -%}
+              <p class="longeva-cart__deposit-terms" role="note">{{ _cart_deposit_terms | escape }}</p>
+            {%- endif -%}
+            <p class="longeva-cart__summary-note">{{ section.settings.summary_note | default: 'Shipping and any applicable VAT calculated at checkout.' | escape }}</p>
+            {%- comment -%}
+              UX-01 (Alicia + Varsha May 2026), adults-only confirmation.
+              Theme-side age gate; complements the Sesami booking-form
+              DOB field. Required checkbox: form cannot submit without
+              it via browser-native validation. Sesami handles the
+              clinical DOB capture; this is the conversion-step legal
+              confirmation.
+            {%- endcomment -%}
+            <label class="longeva-cart__age-confirm" for="LongevaCartAgeConfirm">
+              <input type="checkbox" id="LongevaCartAgeConfirm" name="attributes[Age confirmed 18+]" value="Yes" required>
+              <span>I confirm I am aged 18 or over. Any date of birth captured by the clinician at the appointment is accurate.</span>
+            </label>
+            <button type="submit" name="checkout" class="longeva-btn longeva-btn--primary-on-light longeva-cart__checkout">
+              <span>{{ section.settings.checkout_label | default: 'Continue to payment' | escape }}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+            </button>
+            <p class="longeva-cart__trust">
+              {{ section.settings.trust_lede | default: 'Pharmacy regulator: GPhC ' | escape }}{{ gphc_num }}. {{ section.settings.trust_tail | default: 'Secured via Shopify Payments.' | escape }}
+            </p>
+          </div>
+        </aside>
+      </form>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .longeva-cart { padding-block: 0; }
+  .longeva-cart__inner {
+    max-width: 1080px;
+    padding-block: clamp(40px, 6vw, 72px) clamp(56px, 8vw, 96px);
+  }
+  .longeva-cart__header {
+    margin-block-end: 32px;
+  }
+  .longeva-cart__title {
+    font-size: clamp(36px, 5vw, 56px);
+    margin: 12px 0 0;
+    color: var(--longeva-text);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .longeva-cart__count {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--longeva-text-subdued);
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+  }
+  .longeva-cart__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 380px);
+    gap: 56px;
+    align-items: start;
+  }
+  .longeva-cart__body { min-width: 0; }
+  .longeva-cart__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-block-start: 1px solid var(--longeva-border-mid);
+  }
+  /* Busy state during in-flight cart change. Class-based so the
+     fetch handler does not write inline style and lose to external
+     CSS or theme-editor refreshes. */
+  .longeva-cart__item.is-busy {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .longeva-cart__item {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 24px;
+    padding-block: 24px;
+    border-block-end: 1px solid var(--longeva-border-mid);
+    align-items: start;
+  }
+  .longeva-cart__item-thumb {
+    display: block;
+    width: 120px;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--longeva-radius-md);
+    background: rgba(45, 25, 14, 0.04);
+    border: 1px solid var(--longeva-border);
+  }
+  .longeva-cart__item-thumb img,
+  .longeva-cart__item-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .longeva-cart__item-thumb-placeholder {
+    background: linear-gradient(135deg, rgba(185, 145, 87, 0.10), rgba(45, 25, 14, 0.04));
+  }
+  /* Service-thumb (vaccines, consultations, aesthetics): the calendar
+     glyph was 28px inside a 120x150 box, which read as an empty cell.
+     Center it and scale up so the cell visibly communicates "booking"
+     rather than "missing image". */
+  .longeva-cart__item-thumb--service {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(185, 145, 87, 0.10), rgba(45, 25, 14, 0.04));
+  }
+  .longeva-cart__item-thumb--service .longeva-cart__item-thumb-glyph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60%;
+    height: 60%;
+    color: rgba(45, 25, 14, 0.55);
+  }
+  .longeva-cart__item-thumb--service .longeva-cart__item-thumb-glyph svg {
+    width: 100%;
+    height: 100%;
+  }
+  .longeva-cart__item-meta { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .longeva-cart__item-title {
+    font-family: var(--longeva-font-display);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    margin: 0;
+    color: var(--longeva-text);
+  }
+  .longeva-cart__item-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .longeva-cart__item-title a:hover,
+  .longeva-cart__item-title a:focus-visible {
+    text-decoration: underline;
+    text-decoration-color: var(--longeva-accent);
+    text-underline-offset: 3px;
+  }
+  .longeva-cart__item-variant {
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    color: var(--longeva-text-subdued);
+    margin: 0;
+  }
+  /* Sesami booking confirmation block. Brass tick + bold day/time
+     line so patients land on /cart and immediately see the slot is
+     held. Hairline brand-accent border on the leading edge for the
+     "secured" affordance without leaning on a fill. */
+  .longeva-cart__booking {
+    margin: 10px 0 0;
+    padding: 12px 14px;
+    border-inline-start: 2px solid var(--longeva-accent);
+    background: rgba(185, 145, 87, 0.06);
+    border-radius: 4px;
+  }
+  .longeva-cart__booking-status {
+    margin: 0 0 4px;
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--longeva-accent-ink);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+  .longeva-cart__booking-status svg {
+    color: var(--longeva-accent-gold);
+    flex: 0 0 auto;
+  }
+  .longeva-cart__booking-when {
+    margin: 0;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--longeva-text);
+    letter-spacing: -0.005em;
+  }
+  .longeva-cart__booking-when-sep {
+    color: var(--longeva-text-subdued);
+    font-weight: 400;
+    margin: 0 4px;
+  }
+  .longeva-cart__booking-with {
+    margin: 4px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-cart__booking-token {
+    margin: 4px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--longeva-text-quiet);
+  }
+  .longeva-cart__booking-token code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-cart__item-props {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-cart__item-props li { margin-block-end: 2px; }
+  .longeva-cart__item-props span { color: var(--longeva-text); font-weight: 500; }
+  .longeva-cart__item-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-block-start: 12px;
+    flex-wrap: wrap;
+  }
+  .longeva-cart__qty {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--longeva-border-mid);
+    border-radius: 999px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .longeva-cart__qty-btn {
+    width: 36px;
+    min-height: 36px;
+    background: transparent;
+    border: 0;
+    color: var(--longeva-text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s var(--longeva-ease);
+  }
+  .longeva-cart__qty-btn:hover { background: rgba(45, 25, 14, 0.06); }
+  .longeva-cart__qty-btn:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: -2px;
+  }
+  .longeva-cart__qty-input {
+    width: 44px;
+    border: 0;
+    background: transparent;
+    text-align: center;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: var(--longeva-text);
+    -moz-appearance: textfield;
+  }
+  .longeva-cart__qty-input::-webkit-outer-spin-button,
+  .longeva-cart__qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .longeva-cart__qty-input:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: -2px;
+    background: rgba(45, 25, 14, 0.04);
+  }
+  .longeva-cart__qty-input:focus:not(:focus-visible) { outline: none; background: rgba(45, 25, 14, 0.04); }
+  .longeva-cart__remove {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--longeva-text-subdued);
+    text-decoration: underline;
+    text-decoration-color: rgba(45, 25, 14, 0.25);
+    text-underline-offset: 3px;
+    transition: color 0.15s var(--longeva-ease), text-decoration-color 0.15s var(--longeva-ease);
+  }
+  .longeva-cart__remove:hover,
+  .longeva-cart__remove:focus-visible {
+    color: var(--longeva-primary);
+    text-decoration-color: var(--longeva-primary);
+    outline: none;
+  }
+  .longeva-cart__item-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    align-self: start;
+  }
+  .longeva-cart__item-total {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--longeva-text);
+    margin: 0;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+  .longeva-cart__item-each {
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--longeva-text-subdued);
+    margin: 0;
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .longeva-cart__note {
+    margin-block-start: 24px;
+  }
+  .longeva-cart__note-summary {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: var(--longeva-text-subdued);
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+  }
+  .longeva-cart__note-summary::-webkit-details-marker { display: none; }
+  .longeva-cart__note-summary::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-inline-end: 1px solid currentColor;
+    border-block-end: 1px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.18s var(--longeva-ease);
+  }
+  .longeva-cart__note[open] .longeva-cart__note-summary::before {
+    transform: rotate(45deg);
+  }
+  .longeva-cart__note-input {
+    width: 100%;
+    margin-block-start: 12px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 12px 14px;
+    border: 1px solid var(--longeva-border-mid);
+    border-radius: var(--longeva-radius-md);
+    background: #fff;
+    color: var(--longeva-text);
+    resize: vertical;
+    min-height: 88px;
+  }
+  .longeva-cart__note-input:focus {
+    outline: none;
+    border-color: var(--longeva-primary);
+    box-shadow: 0 0 0 3px rgba(45, 25, 14, 0.10);
+  }
+
+  .longeva-cart__update-fallback {
+    margin-block-start: 16px;
+    font-family: var(--longeva-font-body);
+    font-size: 13px;
+    padding: 10px 16px;
+    border: 1px solid var(--longeva-border-mid);
+    background: #fff;
+    border-radius: var(--longeva-radius-md);
+    color: var(--longeva-text);
+    cursor: pointer;
+  }
+
+  .longeva-cart__summary {
+    position: sticky;
+    top: calc(var(--header-group-height, 80px) + 24px);
+    align-self: start;
+  }
+  .longeva-cart__summary-inner {
+    background: #fff;
+    border: 1px solid var(--longeva-border-mid);
+    border-radius: var(--longeva-radius-card);
+    padding: 28px;
+  }
+  .longeva-cart__summary-title {
+    font-family: var(--longeva-font-display);
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    color: var(--longeva-text);
+  }
+  .longeva-cart__summary-list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .longeva-cart__summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+  }
+  .longeva-cart__summary-row dt { color: var(--longeva-text-subdued); margin: 0; }
+  .longeva-cart__summary-row dd { margin: 0; color: var(--longeva-text); font-variant-numeric: tabular-nums; }
+  .longeva-cart__summary-row--discount dd { color: var(--longeva-accent-gold); }
+  .longeva-cart__summary-row--total {
+    margin-block-start: 12px;
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--longeva-border-mid);
+    font-size: 16px;
+  }
+  .longeva-cart__summary-row--total dt { color: var(--longeva-text); font-weight: 500; }
+  .longeva-cart__summary-row--total dd { color: var(--longeva-primary); font-weight: 500; font-size: 18px; }
+  /* BK-05/06/07 cart-page deposit terms (Varsha May 2026) */
+  .longeva-cart__deposit-terms {
+    margin: 14px 0 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(185, 145, 87, 0.55);
+    background: rgba(185, 145, 87, 0.05);
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--longeva-primary, #2D190E);
+  }
+
+  /* UX-01 age confirm checkbox (Alicia + Varsha May 2026) */
+  .longeva-cart__age-confirm {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 14px 0 16px;
+    padding: 10px 12px;
+    border: 1px solid rgba(45, 25, 14, 0.18);
+    background: rgba(185, 145, 87, 0.04);
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--longeva-primary);
+    cursor: pointer;
+  }
+  .longeva-cart__age-confirm input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: #2D190E;
+  }
+  .longeva-cart__age-confirm input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--longeva-accent, #B99157);
+    outline-offset: 2px;
+  }
+  .longeva-cart__summary-note {
+    margin: 16px 0 20px;
+    font-family: var(--longeva-font-body);
+    font-size: 12px;
+    color: var(--longeva-text-subdued);
+  }
+  .longeva-cart__checkout {
+    width: 100%;
+    min-height: 52px;
+    gap: 8px;
+  }
+  .longeva-cart__trust {
+    margin: 16px 0 0;
+    font-family: var(--longeva-font-body);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--longeva-text-subdued);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* Empty state. Editorial typography: no glyph, brass hairline rule
+     under the heading earns the visual moment. Asymmetric left-align
+     so the composition reads as designed, not as a Shopify default. */
+  .longeva-cart__empty {
+    max-width: 560px;
+    margin: 0;
+    text-align: start;
+    padding-block: clamp(32px, 5vw, 64px);
+  }
+  .longeva-cart__empty-eyebrow {
+    margin: 0;
+    color: var(--longeva-accent-ink);
+  }
+  .longeva-cart__empty-heading {
+    font-size: clamp(36px, 6vw, 56px);
+    margin: 12px 0 0;
+    color: var(--longeva-text);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .longeva-cart__empty-heading::after {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 1px;
+    background: var(--longeva-accent);
+    margin: 24px 0 0;
+  }
+  .longeva-cart__empty-lede {
+    font-family: var(--longeva-font-body);
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--longeva-text-subdued);
+    margin: 24px 0 32px;
+    max-width: 480px;
+  }
+  .longeva-cart__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 24px;
+  }
+  .longeva-cart__empty-cta {
+    gap: 8px;
+    min-width: 200px;
+  }
+  .longeva-cart__empty-link {
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    color: var(--longeva-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--longeva-accent);
+    text-underline-offset: 4px;
+  }
+  .longeva-cart__empty-link:hover,
+  .longeva-cart__empty-link:focus-visible {
+    text-decoration-color: var(--longeva-primary);
+    outline: none;
+  }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    .longeva-cart__form {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .longeva-cart__summary { position: static; }
+  }
+  @media (max-width: 540px) {
+    .longeva-cart__item {
+      grid-template-columns: 88px 1fr;
+      grid-template-areas:
+        "thumb meta"
+        "thumb rail";
+      gap: 16px;
+    }
+    .longeva-cart__item-thumb { grid-area: thumb; width: 88px; }
+    .longeva-cart__item-meta { grid-area: meta; }
+    .longeva-cart__item-rail { grid-area: rail; flex-direction: row; align-items: baseline; gap: 12px; padding-inline-start: 104px; margin-block-start: 4px; align-self: start; }
+    .longeva-cart__item-each { order: -1; }
+    .longeva-cart__title { font-size: 32px; }
+    .longeva-cart__summary-inner { padding: 22px; }
+    .longeva-cart__checkout { min-height: 56px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Longeva Cart page",
+  "tag": "section",
+  "class": "longeva-cart-page-section",
+  "enabled_on": { "templates": ["cart"] },
+  "settings": [
+    { "type": "header", "content": "Active state" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Your selection" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Bookings" },
+    { "type": "text", "id": "summary_heading", "label": "Summary heading", "default": "Summary" },
+    { "type": "text", "id": "summary_note", "label": "Summary note", "default": "Shipping and any applicable VAT calculated at checkout." },
+    { "type": "text", "id": "checkout_label", "label": "Checkout button", "default": "Continue to payment" },
+    { "type": "text", "id": "trust_lede", "label": "Trust line lede", "default": "Regulated UK pharmacy. GPhC " },
+    { "type": "text", "id": "trust_tail", "label": "Trust line tail", "default": "Secured via Shopify Payments." },
+    { "type": "checkbox", "id": "show_note", "label": "Show note field for the dispensing pharmacist", "default": true },
+    { "type": "text", "id": "note_label", "label": "Note label", "default": "Add a note for the dispensing pharmacist" },
+    { "type": "text", "id": "note_placeholder", "label": "Note placeholder", "default": "Allergies, repeat-prescription details, anything we should know." },
+    { "type": "header", "content": "Empty state" },
+    { "type": "text", "id": "empty_eyebrow", "label": "Empty eyebrow", "default": "Your cart" },
+    { "type": "text", "id": "empty_heading", "label": "Empty heading", "default": "Nothing here yet" },
+    { "type": "textarea", "id": "empty_lede", "label": "Empty lede", "default": "Most consultations are booked through the booking flow rather than added to a basket. Browse services to find what you need." },
+    { "type": "text", "id": "empty_cta_label", "label": "Empty primary CTA label", "default": "Browse services" },
+    { "type": "url", "id": "empty_cta_url", "label": "Empty primary CTA URL" },
+    { "type": "text", "id": "empty_secondary_label", "label": "Empty secondary CTA label", "default": "Or book a consultation" },
+    { "type": "url", "id": "empty_secondary_url", "label": "Empty secondary CTA URL" }
+  ],
+  "presets": [
+    { "name": "Longeva Cart page" }
+  ]
+}
+{% endschema %}

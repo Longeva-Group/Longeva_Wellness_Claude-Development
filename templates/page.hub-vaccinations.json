@@ -1,0 +1,67 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hub": {
+      "type": "longeva-category-hub",
+      "blocks": {
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
+        "badge_2": { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 123456" } },
+        "badge_3": { "type": "trust_badge", "settings": { "primary": "Travel + routine", "secondary": "All ages where licensed" } },
+        "badge_4": { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "Same-week appointments" } },
+        "faq_yellow_fever": {
+          "type": "faq",
+          "settings": {
+            "question": "Do you provide an International Certificate of Vaccination for Yellow Fever?",
+            "answer": "<p>Yes. We are a designated Yellow Fever Vaccination Centre. The certificate is issued at the appointment and is valid for life under the WHO 2016 update.</p>"
+          }
+        },
+        "faq_combined": {
+          "type": "faq",
+          "settings": {
+            "question": "Can I have several vaccinations in one visit?",
+            "answer": "<p>Most travel vaccines can be given on the same day. The pharmacist will plan the schedule with you, including any that need to be spaced (for example rabies pre-exposure courses).</p>"
+          }
+        },
+        "faq_lead_time": {
+          "type": "faq",
+          "settings": {
+            "question": "How far in advance should I book for travel?",
+            "answer": "<p>Six to eight weeks is ideal for a full destination plan. We can support shorter timelines with accelerated schedules for hepatitis B and standby kits, but earlier is always safer for full cover.</p>"
+          }
+        },
+        "faq_nhs": {
+          "type": "faq",
+          "settings": {
+            "question": "Do you offer vaccines that are usually free on the NHS?",
+            "answer": "<p>Yes, on a private basis when you fall outside NHS eligibility (for example flu, shingles, MMR catch-up, HPV catch-up). We are not contracted to deliver NHS-funded immunisations from this clinic.</p>"
+          }
+        },
+        "cta_1": { "type": "cta", "settings": { "heading": "Book your travel clinic appointment", "subhead": "Same-week appointments. Yellow Fever certificate issued in clinic." } }
+      },
+      "block_order": [
+        "badge_1", "badge_2", "badge_3", "badge_4",
+        "faq_yellow_fever", "faq_combined", "faq_lead_time", "faq_nhs",
+        "cta_1"
+      ],
+      "settings": {
+        "eyebrow": "Vaccinations",
+        "featured_heading": "",
+        "view_all_label": "View all vaccinations",
+        "faq_heading": "Vaccinations: frequently asked questions",
+        "related_heading": "Related categories",
+        "book_label": "Book a Consultation",
+        "book_url": "/pages/book",
+        "directory_url": "/pages/services-manchester"
+      }
+    }
+  },
+  "order": ["hub"]
+}

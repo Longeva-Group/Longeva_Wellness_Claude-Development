@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "main": {
+      "type": "longeva-travel-hub",
+      "settings": {
+        "eyebrow": "Travel vaccinations",
+        "h1": "Travel Vaccinations for Central and South America",
+        "mode": "region",
+        "region_match": "Central and South America"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

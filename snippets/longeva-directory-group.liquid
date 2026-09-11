@@ -1,0 +1,79 @@
+{% comment %}
+  Renders one directory category group.
+
+  Accepts:
+    title           Heading (the category name).
+    category_slug   Handleised category name, used as the anchor id.
+    handles         Array of page handles matched to this category by
+                    the section (already filtered on metafield).
+    hub_handle      Optional. If a page exists at that handle the
+                    "See all" link renders in the group heading.
+{% endcomment %}
+
+{%- liquid
+  assign hub_page = nil
+  if hub_handle != blank
+    assign hub_page = pages[hub_handle]
+  endif
+  assign category_lower = title | downcase
+-%}
+
+<section
+  id="{{ category_slug }}"
+  class="longeva-directory__group"
+  data-longeva-directory-group
+  aria-label="{{ title | escape }}"
+>
+  {%- comment -%}
+    Heading is a single link to the category hub page when one exists,
+    so the panel title itself is the primary affordance (Varsha review
+    2026-05-04: "users expect to click the heading to reach the
+    treatment list"). Falls back to plain heading when no hub page is
+    set so the markup never renders an empty link.
+  {%- endcomment -%}
+  <h2 class="longeva-directory__group-heading">
+    {% if hub_page %}
+      <a class="longeva-directory__group-heading-link" href="{{ hub_page.url }}">
+        <span>{{ title | escape }}</span>
+        <span class="longeva-directory__group-heading-arrow" aria-hidden="true">{% render 'longeva-arrow' %}</span>
+        <span class="longeva-sr-only">View all {{ category_lower | escape }}</span>
+      </a>
+    {% else %}
+      <span>{{ title | escape }}</span>
+    {% endif %}
+  </h2>
+  <ul class="longeva-directory__list" role="list">
+    {% for h in handles %}
+      {%- assign handle = h | strip -%}
+      {%- if handle == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign pg = pages[handle] -%}
+      {% if pg %}
+        {%- liquid
+          assign display_name = pg.title | remove: ' Manchester'
+          assign search_key = display_name | downcase
+          assign price_raw = pg.metafields.custom.price_from | default: ''
+          assign price_norm = price_raw | strip | downcase
+          assign price_is_placeholder = false
+          if price_norm == '' or price_norm == 'enquire' or price_norm == 'enquiry' or price_norm == 'tbc' or price_norm == 'tba'
+            assign price_is_placeholder = true
+          endif
+          assign duration = pg.metafields.custom.duration_minutes | default: ''
+        -%}
+        <li data-longeva-directory-item data-name="{{ search_key | escape }}">
+          <a class="longeva-directory__link" href="{{ pg.url }}">
+            <span class="longeva-directory__link-name">{{ display_name | escape }}</span>
+            <span class="longeva-directory__link-meta">
+              {% unless price_is_placeholder %}
+                <span class="longeva-directory__link-price">From {{ price_raw | escape }}</span>
+              {% endunless %}
+              {% if duration != blank %}
+                <span class="longeva-directory__link-dot" aria-hidden="true">·</span>
+                <span class="longeva-directory__link-duration">{{ duration }} min</span>
+              {% endif %}
+            </span>
+          </a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</section>

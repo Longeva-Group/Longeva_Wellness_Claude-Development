@@ -1,0 +1,190 @@
+{% comment %}
+  JSON-LD for the Longeva pharmacy entity. Rendered sitewide (from
+  layout/theme.liquid) so the @id #pharmacy node referenced by service,
+  hub and article schemas always resolves on the same page. Previously
+  this only fired on the homepage (via the hero section), which broke
+  entity stitching on every other surface.
+
+  Validated against schema.org vocabulary:
+  - Pharmacy is a subtype of MedicalBusiness.
+  - Using an array for @type lets crawlers that only know Pharmacy OR
+    MedicalBusiness match the same node.
+  - geo + hasMap require admin to populate lat/lon and Google Maps
+    URL. Local-pack eligibility depends on these.
+  - openingHoursSpecification driven by per-day settings (see
+    settings_schema.json longeva_hours_*). Defaults match common UK
+    pharmacy operating hours; admin overrides per-day in theme settings.
+  - priceRange computed dynamically from collections.all min product
+    price (the lowest-priced service product). Falls back to the
+    longeva_price_range setting then to "££" if no products are
+    available. Cost is one Liquid loop per page render, capped at 250
+    products; Shopify caches rendered pages so this amortises.
+
+  Telephone reads from shop.phone settings (admin-driven) so the
+  snippet stays empty until a real number is set in General settings.
+
+  canonical_origin normalises shop.url to https: in case Shopify ever
+  returns a protocol-relative or http URL. Reused for @id + url so
+  cross-page entity stitching never detaches.
+{% endcomment %}
+
+{%- liquid
+  assign canonical_origin = shop.url | replace: 'http://', 'https://'
+  unless canonical_origin contains 'https://'
+    assign canonical_origin = canonical_origin | prepend: 'https:'
+  endunless
+  assign telephone = settings.longeva_phone | default: shop.phone | default: ''
+  assign email = settings.longeva_email | default: ''
+  assign company_number = settings.longeva_company_number | default: '12643186'
+  # Regulator + Companies House register URLs are held under Two Face
+  # Aesthetics Limited (the entries live on the public registers). The
+  # registration numbers render in the identifier[] block below and stay
+  # admin-editable via Theme Settings.
+  assign linkedin_url = settings.longeva_linkedin_url | default: ''
+  assign facebook_url = settings.longeva_facebook_url | default: ''
+  assign instagram_url = settings.longeva_instagram_url | default: ''
+  assign geo_lat = settings.longeva_geo_latitude | strip
+  assign geo_lon = settings.longeva_geo_longitude | strip
+  assign maps_url = settings.longeva_google_maps_url | strip
+
+  # Per-day opening hours. ISO 8601 HH:MM format expected. Empty
+  # value on the open field means closed for that day.
+  assign weekday_open = settings.longeva_hours_weekday_open | default: '09:00'
+  assign weekday_close = settings.longeva_hours_weekday_close | default: '18:00'
+  assign sat_open = settings.longeva_hours_saturday_open | default: '09:00'
+  assign sat_close = settings.longeva_hours_saturday_close | default: '13:00'
+  assign sun_open = settings.longeva_hours_sunday_open | default: ''
+  assign sun_close = settings.longeva_hours_sunday_close | default: ''
+
+  # Build the openingHoursSpecification array contents as a single
+  # comma-joined string. Comma added BEFORE each non-blank block
+  # except the first so JSON stays valid no matter which days are
+  # set. Blank open/close on a day = closed (block omitted).
+  assign hours_inner = ''
+  if weekday_open != blank and weekday_close != blank
+    capture _wb
+      echo '{ "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "'
+      echo weekday_open
+      echo '", "closes": "'
+      echo weekday_close
+      echo '" }'
+    endcapture
+    assign hours_inner = _wb
+  endif
+  if sat_open != blank and sat_close != blank
+    capture _sb
+      echo '{ "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "'
+      echo sat_open
+      echo '", "closes": "'
+      echo sat_close
+      echo '" }'
+    endcapture
+    if hours_inner != blank
+      assign hours_inner = hours_inner | append: ','
+    endif
+    assign hours_inner = hours_inner | append: _sb
+  endif
+  if sun_open != blank and sun_close != blank
+    capture _ub
+      echo '{ "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "'
+      echo sun_open
+      echo '", "closes": "'
+      echo sun_close
+      echo '" }'
+    endcapture
+    if hours_inner != blank
+      assign hours_inner = hours_inner | append: ','
+    endif
+    assign hours_inner = hours_inner | append: _ub
+  endif
+
+  # Compute lowest available product price across the catalogue. This
+  # gives the SERP a concrete "from £X" signal which Google rich
+  # results parse for the priceRange property. Capped at 250 products
+  # per Liquid for-loop ceiling; Shopify caches rendered output.
+  assign min_price_pence = 0
+  for product in collections.all.products limit: 250
+    if product.available and product.price > 0
+      if min_price_pence == 0 or product.price < min_price_pence
+        assign min_price_pence = product.price
+      endif
+    endif
+  endfor
+  if min_price_pence > 0
+    assign price_range_value = min_price_pence | money_without_trailing_zeros | prepend: 'From '
+  else
+    assign price_range_value = settings.longeva_price_range | default: '££'
+  endif
+-%}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["Pharmacy", "MedicalClinic", "MedicalBusiness"],
+  "@id": "{{ canonical_origin }}/#pharmacy",
+  "name": "Longeva",
+  "alternateName": "Longeva Wellness",
+  "url": "{{ canonical_origin }}",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "{{ 'longeva-wordmark.svg' | asset_url | prepend: 'https:' }}"
+  },
+  "image": "{{ 'longeva-og-default.png' | asset_url | prepend: 'https:' }}",
+  {% if telephone != blank %}"telephone": "{{ telephone | escape }}",{% endif %}
+  {% if email != blank %}"email": "{{ email | escape }}",{% endif %}
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Unit 1, Chichester Court, Milnrow Road",
+    "addressLocality": "Rochdale",
+    "postalCode": "OL16 1UG",
+    "addressRegion": "Greater Manchester",
+    "addressCountry": "GB"
+  },
+  {%- if geo_lat != blank and geo_lon != blank -%}
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "{{ geo_lat }}",
+    "longitude": "{{ geo_lon }}"
+  },
+  {%- endif -%}
+  {%- if maps_url != blank -%}
+  "hasMap": {{ maps_url | json }},
+  {%- endif -%}
+  "areaServed": [
+    { "@type": "City", "name": "Manchester" },
+    { "@type": "City", "name": "Rochdale" },
+    { "@type": "AdministrativeArea", "name": "Greater Manchester" }
+  ],
+  "medicalSpecialty": [
+    "Pharmacy",
+    "Dermatology",
+    "Aesthetic Medicine",
+    "Travel medicine"
+  ],
+  "isAcceptingNewPatients": true,
+  "priceRange": {{ price_range_value | json }},
+  {%- if hours_inner != blank -%}
+  "openingHoursSpecification": [{{ hours_inner }}],
+  {%- endif -%}
+  "identifier": [
+    { "@type": "PropertyValue", "name": "GPhC pharmacy registration", "value": "{{ settings.longeva_gphc_number | default: '9012378' }}" },
+    { "@type": "PropertyValue", "name": "MHRA WDA(H) licence", "value": "{{ settings.longeva_mhra_wdah | default: '59619' }}" },
+    { "@type": "PropertyValue", "name": "Companies House", "value": "{{ company_number }}" },
+    { "@type": "PropertyValue", "name": "VAT", "value": "{{ settings.longeva_vat_number | default: 'GB358493064' }}" }
+  ]
+  {%- assign has_social = false -%}
+  {%- if linkedin_url != blank or facebook_url != blank or instagram_url != blank -%}
+    {%- assign has_social = true -%}
+  {%- endif -%}
+  {%- if has_social -%}
+  ,
+  "sameAs": [
+    {%- assign social_parts = '' -%}
+    {%- if linkedin_url != blank -%}{%- capture social_parts -%}{{ social_parts }}{{ linkedin_url | json }}{%- endcapture -%}{%- endif -%}
+    {%- if facebook_url != blank -%}{%- if social_parts != blank -%}{%- capture social_parts -%}{{ social_parts }},{%- endcapture -%}{%- endif -%}{%- capture social_parts -%}{{ social_parts }}{{ facebook_url | json }}{%- endcapture -%}{%- endif -%}
+    {%- if instagram_url != blank -%}{%- if social_parts != blank -%}{%- capture social_parts -%}{{ social_parts }},{%- endcapture -%}{%- endif -%}{%- capture social_parts -%}{{ social_parts }}{{ instagram_url | json }}{%- endcapture -%}{%- endif -%}
+    {{ social_parts }}
+  ]
+  {%- endif -%}
+}
+</script>

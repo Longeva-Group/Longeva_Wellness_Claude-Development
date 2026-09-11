@@ -1,0 +1,1318 @@
+/* Longeva brand tokens and homepage-wide overrides.
+   Loaded by snippets/longeva-brand-fonts.liquid via asset_url. */
+
+:root {
+  /* Brand palette (Brand Guidelines 2026) */
+  /* Brand tokens, verbatim from Longeva Brand Guidelines Final.pdf p18.
+     Note: --longeva-accent-ink is a derived AA-safe variant of brand's
+     Dark Gold (#A6783C) for 13px small-text UI (eyebrows, breadcrumbs,
+     meta labels) where the pure brand hex fails WCAG 4.5:1 on beige. */
+  --longeva-primary: #2D190E;          /* brand Rich Dark Brown */
+  --longeva-primary-hover: #1F120A;    /* derived darker brand for active/hover */
+  --longeva-primary-ivory: #F2E6DC;    /* brand Beige */
+  --longeva-accent: #B99157;           /* brand Gold, decorative only */
+  --longeva-accent-gold: #A6783C;      /* brand Dark Gold, headings/accents */
+  --longeva-accent-ink: #7A5A2C;       /* derived AA-safe gold for small UI text */
+  /* Focus ring colour: must clear WCAG 2.2 SC 1.4.11 (3:1 vs adjacent
+     UI background). #7A5A2C ≈ 5.7:1 vs #FAFAF7, holding the brass
+     register without the legal-blocker contrast issue that #B99157
+     (~2.6:1) carries. Single token so future surfaces never reach
+     for the wrong gold by mistake. */
+  --longeva-focus-ring: var(--longeva-accent-ink);
+  --longeva-accent-dark: #2C4A47;     /* deep teal-green, card variant */
+  --longeva-charcoal: #2A2A2A;        /* neutral charcoal */
+  --longeva-bg: #FAFAF7;              /* off-white */
+  --longeva-text: #1A1A1A;            /* near-black */
+  --longeva-text-subdued: rgba(26, 26, 26, 0.68);
+  --longeva-text-quiet: rgba(26, 26, 26, 0.50);
+  --longeva-border: rgba(0, 0, 0, 0.08);
+  --longeva-border-mid: rgba(0, 0, 0, 0.12);
+
+  --longeva-font-display: "Owners XWide", "Baskerville Display PT", "Playfair Display", Georgia, serif;
+  --longeva-font-body: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --longeva-radius-sm: 2px;
+  --longeva-radius-md: 4px;
+  --longeva-radius-card: 12px;         /* softer card radius, echoes logo arms */
+  --longeva-radius-btn: 999px;         /* pill buttons match rounded cross logo */
+
+  --longeva-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Type scale (PR #127 Phase 2 reference framework). Sections opt in by
+     using these tokens instead of bare px/clamp values so a single source
+     of truth governs vertical rhythm and visual weight across the site. */
+  --longeva-h1-mobile: clamp(32px, 9vw, 40px);
+  --longeva-h1-desktop: clamp(48px, 5vw, 72px);
+  --longeva-h2-mobile: clamp(26px, 7vw, 32px);
+  --longeva-h2-desktop: clamp(32px, 3vw, 40px);
+  --longeva-h3-mobile: 20px;
+  --longeva-h3-desktop: 22px;
+  --longeva-h4: 18px;
+  --longeva-body: 16px;
+  --longeva-small: 14px;
+  --longeva-micro: 12px;
+  --longeva-eyebrow: 11px;
+
+  /* Letter spacing */
+  --longeva-tracking-display: -0.02em;
+  --longeva-tracking-h2: -0.01em;
+  --longeva-tracking-body: 0;
+  --longeva-tracking-eyebrow: 0.16em;
+
+  /* Line heights */
+  --longeva-lh-display: 1.05;
+  --longeva-lh-heading: 1.2;
+  --longeva-lh-body: 1.55;
+
+  /* Spacing scale (8pt grid). */
+  --longeva-section-pad-tight: clamp(48px, 6vw, 64px);
+  --longeva-section-pad-default: clamp(64px, 8vw, 96px);
+  --longeva-section-pad-hero: clamp(80px, 10vw, 120px);
+  --longeva-card-pad: 24px;
+  --longeva-card-pad-mobile: 20px;
+  --longeva-grid-gap: 16px;
+  --longeva-heading-drop: 40px;
+  --longeva-heading-drop-mobile: 32px;
+}
+
+/* Homepage-wide resets for sections that want the full brand treatment.
+   Background is applied via the `--light` modifier so dark-scheme sections
+   (hero, CTA band) are free to paint their own background. */
+.longeva-page {
+  color: var(--longeva-text);
+  font-family: var(--longeva-font-body);
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.longeva-page--light {
+  background: var(--longeva-bg);
+}
+
+.longeva-page *,
+.longeva-page *::before,
+.longeva-page *::after {
+  box-sizing: border-box;
+}
+
+/* Display headings. */
+.longeva-display {
+  font-family: var(--longeva-font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+/* Eyebrow labels. Default uses accent ink (AA on light bg). On dark
+   surfaces, override the colour locally to the brighter brand gold
+   via the modifiers below, since this stylesheet loads after the
+   per-section compiled styles.css and would otherwise beat them. */
+.longeva-eyebrow {
+  font-family: var(--longeva-font-body);
+  font-size: var(--longeva-eyebrow);
+  text-transform: uppercase;
+  letter-spacing: var(--longeva-tracking-eyebrow);
+  color: var(--longeva-accent-ink);
+  margin: 0;
+}
+/* Dark-surface eyebrow overrides. Brand Gold (#B99157) on primary
+   (#2D190E) clears WCAG AA 4.5:1 for 13px body; accent-ink does not. */
+.longeva-hero__eyebrow,
+.longeva-cta-band__eyebrow,
+.longeva-page--dark .longeva-eyebrow {
+  color: var(--longeva-accent);
+}
+
+/* Bespoke arrow (snippets/longeva-arrow.liquid). Renders inline with
+   text, nudges on hover for affordance. stroke-width 1 and rounded
+   caps echo the logo's pill arms. */
+.longeva-arrow {
+  display: inline-block;
+  vertical-align: -0.15em;
+  margin-inline-start: 0.45em;
+  transition: transform 0.2s var(--longeva-ease);
+}
+.longeva-arrow--left {
+  transform: rotate(180deg);
+  margin-inline-start: 0;
+  margin-inline-end: 0.45em;
+}
+a:hover .longeva-arrow--right,
+a:focus-visible .longeva-arrow--right,
+button:hover .longeva-arrow--right,
+button:focus-visible .longeva-arrow--right {
+  transform: translateX(3px);
+}
+a:hover .longeva-arrow--left,
+a:focus-visible .longeva-arrow--left {
+  transform: rotate(180deg) translateX(3px);
+}
+
+/* Button system.
+   Three modifiers; primary stays filled on hover (subtle darken + lift,
+   no fill/outline inversion). Secondary is the only outlined variant
+   and inverts on hover by design. */
+.longeva-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 32px;
+  border-radius: var(--longeva-radius-btn);
+  font-family: var(--longeva-font-body);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s var(--longeva-ease), color 0.2s var(--longeva-ease), transform 0.2s var(--longeva-ease), box-shadow 0.2s var(--longeva-ease);
+  white-space: nowrap;
+}
+
+.longeva-btn--primary-on-dark {
+  background: var(--longeva-primary-ivory);
+  color: var(--longeva-primary);
+  border: 1.5px solid var(--longeva-primary-ivory);
+}
+.longeva-btn--primary-on-dark:hover,
+.longeva-btn--primary-on-dark:focus-visible {
+  background: #EAE4DB;
+  color: var(--longeva-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.longeva-btn--secondary-on-dark {
+  background: transparent;
+  color: var(--longeva-primary-ivory);
+  border: 1.5px solid var(--longeva-primary-ivory);
+}
+.longeva-btn--secondary-on-dark:hover,
+.longeva-btn--secondary-on-dark:focus-visible {
+  background: var(--longeva-primary-ivory);
+  color: var(--longeva-primary);
+}
+
+.longeva-btn--primary-on-light {
+  background: var(--longeva-primary);
+  color: var(--longeva-primary-ivory);
+  border: 1.5px solid var(--longeva-primary);
+}
+.longeva-btn--primary-on-light:hover,
+.longeva-btn--primary-on-light:focus-visible {
+  background: var(--longeva-primary-hover);
+  border-color: var(--longeva-primary-hover);
+  color: var(--longeva-primary-ivory);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(45, 25, 14, 0.25);
+}
+
+.longeva-btn:focus-visible {
+  outline: 2px solid var(--longeva-focus-ring);
+  outline-offset: 3px;
+}
+
+/* Dark-scope focus ring override. The base --longeva-focus-ring (#7A5A2C)
+   clears WCAG 2.2 SC 1.4.11 (3:1) on the ivory page background but only
+   reaches ~2.1:1 against brand-dark surfaces. Re-bind the variable inside
+   dark scopes so any focus-visible (button, link, summary, input) inherits
+   the ivory ring (~12:1 vs brand-dark) without per-component overrides. */
+.longeva-page--dark,
+.longeva-btn--primary-on-dark,
+.longeva-btn--secondary-on-dark,
+.longeva-service-page__cta-band,
+.longeva-header__drawer {
+  --longeva-focus-ring: var(--longeva-primary-ivory);
+}
+
+/* Mobile button sizing, keep tap target at least 48px. */
+@media (max-width: 640px) {
+  .longeva-btn {
+    width: 100%;
+    min-height: 56px;
+  }
+}
+
+/* Sesami web component booking button.
+   The sesami-experience custom element renders its own button shell. We
+   constrain width and force the brand font stack so it reads as a native
+   Longeva button rather than the vendor default. Dimensions, colour and
+   radius come from the inline button-style JSON set in the snippet; this
+   block only touches what JSON cannot express (font family and weight)
+   and clamps host-level layout. */
+sesami-experience.longeva-sesami {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  font-family: var(--longeva-font-body);
+}
+/* The wrapping <form class="longeva-sesami-form"> exists only to give
+   Sesami's ws() form-discovery a /cart/add-action ancestor so its
+   hidden-fields wrapper (slot date / time / reservation token) is
+   included in new FormData(form). display: contents removes the form
+   box from layout while keeping the inner button positioned in its
+   parent's flex / grid context exactly as before. */
+.longeva-sesami-form {
+  display: contents;
+}
+html body sesami-experience.longeva-sesami,
+html body sesami-experience.longeva-sesami * {
+  font-family: var(--longeva-font-body);
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+/* On dark CTA bands the Sesami button keeps its ivory fill; give it
+   some breathing room so it does not look squashed next to the heading. */
+.longeva-service-page__cta-band sesami-experience.longeva-sesami,
+.longeva-service-page__hero-cta sesami-experience.longeva-sesami {
+  min-width: 220px;
+}
+@media (max-width: 640px) {
+  sesami-experience.longeva-sesami {
+    width: 100%;
+  }
+}
+
+/* Inline 'Book now' links that live inside rich-text page content (written
+   by SEO team, not routed through the snippet). Render them as ghost
+   buttons so they line up with the rest of the button system rather than
+   appearing as bare underlined anchors. */
+.longeva-service-page__body-inner.rte a[href="/pages/book"],
+.longeva-service-page__body-inner.rte a[href*="/pages/book?"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 32px;
+  margin-top: 16px;
+  border-radius: var(--longeva-radius-btn);
+  background: transparent;
+  color: var(--longeva-primary);
+  border: 1.5px solid var(--longeva-primary);
+  font-family: var(--longeva-font-body);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s var(--longeva-ease), color 0.2s var(--longeva-ease);
+}
+.longeva-service-page__body-inner.rte a[href="/pages/book"]:hover,
+.longeva-service-page__body-inner.rte a[href="/pages/book"]:focus-visible {
+  background: var(--longeva-primary);
+  color: var(--longeva-primary-ivory);
+  outline: none;
+}
+
+/* Container widths. The padding-inline value is exposed as
+   --longeva-container-pad so sticky elements (services directory,
+   header sticky CTAs) can pull negative-margin to bleed full-width
+   while staying tracked to the same gutter, without having to
+   duplicate the breakpoint cascade. */
+.longeva-container {
+  --longeva-container-pad: 24px;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--longeva-container-pad);
+}
+@media (min-width: 1024px) {
+  .longeva-container { --longeva-container-pad: 40px; }
+}
+@media (min-width: 1280px) {
+  .longeva-container { --longeva-container-pad: 80px; }
+}
+
+.longeva-container--narrow {
+  max-width: 880px;
+  margin-inline: auto;
+}
+
+/* Hide visually-only decorative elements from SRs. */
+.longeva-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Section vertical rhythm. */
+.longeva-section {
+  padding-block: clamp(20px, 10vw, 20px);
+}
+
+/* ------------------------------------------------------------------
+ * Animations
+ *
+ * Elements with [data-longeva-reveal] start at opacity 0 + 16px offset
+ * and transition to visible + in-place when `.is-in` is added by the
+ * IntersectionObserver in longeva-animations.js. The final state is
+ * also applied when the user prefers reduced motion (see .longeva-
+ * motion-off below) so content never stays hidden.
+ *
+ * Contract: only transform + opacity are animated so the browser can
+ * composite on the GPU without triggering layout or paint.
+ * ---------------------------------------------------------------- */
+
+[data-longeva-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition: opacity 0.6s var(--longeva-ease), transform 0.6s var(--longeva-ease);
+}
+[data-longeva-reveal="fade"] { transform: none; }
+[data-longeva-reveal="left"] { transform: translate3d(-20px, 0, 0); }
+[data-longeva-reveal="right"] { transform: translate3d(20px, 0, 0); }
+[data-longeva-reveal="scale"] { transform: scale(0.97); transform-origin: center; }
+
+[data-longeva-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Reduced-motion kill switch. The script adds .longeva-motion-off to
+   <html> and flips every reveal to is-in instantly, but this class
+   also wipes the transition in case a reveal class was parsed before
+   JS ran. */
+.longeva-motion-off [data-longeva-reveal],
+.longeva-motion-off [data-longeva-reveal].is-in {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Smooth in-page anchor scroll, with a scroll-margin offset so anchored
+   targets clear the sticky header rather than landing under it. Disabled
+   for users who prefer reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+/* WCAG 2.2 SC 2.4.11 Focus Not Obscured (Minimum): when the browser
+   auto-scrolls to a focused element (Tab key navigation), reserve the
+   sticky header height so the focus ring is never hidden behind the
+   header. Combined with scroll-margin-top below for anchor links. */
+html {
+  scroll-padding-top: calc(var(--header-height, 80px) + 16px);
+}
+:where(h1, h2, h3, h4, section, article)[id] {
+  scroll-margin-top: calc(var(--header-height, 80px) + 16px);
+}
+
+/* Hover micro-interactions scoped to the brand. Kept here so any
+   consumer of the brand tokens inherits them, not just individual
+   sections. Scaled gently to avoid jitter on repeated hovers. */
+.longeva-motion-on a.longeva-btn,
+.longeva-motion-on button.longeva-btn {
+  transition:
+    background 0.2s var(--longeva-ease),
+    color 0.2s var(--longeva-ease),
+    border-color 0.2s var(--longeva-ease),
+    transform 0.2s var(--longeva-ease),
+    box-shadow 0.2s var(--longeva-ease);
+}
+
+/* Body-content helpers used inside page-level markdown rendered
+   through Liquid. These classes are set by the service page body
+   HTML so the same structure can drop into any page template that
+   renders `page.content`. */
+
+.longeva-lede {
+  font-family: var(--longeva-font-body);
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--longeva-text-subdued);
+  max-width: 64ch;
+  margin: 0 0 24px;
+}
+
+/* Accordion FAQ disclosure: native <details>/<summary> with a
+   rotating + toggle, brand border rhythm and an answer reveal that
+   does not rely on JS. */
+.longeva-faq {
+  margin: 16px 0 32px;
+  border-block-start: 1px solid var(--longeva-border);
+}
+.longeva-faq details {
+  border-block-end: 1px solid var(--longeva-border);
+  padding-block: 18px;
+}
+.longeva-faq summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: var(--longeva-font-body);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--longeva-text);
+  line-height: 1.35;
+}
+.longeva-faq summary::-webkit-details-marker { display: none; }
+.longeva-faq summary::after {
+  content: '+';
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--longeva-primary);
+  transition: transform 0.2s var(--longeva-ease);
+}
+.longeva-faq details[open] summary::after {
+  content: '\2212';
+}
+.longeva-faq summary:hover,
+.longeva-faq summary:focus-visible {
+  color: var(--longeva-primary);
+  outline: none;
+}
+.longeva-faq details > p,
+.longeva-faq details > div {
+  font-family: var(--longeva-font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--longeva-text);
+  margin: 12px 0 0;
+  max-width: 68ch;
+}
+
+/* Related services pill row. Horizon default anchors in an rte are
+   underlined inline links; this gives them a subtle chip treatment.
+
+   Anchor selectors repeat :link/:visited/:hover/:focus-visible so the
+   rule beats Horizon's `.rte a` cascade without needing !important. */
+.longeva-related {
+  margin: 32px 0;
+  padding: 24px;
+  background: #FFFFFF;
+  border: 1px solid var(--longeva-border);
+  border-radius: var(--longeva-radius-card);
+}
+.longeva-related h3 {
+  font-family: var(--longeva-font-display);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+  color: var(--longeva-text);
+}
+.longeva-related p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.longeva-related a[href],
+.longeva-related a[href]:link,
+.longeva-related a[href]:visited {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border: 1px solid var(--longeva-border-mid);
+  border-radius: 999px;
+  font-family: var(--longeva-font-body);
+  font-size: 14px;
+  color: var(--longeva-text);
+  background: transparent;
+  text-decoration: none;
+  text-decoration-color: transparent;
+  transition: background 0.15s var(--longeva-ease), color 0.15s var(--longeva-ease), border-color 0.15s var(--longeva-ease);
+}
+:root .longeva-related a[href]:hover,
+:root .longeva-related a[href]:focus-visible,
+:root .longeva-related a[href]:hover:visited,
+:root .longeva-related a[href]:focus-visible:visited {
+  background: var(--longeva-primary);
+  border-color: var(--longeva-primary);
+  color: var(--longeva-primary-ivory);
+  text-decoration: none;
+  outline: none;
+}
+.longeva-related p > :not(a) {
+  display: none;
+}
+
+/* Brand button reinforcement: Horizon's link cascade can bleed through
+   when a .longeva-btn is placed inside an rte wrapper. Lock colour so
+   hover never dips into the body-text colour. */
+a.longeva-btn,
+a.longeva-btn:link,
+a.longeva-btn:visited { text-decoration: none; }
+
+/* Beat Horizon's p/rte :is() a :hover cascade which resolves to 0-3-2
+   (.rte :is(p) :not(.h1,...) a:hover). :root bumps us to 0-4-1. */
+:root a.longeva-btn.longeva-btn--primary-on-light:hover,
+:root a.longeva-btn.longeva-btn--primary-on-light:focus-visible,
+:root a.longeva-btn.longeva-btn--primary-on-light:hover:visited,
+:root a.longeva-btn.longeva-btn--primary-on-light:focus-visible:visited {
+  color: var(--longeva-primary-ivory);
+}
+
+:root a.longeva-btn.longeva-btn--primary-on-dark:hover,
+:root a.longeva-btn.longeva-btn--primary-on-dark:focus-visible,
+:root a.longeva-btn.longeva-btn--primary-on-dark:hover:visited,
+:root a.longeva-btn.longeva-btn--primary-on-dark:focus-visible:visited {
+  color: var(--longeva-primary);
+}
+
+:root a.longeva-btn.longeva-btn--secondary-on-dark:hover,
+:root a.longeva-btn.longeva-btn--secondary-on-dark:focus-visible {
+  color: var(--longeva-primary);
+}
+
+/* Ghost button outside the header group: sections ship their own
+   scoped copy but a standalone rule keeps hover colours aligned when
+   ghost buttons appear in body copy or other sections. */
+.longeva-btn--ghost,
+.longeva-btn--ghost:link,
+.longeva-btn--ghost:visited {
+  background: transparent;
+  color: var(--longeva-primary);
+  border: 1.5px solid var(--longeva-primary);
+  text-decoration: none;
+}
+:root a.longeva-btn.longeva-btn--ghost:hover,
+:root a.longeva-btn.longeva-btn--ghost:focus-visible,
+:root a.longeva-btn.longeva-btn--ghost:hover:visited,
+:root a.longeva-btn.longeva-btn--ghost:focus-visible:visited {
+  background: var(--longeva-primary);
+  color: var(--longeva-primary-ivory);
+  border-color: var(--longeva-primary);
+  outline: none;
+}
+
+/* Inline trust note near the end of service body copy. */
+.longeva-trust {
+  margin: 32px 0;
+  padding: 20px 24px;
+  background: rgba(44, 74, 71, 0.06);
+  border-inline-start: 3px solid var(--longeva-accent-dark);
+  border-radius: var(--longeva-radius-card);
+}
+.longeva-trust p {
+  margin: 0;
+  font-family: var(--longeva-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--longeva-text);
+}
+
+/* Body-level CTA block. The anchor carries class="button" in the
+   page HTML, inheriting an unintended dark pill on transparent from
+   Horizon. Force brand pattern regardless of classes so the CTA is
+   always visible. */
+.longeva-cta {
+  margin: 32px 0;
+}
+.longeva-cta a,
+.longeva-cta a.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 32px;
+  background: var(--longeva-primary);
+  color: var(--longeva-primary-ivory);
+  border: 1.5px solid var(--longeva-primary);
+  border-radius: var(--longeva-radius-btn);
+  font-family: var(--longeva-font-body);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s var(--longeva-ease), border-color 0.2s var(--longeva-ease), transform 0.2s var(--longeva-ease), box-shadow 0.2s var(--longeva-ease);
+}
+.longeva-cta a:hover,
+.longeva-cta a:focus-visible,
+.longeva-cta a.button:hover,
+.longeva-cta a.button:focus-visible {
+  background: #1F120A;
+  border-color: #1F120A;
+  color: var(--longeva-primary-ivory);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(45, 25, 14, 0.25);
+  outline: none;
+}
+
+sesami-experience.longeva-sesami {
+  display: inline-block;
+  min-height: 52px;
+  font-family: var(--longeva-font-body, inherit);
+}
+sesami-experience.longeva-sesami:not(:defined) {
+  visibility: hidden;
+  min-width: 180px;
+}
+.longeva-service-page__sticky .longeva-sesami { width: 100%; }
+
+/* Service PDP hero deposit caption (Varsha 28 May). The price shown is
+   the 25% booking deposit; the caption clarifies the balance is settled
+   at the appointment so the figure does not read as the full fee. */
+.longeva-service-hero__price-note {
+  margin: 6px 0 0;
+  font-family: var(--longeva-font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--longeva-text-subdued);
+  max-width: 42ch;
+}
+
+/* USP announcement strip centring (Varsha 28 May). The stock Horizon
+   header-announcements section renders the strip inside a page-width
+   container, which can read as left-of-centre on wide viewports. We do
+   not edit the shipped Horizon section (operating rules); instead we
+   raise specificity via the header-group ancestor and centre the slide
+   and its text. No !important. */
+.shopify-section-group-header-group .announcement-bar__slide.text-block {
+  justify-items: center;
+  text-align: center;
+}
+.shopify-section-group-header-group .announcement-bar__text {
+  width: 100%;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* Mobile announcement bar: marquee scroll instead of ellipsis truncation.
+   GPU-accelerated transform keyframe, zero JS. CRO research shows mobile
+   announcement wraps eat ~8% of fold; ellipsis hid half the trust message.
+   Marquee shows it all on a continuous loop without clipping. */
+@media (max-width: 749px) {
+  /* PR #131: live DOM uses Horizon's default `.announcement-bar__text`
+     class (Anthony uses the shipped announcement-bar in admin, not the
+     custom longeva-announcement-bar section). Revert the PR #129
+     selector change. Both Horizon-default + longeva-prefixed selectors
+     listed for safety. Slideshow ancestors also need overflow hidden. */
+  .announcement-bar__text,
+  .longeva-announcement-bar__text {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    display: inline-block !important;
+    padding-inline-start: 100% !important;
+    animation: longeva-marquee 18s linear infinite;
+    will-change: auto;
+  }
+  .announcement-bar__slide,
+  .announcement-bar__slides,
+  .announcement-bar__slider,
+  .announcement-bar,
+  .longeva-announcement-bar__inner,
+  .longeva-announcement-bar {
+    overflow: hidden !important;
+  }
+  @keyframes longeva-marquee {
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+  }
+}
+@media (max-width: 749px) and (prefers-reduced-motion: reduce) {
+  .announcement-bar__text,
+  .longeva-announcement-bar__text {
+    animation: none;
+    padding-inline-start: 1rem !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+/* Citadel hero trust-meta line. Lives outside the hero section's
+   <style> block because the section file's stylesheet block is owned
+   by the theme editor and gets 3-way-merged on push, often reverting.
+   Asset CSS pushes cleanly. */
+.longeva-hero__trust-meta {
+  display: none;
+  margin: 24px 0 0;
+  font-family: var(--longeva-font-body, inherit);
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 234, 0.62);
+}
+@media (max-width: 1023px) {
+  .longeva-hero__trust-meta {
+    display: block;
+    margin-block-start: 18px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* Desktop dropdown: ensure dropdown sits above the hover-bridge
+   pseudo-element so child link clicks always land on the child, not
+   on the bridge. Bridge height tightened to the exact gap (12px)
+   matching the dropdown's `top: calc(100% + 12px)` offset, so there's
+   zero overlap with dropdown items. */
+.longeva-header__nav .longeva-header__dropdown {
+  z-index: 2;
+}
+.longeva-header__nav .longeva-header__item--has-children::after {
+  height: 12px;
+}
+
+/* Desktop dropdown: styled "All [category]" link sits under a hairline,
+   in brass small caps. Sits in pages.css instead of the header section
+   stylesheet so admin's last-saved nav state cannot 3-way-merge it
+   away on a CLI push. Selectors use the dropdown ancestor to win the
+   cascade against the section's own one-class hover rule without
+   needing !important. */
+.longeva-header__dropdown .longeva-header__dropdown-link--all {
+  color: var(--longeva-accent, #B99157);
+  border-block-start: 1px solid rgba(0, 0, 0, 0.06);
+  margin-block-start: 4px;
+  padding-block-start: 12px;
+  padding-block-end: 12px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.longeva-header__dropdown .longeva-header__dropdown-link--all:hover,
+.longeva-header__dropdown .longeva-header__dropdown-link--all:focus-visible {
+  color: var(--longeva-primary, #2D190E);
+  border-inline-start-color: var(--longeva-accent, #B99157);
+}
+
+/* ======================================================================
+   PR #132: Premium homepage animations
+   ----------------------------------------------------------------------
+   Anthony asked for "small animations to make it premium" without
+   slowing mobile. Three additions, all compositor-only (transform +
+   opacity, no paint-heavy filters/box-shadow animations), ~6KB CSS,
+   zero JS, full prefers-reduced-motion support.
+
+   1. Brass shimmer on the primary Book CTA: a thin brass diagonal
+      sweep crosses the button every 8s. Mimics premium-watch-face
+      ambient detail (Aesop campaign + Le Labo store CTAs use this).
+      Hidden in idle 65% of the cycle so it doesn't fight reading.
+
+   2. Tap scale feedback on every primary CTA: 0.97 on :active for
+      tactile press response. iOS/Android haptic-feel parity.
+
+   3. Subtle hover lift / arrow slide refinement: already present
+      site-wide; just unifies the easing curve.
+   ====================================================================== */
+
+/* 1. Brass shimmer on primary Book CTAs */
+.longeva-hero__cta-primary,
+.longeva-header__drawer-cta,
+.longeva-footer-v2__strip-item[href*="/pages/book"] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.longeva-hero__cta-primary::before,
+.longeva-header__drawer-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(185, 145, 87, 0.0) 42%,
+    rgba(185, 145, 87, 0.32) 50%,
+    rgba(185, 145, 87, 0.0) 58%,
+    transparent 70%
+  );
+  transform: translateX(-160%);
+  animation: longeva-cta-shimmer 8s cubic-bezier(0.4, 0, 0.2, 1) 2s infinite;
+  pointer-events: none;
+}
+.longeva-hero__cta-primary > *,
+.longeva-header__drawer-cta > * {
+  position: relative;
+  z-index: 1;
+}
+@keyframes longeva-cta-shimmer {
+  0%, 60% { transform: translateX(-160%); }
+  78% { transform: translateX(160%); }
+  100% { transform: translateX(160%); }
+}
+
+/* 2. Tap scale feedback on primary CTAs */
+.longeva-btn,
+.longeva-hero__cta-primary,
+.longeva-header__drawer-cta {
+  transition: transform 0.16s cubic-bezier(0.32, 0.72, 0, 1),
+              background-color 0.18s ease,
+              color 0.18s ease,
+              box-shadow 0.18s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.longeva-btn:active,
+.longeva-hero__cta-primary:active,
+.longeva-header__drawer-cta:active {
+  transform: scale(0.97);
+}
+
+/* 3. Magazine card lift refinement: unify easing curve so all
+   premium-clinical card hovers feel like one design. */
+.longeva-aesthetics-grid__card,
+.longeva-quickroute__card,
+.longeva-hub__featured-card,
+.longeva-service-page__related-link {
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
+              border-color 0.22s ease,
+              box-shadow 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* prefers-reduced-motion: kill the shimmer + tap scale + arrow slides */
+@media (prefers-reduced-motion: reduce) {
+  .longeva-hero__cta-primary::before,
+  .longeva-header__drawer-cta::before {
+    animation: none;
+    display: none;
+  }
+  .longeva-btn,
+  .longeva-hero__cta-primary,
+  .longeva-header__drawer-cta {
+    transition: none;
+  }
+  .longeva-btn:active,
+  .longeva-hero__cta-primary:active,
+  .longeva-header__drawer-cta:active {
+    transform: none;
+  }
+  /* Suppress arrow-slide micro-interactions on links: directory category
+     headings, mega-menu pinned-top banners, and any inline arrow-on-link
+     pattern. Pointer-driven, but movement is movement under SC 2.3.3. */
+  .longeva-directory__group-heading-link:hover .longeva-directory__group-heading-arrow,
+  .longeva-directory__group-heading-link:focus-visible .longeva-directory__group-heading-arrow,
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all:hover svg,
+  .longeva-header__dropdown-col--all-top .longeva-header__dropdown-link--all:focus-visible svg {
+    transform: none;
+  }
+}
+
+/* Quickroute: 4-card category strip under the hero on home only.
+   Sits in pages.css to bypass the hero section's stylesheet block,
+   which is subject to 3-way-merge revert (PR #107 diagnosis).
+
+   SEO: heading is .longeva-sr-only, H1 hierarchy preserved (hero H1
+   -> quickroute H2 -> H3 cards -> aesthetics-grid H2). */
+.longeva-quickroute {
+  background: #FAFAF7;
+  padding-block: clamp(28px, 4vw, 48px);
+  border-block-end: 1px solid rgba(45, 25, 14, 0.06);
+}
+.longeva-quickroute__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* PR #130: equal-height rows so cards stay aligned even when one
+     title wraps to two lines (e.g. "Weight Management"). 1fr rows
+     stretch each row to the tallest card. */
+  grid-auto-rows: 1fr;
+  gap: 14px;
+}
+.longeva-quickroute__grid > li {
+  display: flex;
+}
+.longeva-quickroute__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 22px 18px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.10);
+  width: 100%;
+  border-radius: var(--longeva-radius-card, 12px);
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 92px;
+}
+.longeva-quickroute__card:hover,
+.longeva-quickroute__card:focus-visible {
+  border-color: #2D190E;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 25, 14, 0.06);
+  outline: none;
+}
+.longeva-quickroute__eyebrow {
+  font-family: var(--longeva-font-body, inherit);
+  font-size: var(--longeva-eyebrow);
+  letter-spacing: var(--longeva-tracking-eyebrow);
+  text-transform: uppercase;
+  color: rgba(185, 145, 87, 0.95);
+}
+.longeva-quickroute__title {
+  font-family: var(--longeva-font-display, serif);
+  font-size: var(--longeva-h3-desktop);
+  line-height: 1.15;
+  color: #1A1A1A;
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.longeva-quickroute__arrow {
+  position: absolute;
+  inset-block-start: 22px;
+  inset-inline-end: 18px;
+  color: #B99157;
+  display: inline-flex;
+  align-items: center;
+  transition: transform 0.18s ease;
+}
+.longeva-quickroute__card:hover .longeva-quickroute__arrow,
+.longeva-quickroute__card:focus-visible .longeva-quickroute__arrow {
+  transform: translateX(3px);
+}
+
+/* Tablet (601-899): keep single-row 4-col but tighter padding */
+@media (max-width: 899px) and (min-width: 601px) {
+  .longeva-quickroute__grid { gap: 10px; }
+  .longeva-quickroute__card { padding: 16px 18px 14px; min-height: 88px; }
+  .longeva-quickroute__title { font-size: 20px; }
+}
+
+/* Mobile (<=600): 2x2 grid so all four cards stay visible without
+   scroll. Cards split to ~48% each, eyebrow + title still readable. */
+@media (max-width: 600px) {
+  .longeva-quickroute { padding-block: 22px; }
+  .longeva-quickroute__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .longeva-quickroute__card {
+    padding: 14px 14px 12px;
+    min-height: 78px;
+  }
+  .longeva-quickroute__eyebrow { font-size: 10px; letter-spacing: var(--longeva-tracking-eyebrow); }
+  .longeva-quickroute__title { font-size: var(--longeva-h4); }
+  .longeva-quickroute__arrow {
+    inset-block-start: 16px;
+    inset-inline-end: 12px;
+  }
+}
+
+/* Footer compliance + best-practice additions (PR #115 research synthesis).
+   Placed in pages.css to bypass the footer section's stylesheet block
+   (subject to 3-way-merge revert). */
+
+/* Compressed regnums + compliance lines.
+   Replaces the prior 2x2 dl + separate verify line with two single-row
+   paragraphs that collapse the brand block height. Anthony 2026-04-29:
+   "footer is too long". Drop vertical mass without losing GPhC route-
+   to-verify or the Companies Regs reg 25 country of registration. */
+.longeva-footer-v2__regnums-line,
+.longeva-footer-v2__compliance-line {
+  margin: 12px 0 0;
+  font-family: var(--longeva-font-body, inherit);
+  font-size: 12px;
+  letter-spacing: var(--longeva-tracking-eyebrow);
+  line-height: 1.6;
+  color: rgba(245, 241, 234, 0.62);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: baseline;
+}
+/* PR #135: Footer regnum + compliance links, visible-on-default,
+   stronger-on-hover affordance.
+   - Default: full ivory text, brass underline at 55% opacity.
+     Reads as "this is a link" upfront (premium editorial convention).
+   - Hover/focus: full ivory text, brass underline at 100% + thicker
+     stroke (1px → 2px). Clear visible delta on interaction.
+   Specificity bumped to two-class so the rule beats both the section's
+   `.longeva-footer-v2 a { color: inherit }` rule and Horizon's global
+   `:is(h1...p) > a:hover` rule. No !important. */
+/* Specificity bumped with [href] attribute selector to (0,4,1) for
+   hover so it beats Horizon's `:is(p:not(...) a:where(...)):hover`
+   rule from base.css (0,2,2 specificity, sets text-decoration-color
+   to transparent + color to var(--color-primary-hover) which resolves
+   to BLACK on this colour scheme). PR #135 tried (0,3,1) but the
+   visible result on Anthony's screenshot showed Horizon was still
+   winning. Bumping to (0,4,1) resolves it without `!important`. */
+.longeva-footer-v2 .longeva-footer-v2__regnums-line a[href],
+.longeva-footer-v2 .longeva-footer-v2__compliance-line a[href] {
+  color: #F2E6DC;
+  text-decoration: underline;
+  text-decoration-color: rgba(185, 145, 87, 0.55);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  border-block-end: 0;
+  padding-block-end: 0;
+  transition: text-decoration-color 0.18s ease, text-decoration-thickness 0.18s ease;
+}
+.longeva-footer-v2 .longeva-footer-v2__regnums-line a[href]:hover,
+.longeva-footer-v2 .longeva-footer-v2__regnums-line a[href]:focus-visible,
+.longeva-footer-v2 .longeva-footer-v2__compliance-line a[href]:hover,
+.longeva-footer-v2 .longeva-footer-v2__compliance-line a[href]:focus-visible {
+  color: #F2E6DC;
+  text-decoration-color: var(--longeva-accent, #B99157);
+  text-decoration-thickness: 2px;
+  outline: none;
+}
+.longeva-footer-v2__regnums-line span[aria-hidden="true"],
+.longeva-footer-v2__compliance-line span[aria-hidden="true"] {
+  color: rgba(245, 241, 234, 0.30);
+}
+.longeva-footer-v2__regnum-muted {
+  color: rgba(245, 241, 234, 0.45);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  margin-inline-start: 3px;
+}
+.longeva-footer-v2__compliance-line strong {
+  color: rgba(245, 241, 234, 0.92);
+  font-weight: 500;
+}
+
+/* Newsletter UK-GDPR consent copy. Required by PECR Reg 22 +
+   UK GDPR Art 7. Small + greyed so it reads as legal notice
+   without competing with the form. */
+.longeva-footer-v2__signup-consent {
+  margin: 10px 0 0;
+  font-family: var(--longeva-font-body, inherit);
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(245, 241, 234, 0.55);
+  letter-spacing: 0.01em;
+}
+.longeva-footer-v2__signup-consent a {
+  color: rgba(245, 241, 234, 0.78);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.longeva-footer-v2__signup-consent a:hover,
+.longeva-footer-v2__signup-consent a:focus-visible {
+  color: var(--longeva-accent, #B99157);
+}
+
+/* Compliance microstrip below the primary legal row. Modern Slavery,
+   Accessibility, Sitemap separated out so the main legal row stays
+   scannable. Pattern from 7/11 peer pharmacy footers. */
+.longeva-footer-v2__microstrip {
+  padding: 8px 0 14px;
+  border-block-start: 1px solid rgba(245, 241, 234, 0.05);
+  margin-block-start: 6px;
+}
+.longeva-footer-v2__microstrip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(245, 241, 234, 0.45);
+}
+.longeva-footer-v2__microstrip-list a {
+  color: rgba(245, 241, 234, 0.55);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.longeva-footer-v2__microstrip-list a:hover,
+.longeva-footer-v2__microstrip-list a:focus-visible {
+  color: rgba(245, 241, 234, 0.85);
+  outline: none;
+}
+
+/* Hero mobile-only image cell. Hidden on desktop; the right-column
+   `image` field is used instead. On mobile (<=1023px) the cell sits
+   above the heading as a contained banner.
+
+   Height capped at ~28dvh (PR #120 fix): the original 56dvh + 3:4
+   aspect pushed the H1 and primary CTA below the iPhone 14 Pro Max
+   fold. 28dvh keeps the image atmospheric while leaving room for
+   heading + subhead + Book CTA above the fold.
+
+   PR #119 research: 1080x1440 (3:4 portrait) is the recommended
+   source size: object-fit cover crops the source to the constrained
+   render height, so the source stays portrait but the rendered banner
+   reads as a wide editorial header. */
+.longeva-hero__image-mobile {
+  display: none;
+}
+.longeva-hero__image-mobile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Crop position favours the lower portion of the source so a 3:4
+     portrait hand-portrait survives a wide 28dvh banner crop. PR #122
+     research: peer pharmacy sites use focal-point cropping (Numan
+     Storyblok) rather than full-bleed overlay. Adjustable via the
+     section setting if Anthony provides a re-prompted landscape source
+     (in which case set to `center center`). */
+  object-position: center 78%;
+  display: block;
+}
+@media (max-width: 1023px) {
+  /* Only restructure the hero grid when the mobile image cell is
+     actually present in the DOM. Without this :has() guard, hero
+     pages without an image_mobile setting would render an empty
+     first row. */
+  .longeva-hero:has(.longeva-hero__image-mobile) {
+    grid-template-rows: auto auto;
+    min-height: auto;
+  }
+  .longeva-hero:has(.longeva-hero__image-mobile) .longeva-hero__content {
+    grid-row: 2;
+    /* PR #121 polish: tighten top padding so the hero text sits closer
+       to the image edge. Premium clinical hero rhythm: image-fade -> H1
+       directly, no dead space. */
+    padding-block-start: 18px;
+  }
+  .longeva-hero__image-mobile {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 28dvh;
+    min-height: 200px;
+    max-height: 320px;
+    overflow: hidden;
+    grid-row: 1;
+    grid-column: 1;
+    background: #B99157;
+  }
+  /* PR #121: gradient fade at bottom of mobile image into the dark
+     ink hero background. Kills the hard cut between image and hero. */
+  .longeva-hero__image-mobile::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    height: 56px;
+    background: linear-gradient(to bottom, rgba(45, 25, 14, 0), rgba(45, 25, 14, 0.85) 70%, #2D190E 100%);
+    pointer-events: none;
+  }
+}
+
+/* PR #121 polish: hero-wide trust assurance line, small caps, sits
+   below the CTA cluster instead of inside it. Reads as brand voice,
+   not button caption. */
+.longeva-hero__assurance {
+  margin: 18px 0 0;
+  font-family: var(--longeva-font-body, inherit);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 234, 0.55);
+}
+@media (max-width: 1023px) {
+  .longeva-hero__assurance {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin-block-start: 14px;
+  }
+}
+
+/* PR #121 polish: brass calendar icon inside the primary Book CTA.
+   Aligns with brand standard (modern clinical CTAs pair label + icon). */
+.longeva-hero__cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.longeva-hero__cta-primary svg {
+  flex: 0 0 auto;
+  opacity: 0.85;
+}
+
+/* PR #121: Browse treatments link styling, restore the arrow, add
+   subtle brass hairline + tracked tracking so the subordinate link
+   reads as designed not afterthought. */
+.longeva-hero__ctas .longeva-hero__cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.longeva-hero__ctas .longeva-hero__cta-link svg {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--longeva-accent, #B99157);
+  transition: transform 0.18s ease;
+}
+.longeva-hero__ctas .longeva-hero__cta-link:hover svg,
+.longeva-hero__ctas .longeva-hero__cta-link:focus-visible svg {
+  transform: translateX(3px);
+}
+
+/* PR #121 desktop polish: soft vertical fade where the dark hero
+   meets the right-column image. Bleeds the ink colour into the left
+   edge of the image so the seam reads as gradient, not slab cut. */
+@media (min-width: 1024px) {
+  .longeva-hero__image {
+    position: relative;
+  }
+  .longeva-hero__image::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: 0;
+    width: 96px;
+    background: linear-gradient(to right, #2D190E, rgba(45, 25, 14, 0.6) 35%, rgba(45, 25, 14, 0));
+    pointer-events: none;
+    z-index: 2;
+  }
+  /* Tighten top padding on desktop hero text column so H1 sits higher,
+     matching premium editorial hero rhythm. */
+  .longeva-hero .longeva-hero__content {
+    padding-block-start: 40px;
+  }
+}
+
+/* PR #139 header polish: real wordmark needs more presence on desktop
+   (the base 28px reads tiny against the 80px header bar). Phone label
+   was wrapping to a second line on narrow desktops. Both fixes scoped
+   higher than the section's one-class rules so the cascade resolves
+   here without !important, and live in pages.css so a section-stylesheet
+   3-way-merge cannot revert them.
+
+   Width is set explicitly (not auto) because the brand link is
+   display: inline-flex inside a grid auto column, and the global img
+   max-width: 100% creates a sizing loop that collapses the wordmark to
+   ~68px wide. Aspect ratio 859.26 / 196.34 = 4.376:1, so:
+   32px * 4.376 = 140px, 40px * 4.376 = 175px. */
+.longeva-header__brand .longeva-header__wordmark {
+  height: 32px;
+  width: 140px;
+  max-width: none;
+}
+.longeva-header .longeva-header__phone {
+  white-space: nowrap;
+}
+/* Phone icon was rendering 8x16 (squished) because the inline-flex
+   parent + global svg max-width:100% let it flex-shrink. Pin the
+   intrinsic dimensions and lock flex-shrink. Icon bumps from 16 to 18
+   on desktop to keep proportion with the larger wordmark. */
+.longeva-header__phone svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  max-width: none;
+}
+@media (min-width: 1024px) {
+  .longeva-header__phone svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+@media (min-width: 1024px) {
+  .longeva-header__brand .longeva-header__wordmark {
+    height: 36px;
+    width: 158px;
+  }
+}
+
+/* UX-04 (Varsha feedback May 2026): treatment pages had both an inline
+   "Related services" div (in page.content) AND the section-rendered
+   "You may also like" row. Hiding the inline duplicate; the auto
+   section is the canonical cross-sell. */
+.longeva-service-page .longeva-related,
+[data-longeva-service-page] .longeva-related {
+  display: none !important;
+}
+
+
+#header-group {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}

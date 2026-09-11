@@ -1,0 +1,891 @@
+/*
+  Longeva destinations stylesheet.
+
+  Owns spacing and component CSS for the destination metaobject pages
+  and the destinations index. Pairs with:
+    - sections/longeva-destination-detail.liquid
+    - sections/longeva-destinations-index.liquid
+    - snippets/longeva-destination-vaccine-card.liquid
+
+  All selectors are scoped with .longeva-destination* prefixes so
+  there is zero specificity contention with longeva-pages.css. No
+  specificity overrides anywhere per PROJECT_RULES.md §3.4.
+
+  Tokens come from longeva-pages.css :root.
+*/
+
+/* --- Shared destination chrome ----------------------------------- */
+.longeva-destination,
+.longeva-destinations-index {
+  background: #FAFAF7;
+  color: #2D190E;
+}
+
+.longeva-destination__h2,
+.longeva-destinations-index__h2 {
+  font-family: var(--longeva-font-display, serif);
+  font-size: clamp(28px, 3.6vw, 40px);
+  line-height: 1.18;
+  letter-spacing: -0.005em;
+  margin: 0 0 16px;
+}
+
+/* --- Breadcrumb --------------------------------------------------- */
+.longeva-destination__breadcrumb {
+  padding-top: 24px;
+  font-size: 14px;
+  color: rgba(45, 25, 14, 0.7);
+}
+.longeva-destination__breadcrumb ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.longeva-destination__breadcrumb li + li::before {
+  content: "/";
+  margin-right: 8px;
+  color: rgba(45, 25, 14, 0.35);
+}
+.longeva-destination__breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.18s ease;
+}
+.longeva-destination__breadcrumb a:hover,
+.longeva-destination__breadcrumb a:focus-visible {
+  border-bottom-color: currentColor;
+  outline: none;
+}
+.longeva-destination__breadcrumb [aria-current="page"] {
+  color: #2D190E;
+}
+
+/* --- Hero --------------------------------------------------------- */
+.longeva-destination__hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .longeva-destination__hero {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 64px;
+  }
+}
+.longeva-destination__eyebrow {
+  margin: 0 0 12px;
+}
+.longeva-destination__heading {
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+}
+.longeva-destination__summary {
+  font-size: clamp(17px, 1.6vw, 19px);
+  line-height: 1.55;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 60ch;
+}
+.longeva-destination__summary p { margin: 0 0 12px; }
+.longeva-destination__summary p:last-child { margin-bottom: 0; }
+.longeva-destination__hero-cta {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.longeva-destination__hero-image {
+  margin: 0;
+}
+.longeva-destination__hero-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--longeva-radius-card, 12px);
+  object-fit: cover;
+  aspect-ratio: 3 / 2;
+}
+
+/* Entry-requirements callout styles removed 31 May 2026 alongside the
+   card itself (Anthony). No markup references __callout* any more. */
+
+/* --- Recommended vaccines grid ----------------------------------- */
+.longeva-destination__vaccines-header {
+  margin-bottom: 28px;
+  max-width: 60ch;
+}
+.longeva-destination__vaccines-intro {
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(45, 25, 14, 0.78);
+  margin: 0;
+}
+.longeva-destination__vaccine-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 600px) {
+  .longeva-destination__vaccine-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .longeva-destination__vaccine-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+}
+.longeva-destination__vaccine-card {
+  display: flex;
+}
+.longeva-destination__vaccine-link {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.10);
+  border-radius: var(--longeva-radius-card, 12px);
+  padding: 24px 24px 22px;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  transition: border-color 0.22s ease, transform 0.22s cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.longeva-destination__vaccine-link:hover,
+.longeva-destination__vaccine-link:focus-visible {
+  border-color: #2D190E;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(45, 25, 14, 0.07);
+  outline: none;
+}
+.longeva-destination__vaccine-title {
+  font-size: clamp(19px, 2vw, 22px);
+  line-height: 1.18;
+  margin: 0;
+  color: #1A1A1A;
+  letter-spacing: -0.005em;
+}
+.longeva-destination__vaccine-lede {
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(45, 25, 14, 0.78);
+  margin: 0;
+  flex-grow: 1;
+}
+.longeva-destination__vaccine-meta {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(45, 25, 14, 0.78);
+}
+.longeva-destination__vaccine-price {
+  font-weight: 500;
+  color: #2D190E;
+}
+.longeva-destination__vaccine-price--placeholder {
+  font-weight: 400;
+  color: rgba(45, 25, 14, 0.6);
+}
+.longeva-destination__vaccine-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #A6783C;
+  margin-top: 4px;
+}
+.longeva-destination__empty {
+  font-size: 16px;
+  color: rgba(45, 25, 14, 0.65);
+  font-style: italic;
+}
+
+/* --- Traveller advice (prose) ------------------------------------ */
+.longeva-destination__advice-body {
+  max-width: 70ch;
+  font-size: 16px;
+  line-height: 1.62;
+  color: rgba(45, 25, 14, 0.85);
+}
+.longeva-destination__advice-body h3 {
+  font-family: var(--longeva-font-display, serif);
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 28px 0 8px;
+  color: #2D190E;
+}
+.longeva-destination__advice-body p { margin: 0 0 14px; }
+.longeva-destination__advice-body ul,
+.longeva-destination__advice-body ol { padding-left: 20px; margin: 0 0 14px; }
+.longeva-destination__advice-body li { margin-bottom: 6px; }
+.longeva-destination__advice-body a { color: #A6783C; }
+
+/* --- FAQ accordion (Varsha SEO review) --------------------------- */
+/* Native details/summary, matching the vaccine-hub and service-page
+   FAQ pattern: a hairline-divided list with a +/minus glyph that flips
+   on [open]. No JS, no CLS. Reading width capped to keep questions
+   scannable. */
+.longeva-destination__faq-list {
+  max-width: 72ch;
+  display: flex;
+  flex-direction: column;
+}
+.longeva-destination__faq-item {
+  border-bottom: 1px solid rgba(45, 25, 14, 0.12);
+}
+.longeva-destination__faq-question {
+  font-family: var(--longeva-font-body, sans-serif);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #2D190E;
+  padding: 18px 36px 18px 0;
+  cursor: pointer;
+  list-style: none;
+  position: relative;
+}
+.longeva-destination__faq-question::-webkit-details-marker { display: none; }
+.longeva-destination__faq-question::marker { content: ''; }
+.longeva-destination__faq-question::after {
+  content: "+";
+  position: absolute;
+  inset-inline-end: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--longeva-accent-ink, #7A5A2C);
+}
+.longeva-destination__faq-item[open] .longeva-destination__faq-question::after {
+  content: "\2212";
+}
+.longeva-destination__faq-question:focus-visible {
+  outline: 2px solid #A6783C;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.longeva-destination__faq-answer {
+  padding-block-end: 20px;
+  font-size: 16px;
+  line-height: 1.62;
+  color: rgba(45, 25, 14, 0.82);
+}
+.longeva-destination__faq-answer p { margin: 0 0 12px; }
+.longeva-destination__faq-answer p:last-child { margin-bottom: 0; }
+.longeva-destination__faq-answer ul,
+.longeva-destination__faq-answer ol { padding-left: 20px; margin: 0 0 12px; }
+.longeva-destination__faq-answer li { margin-bottom: 6px; }
+.longeva-destination__faq-answer a { color: #A6783C; }
+
+/* --- Further guidance (quiet reference, below the booking CTA) ---- */
+.longeva-destination__source-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .longeva-destination__source-list { grid-template-columns: repeat(2, 1fr); }
+}
+.longeva-destination__source-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.10);
+  border-radius: var(--longeva-radius-card, 12px);
+  color: #2D190E;
+  text-decoration: none;
+  font-size: 16px;
+  line-height: 1.4;
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+.longeva-destination__source-link:hover,
+.longeva-destination__source-link:focus-visible {
+  border-color: #A6783C;
+  outline: none;
+}
+.longeva-destination__source-host {
+  font-size: 13px;
+  color: rgba(45, 25, 14, 0.55);
+  letter-spacing: 0.02em;
+}
+
+/* --- Final CTA band ---------------------------------------------- */
+.longeva-destination__cta-band {
+  padding-bottom: 16px;
+}
+.longeva-destination__cta-inner {
+  background: #2D190E;
+  color: #F2E6DC;
+  padding: 48px 32px;
+  border-radius: var(--longeva-radius-card, 12px);
+  text-align: center;
+}
+.longeva-destination__cta-heading {
+  color: #F2E6DC;
+  font-size: clamp(26px, 3.2vw, 34px);
+  margin: 0 0 12px;
+}
+.longeva-destination__cta-sub {
+  color: rgba(242, 230, 220, 0.82);
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 56ch;
+  margin: 0 auto 24px;
+}
+.longeva-destination__cta-inner .longeva-btn--primary-on-light {
+  background: #F2E6DC;
+  color: #2D190E;
+  border-color: #F2E6DC;
+}
+.longeva-destination__cta-inner .longeva-btn--primary-on-light:hover,
+.longeva-destination__cta-inner .longeva-btn--primary-on-light:focus-visible {
+  background: #fff;
+  border-color: #fff;
+}
+
+/* On-page booking target. Offset the scroll so the band clears the
+   sticky header when a Book button jumps to it. */
+.longeva-destination__cta-band {
+  scroll-margin-top: 90px;
+}
+
+/* Trip-detail prompts inside the booking band (travel date, length of
+   stay). Light-on-dark to match the band. */
+.longeva-sesami-trip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  max-width: 480px;
+  margin: 0 auto 20px;
+  text-align: left;
+}
+.longeva-sesami-trip__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 180px;
+}
+.longeva-sesami-trip__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(242, 230, 220, 0.92);
+}
+.longeva-sesami-trip__input {
+  font: inherit;
+  font-size: 15px;
+  padding: 11px 14px;
+  border-radius: var(--longeva-radius-input, 8px);
+  border: 1px solid rgba(242, 230, 220, 0.55);
+  background: #F2E6DC;
+  color: #2D190E;
+  width: 100%;
+}
+.longeva-sesami-trip__input:focus-visible {
+  outline: 2px solid #B99157;
+  outline-offset: 1px;
+  border-color: #B99157;
+}
+
+/* --- Review footer ----------------------------------------------- */
+.longeva-destination__review {
+  padding: 24px 0 16px;
+  border-top: 1px solid rgba(45, 25, 14, 0.08);
+  margin-top: 8px;
+}
+.longeva-destination__review-text {
+  font-size: 14px;
+  color: rgba(45, 25, 14, 0.6);
+  margin: 0;
+}
+
+/* --- Sibling chips ----------------------------------------------- */
+.longeva-destination__sibling-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.longeva-destination__sibling-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.14);
+  border-radius: 999px;
+  color: #2D190E;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.longeva-destination__sibling-chip:hover,
+.longeva-destination__sibling-chip:focus-visible {
+  border-color: #A6783C;
+  background: #F4ECDE;
+  outline: none;
+}
+
+/* --- Compare / similar destinations (Brief S13) ------------------- */
+/* Curated cross-region internal links. Cards rather than chips so the
+   region label can sit above the country name, matching the popular
+   strip card register on the index. Grid collapses gracefully. */
+.longeva-destination__similar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 600px) {
+  .longeva-destination__similar-list { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .longeva-destination__similar-list { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+.longeva-destination__similar-item {
+  display: flex;
+}
+.longeva-destination__similar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.10);
+  border-radius: var(--longeva-radius-card, 12px);
+  color: #2D190E;
+  text-decoration: none;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.longeva-destination__similar-card:hover,
+.longeva-destination__similar-card:focus-visible {
+  border-color: #2D190E;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 25, 14, 0.07);
+  outline: none;
+}
+.longeva-destination__similar-region {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--longeva-accent-ink, #7A5A2C);
+}
+.longeva-destination__similar-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--longeva-font-display, serif);
+  font-size: 19px;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+/* ----------------------------------------------------------------- */
+/* Destinations index page                                            */
+/* ----------------------------------------------------------------- */
+.longeva-destinations-index__hero {
+  text-align: left;
+  padding-top: 32px;
+}
+.longeva-destinations-index__eyebrow { margin: 0 0 12px; }
+.longeva-destinations-index__heading {
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.08;
+  margin: 0 0 20px;
+  letter-spacing: -0.01em;
+}
+.longeva-destinations-index__intro {
+  font-size: clamp(17px, 1.6vw, 19px);
+  line-height: 1.55;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.longeva-destinations-index__regions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+@media (min-width: 768px) {
+  .longeva-destinations-index__regions { grid-template-columns: repeat(2, 1fr); gap: 48px; }
+}
+
+.longeva-destinations-index__region-heading {
+  font-family: var(--longeva-font-display, serif);
+  font-size: 24px;
+  letter-spacing: -0.005em;
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(45, 25, 14, 0.12);
+}
+
+.longeva-destinations-index__country-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.longeva-destinations-index__country-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  text-decoration: none;
+  color: #2D190E;
+  font-size: 16px;
+  border-bottom: 1px solid rgba(45, 25, 14, 0.06);
+  transition: color 0.18s ease, padding 0.18s ease;
+}
+.longeva-destinations-index__country-link:hover,
+.longeva-destinations-index__country-link:focus-visible {
+  color: #A6783C;
+  padding-left: 6px;
+  outline: none;
+}
+
+.longeva-destinations-index__alphabetical {
+  border-top: 1px solid rgba(45, 25, 14, 0.08);
+  padding-top: 24px;
+}
+.longeva-destinations-index__alpha-heading {
+  font-family: var(--longeva-font-display, serif);
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+.longeva-destinations-index__alpha-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.longeva-destinations-index__alpha-list a {
+  color: rgba(45, 25, 14, 0.78);
+  font-size: 14px;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(45, 25, 14, 0.3);
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.longeva-destinations-index__alpha-list a:hover,
+.longeva-destinations-index__alpha-list a:focus-visible {
+  color: #A6783C;
+  border-bottom-color: #A6783C;
+  outline: none;
+}
+
+.longeva-destinations-index__empty {
+  font-style: italic;
+  color: rgba(45, 25, 14, 0.6);
+}
+
+/* --- Local relevance content slot (Varsha SEO review) ------------- */
+/* Editable Rochdale / Greater Manchester copy area. Sits below the
+   destinations lists as supporting local-SEO body copy. Reading width
+   capped, brand-neutral, no decoration of its own. */
+.longeva-destinations-index__local {
+  border-top: 1px solid rgba(45, 25, 14, 0.08);
+  padding-top: 24px;
+}
+.longeva-destinations-index__local-heading {
+  font-family: var(--longeva-font-display, serif);
+  font-size: clamp(22px, 2.6vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  margin: 0 0 16px;
+}
+.longeva-destinations-index__local-body {
+  max-width: 70ch;
+  font-size: 16px;
+  line-height: 1.62;
+  color: rgba(45, 25, 14, 0.85);
+}
+.longeva-destinations-index__local-body h3 {
+  font-family: var(--longeva-font-display, serif);
+  font-size: 22px;
+  line-height: 1.25;
+  margin: 28px 0 8px;
+  color: #2D190E;
+}
+.longeva-destinations-index__local-body p { margin: 0 0 14px; }
+.longeva-destinations-index__local-body ul,
+.longeva-destinations-index__local-body ol { padding-left: 20px; margin: 0 0 14px; }
+.longeva-destinations-index__local-body li { margin-bottom: 6px; }
+.longeva-destinations-index__local-body a { color: #A6783C; }
+
+/* --- Popular destinations strip (ADR chunk 2, Anthony brief May 2026).
+   Featured merchandising zone above the region groups. Cards, not a
+   list. Mobile: horizontal scroll-snap rail so it stays a strip and
+   does not push the regions below the fold. Capped to 8 in Liquid. */
+.longeva-destinations-index__popular {
+  margin-block-end: 56px;
+}
+.longeva-destinations-index__popular-heading {
+  font-family: var(--longeva-font-body, sans-serif);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--longeva-accent-ink, #7A5A2C);
+  margin: 0 0 20px;
+}
+.longeva-destinations-index__popular-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.longeva-destinations-index__popular-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 132px;
+  padding: 20px;
+  border: 1px solid rgba(45, 25, 14, 0.12);
+  border-radius: var(--longeva-radius-card, 12px);
+  background: #fff;
+  color: #2D190E;
+  text-decoration: none;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.longeva-destinations-index__popular-card:hover,
+.longeva-destinations-index__popular-card:focus-visible {
+  border-color: #2D190E;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 25, 14, 0.07);
+  outline: none;
+}
+.longeva-destinations-index__popular-region {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--longeva-accent-ink, #7A5A2C);
+}
+.longeva-destinations-index__popular-name {
+  display: block;
+  font-family: var(--longeva-font-display, serif);
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 6px 0 0;
+}
+.longeva-destinations-index__popular-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--longeva-accent-ink, #7A5A2C);
+}
+@media (max-width: 1023px) {
+  .longeva-destinations-index__popular-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(180px, 70%);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-inline: calc(var(--longeva-container-pad, 24px) * -1);
+    padding-inline: var(--longeva-container-pad, 24px);
+    scrollbar-width: none;
+  }
+  .longeva-destinations-index__popular-grid::-webkit-scrollbar { display: none; }
+  .longeva-destinations-index__popular-card { scroll-snap-align: start; }
+}
+
+/* --- Region groups: collapsible on mobile (ADR chunk 2). Native
+   details/summary so there is no JS and no CLS. Desktop stays open
+   multi-column; the disclosure marker and pointer are suppressed
+   above the breakpoint so it reads as a static heading. */
+.longeva-destinations-index__region > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.longeva-destinations-index__region > summary::-webkit-details-marker { display: none; }
+.longeva-destinations-index__region > summary::marker { content: ''; }
+.longeva-destinations-index__region-chevron {
+  flex: 0 0 auto;
+  transition: transform 0.2s ease;
+  color: var(--longeva-accent-ink, #7A5A2C);
+}
+.longeva-destinations-index__region[open] .longeva-destinations-index__region-chevron {
+  transform: rotate(180deg);
+}
+@media (min-width: 768px) {
+  .longeva-destinations-index__region > summary {
+    pointer-events: none;
+  }
+  .longeva-destinations-index__region-chevron { display: none; }
+}
+
+
+/* === Destination detail: traveller-journey additions (ADR chunk 4) === */
+
+/* "What happens at your appointment" 3-step process block. */
+.longeva-destination__process-steps {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 768px) {
+  .longeva-destination__process-steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+.longeva-destination__process-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.longeva-destination__process-num {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--longeva-primary, #2D190E);
+  color: var(--longeva-primary-ivory, #F2E6DC);
+  font-family: var(--longeva-font-body, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+}
+.longeva-destination__process-step-title {
+  font-family: var(--longeva-font-display, serif);
+  font-size: 17px;
+  line-height: 1.25;
+  margin: 2px 0 6px;
+  color: var(--longeva-text, #2D190E);
+}
+.longeva-destination__process-step p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(45, 25, 14, 0.78);
+}
+.longeva-destination__process-cta {
+  margin-top: 28px;
+}
+
+/* Related destination cross-link (reciprocal, e.g. Saudi <-> Hajj). */
+.longeva-destination__related-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid rgba(45, 25, 14, 0.12);
+  border-radius: var(--longeva-radius-card, 12px);
+  background: #fff;
+  text-decoration: none;
+  color: var(--longeva-text, #2D190E);
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+.longeva-destination__related-link:hover,
+.longeva-destination__related-link:focus-visible {
+  border-color: var(--longeva-primary, #2D190E);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 25, 14, 0.07);
+  outline: none;
+}
+.longeva-destination__related-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--longeva-accent-ink, #7A5A2C);
+}
+.longeva-destination__related-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--longeva-font-display, serif);
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+
+/* Sticky mobile booking bar. Mobile only; height reserved so it does
+   not shift layout. Desktop already carries the booking action in the
+   hero, process block and CTA band, so it is hidden there. */
+.longeva-destination__sticky-cta {
+  display: none;
+}
+@media (max-width: 767px) {
+  .longeva-destination__sticky-cta {
+    display: block;
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    padding: 12px var(--longeva-container-pad, 24px) calc(12px + env(safe-area-inset-bottom, 0px));
+    background: rgba(250, 250, 247, 0.96);
+    backdrop-filter: blur(8px);
+    border-block-start: 1px solid rgba(45, 25, 14, 0.10);
+  }
+  .longeva-destination__sticky-cta-btn {
+    display: flex;
+    width: 100%;
+    min-height: 52px;
+  }
+}
+
+/* --- Yellow fever cross-link callout ------------------------------ */
+.longeva-destination__yf-callout {
+  padding-top: clamp(8px, 2vw, 16px);
+}
+.longeva-destination__yf-inner {
+  border: 1px solid rgba(166, 120, 60, 0.35);
+  border-left: 3px solid #A6783C;
+  border-radius: 12px;
+  background: #FBF4E9;
+  padding: clamp(20px, 3vw, 28px);
+}
+.longeva-destination__yf-heading {
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+.longeva-destination__yf-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0 0 14px;
+}
+.longeva-destination__yf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8a5f2a;
+  font-weight: 600;
+  text-decoration: none;
+}
+.longeva-destination__yf-link:hover,
+.longeva-destination__yf-link:focus-visible {
+  text-decoration: underline;
+}

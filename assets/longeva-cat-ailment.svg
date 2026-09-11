@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-label="Minor ailment service">
+  <rect width="400" height="400" rx="16" fill="#F2E6DC"/>
+  <g fill="none" stroke="#2D190E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(200 200)">
+    <circle cx="0" cy="0" r="95"/>
+    <path d="M-32 0 L32 0"/>
+    <path d="M0 -32 L0 32"/>
+  </g>
+  <g transform="translate(200 200)">
+    <circle cx="0" cy="-65" r="4" fill="#B99157"/>
+  </g>
+</svg>

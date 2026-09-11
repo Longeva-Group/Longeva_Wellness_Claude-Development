@@ -1,0 +1,79 @@
+{%- comment -%}
+  JSON-LD for Longeva journal articles.
+
+  Emits:
+    - Article + MedicalWebPage (YMYL pattern)
+    - author from article.author
+    - reviewedBy when the article has a custom.reviewed_by metaobject
+      set (name + optional GPhC registration)
+    - datePublished, dateModified, lastReviewed
+    - publisher (Longeva / MedicalBusiness)
+    - mainEntityOfPage
+
+  Called from layout/theme.liquid so it always runs on articles. Silent
+  when invoked outside an article context.
+{%- endcomment -%}
+
+{%- if request.page_type == 'article' and article -%}
+  {%- liquid
+    assign reviewer = article.metafields.custom.reviewed_by.value
+    assign reviewer_name = ''
+    assign reviewer_gphc = ''
+    if reviewer
+      assign reviewer_name = reviewer.name
+      assign reviewer_gphc = reviewer.gphc_number
+    endif
+    assign hero_image = article.image
+    assign canonical = shop.url | append: article.url
+  -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["Article", "MedicalWebPage"],
+  "headline": {{ article.title | json }},
+  "url": "{{ canonical }}",
+  "mainEntityOfPage": { "@type": "WebPage", "@id": "{{ canonical }}" },
+  {%- if article.excerpt != blank %}
+  "description": {{ article.excerpt | strip_html | strip_newlines | json }},
+  {%- endif %}
+  {%- if hero_image %}
+  "image": {
+    "@type": "ImageObject",
+    "url": "https:{{ hero_image | image_url: width: 1200 }}",
+    "width": {{ hero_image.width | default: 1200 }},
+    "height": {{ hero_image.height | default: 630 }}
+  },
+  {%- endif %}
+  "author": {
+    "@type": "Person",
+    "name": {{ article.author | json }}
+  },
+  {%- if reviewer_name != blank %}
+  "reviewedBy": {
+    "@type": "Person",
+    "name": {{ reviewer_name | json }}
+    {%- if reviewer_gphc != blank -%},
+    "identifier": [
+      { "@type": "PropertyValue", "name": "GPhC pharmacist registration", "value": {{ reviewer_gphc | json }} }
+    ]
+    {%- endif %}
+  },
+  "lastReviewed": "{{ article.published_at | date: '%Y-%m-%d' }}",
+  {%- endif %}
+  "datePublished": "{{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
+  "dateModified": "{{ article.updated_at | default: article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
+  "publisher": {
+    "@type": ["Pharmacy", "MedicalBusiness", "Organization"],
+    "name": "Longeva",
+    "url": "{{ shop.url }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ 'longeva-wordmark.svg' | asset_url | prepend: 'https:' }}"
+    }
+  },
+  "inLanguage": "en-GB",
+  "isFamilyFriendly": true,
+  "medicalAudience": ["Patient", "General Public"]
+}
+</script>
+{%- endif -%}

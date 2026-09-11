@@ -1,0 +1,512 @@
+{%- comment -%}
+  Longeva destination detail.
+
+  Renders /pages/destinations/{handle} from the `destination` metaobject.
+  Per destination-metaobject-spec.md §4. Reuses existing brand
+  primitives (longeva-container, longeva-section, longeva-display,
+  longeva-eyebrow, longeva-btn) so the page slots into the existing
+  visual system with no new design language.
+
+  Layout (top to bottom):
+    1. Breadcrumb              Home > Travel vaccinations > {country}
+    2. Hero                    H1 + summary, optional featured image
+    3. Recommended vaccines    product cards from list.product_reference
+    4. Process                 what happens at your appointment
+    5. Traveller advice        rich text (conditional)
+    6. Booking CTA band        primary action, final prominent CTA
+    7. Further guidance        FCDO + NaTHNaC outbound links (quiet reference)
+    8. Clinical review footer  Last reviewed date + reviewer attribution
+    9. Cross-link footer       Other destinations in the same region
+
+  The `metaobject` Liquid drop is auto-injected by Shopify when this
+  section runs under templates/metaobject.destination.json.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-destinations.css' | asset_url | stylesheet_tag }}
+{% render 'longeva-destination-jsonld', metaobject: metaobject %}
+
+{%- liquid
+  if metaobject == blank or metaobject.country == blank
+    assign rendered_in_wrong_context = true
+  endif
+
+  assign country_name = metaobject.country | strip
+  assign region_name = metaobject.region | strip
+  assign reviewer = metaobject.reviewed_by_pharmacist | strip
+  if reviewer == blank
+    assign reviewer = 'the Longeva pharmacy team'
+  endif
+  assign reviewed_human = metaobject.last_reviewed_date | date: '%-d %B %Y'
+
+  assign featured_image = metaobject.featured_image.value
+  assign vaccines = metaobject.recommended_vaccines.value
+  assign traveller_notes = metaobject.notes
+  assign fcdo_url = metaobject.fcdo_travel_advice_url
+  assign nathnac_url = metaobject.nathnac_url
+  assign yf_category = metaobject.yellow_fever_category | strip | downcase
+
+  assign book_label = 'Book a consultation'
+  comment
+    Every Book button on this page (hero, process step, sticky) routes to
+    the on-page booking band below, which renders the Sesami slot picker
+    inline with the destination pre-filled and prompts for travel dates
+    and length of stay. Anthony (3 June 2026): the previous target,
+    /pages/travel-health-consultation-manchester, dropped patients into a
+    full services menu, contradicting the page's 3-step promise. The fix
+    keeps them on the page and delivers the slot picker directly.
+  endcomment
+  assign book_url = '#longeva-destination-book'
+
+  comment
+    Sibling destinations: iterate all published destinations, filter
+    to the same region, exclude self, alphabetise. Quietly does nothing
+    if Varsha has not yet populated other destinations.
+  endcomment
+  assign all_destinations = shop.metaobjects.destination.values
+
+  comment
+    Related destination (chunk 4 / ADR ruling B + D): an optional,
+    data-driven reciprocal cross-link (e.g. Saudi Arabia <-> Hajj and
+    Umrah). Distinct from the region sibling chips. Renders only when
+    set on the entry.
+  endcomment
+  assign related_dest = metaobject.related_destination.value
+
+  comment
+    Destination FAQ (Varsha SEO review). Reuses the shared faq_item
+    metaobject (question + answer). Count only valid entries (both
+    fields non-blank) so an empty or half-filled list renders nothing
+    rather than an empty container, and the FAQPage JSON-LD in the
+    snippet stays gated on the same condition.
+  endcomment
+  assign destination_faqs = metaobject.faq.value
+  assign valid_faq_count = 0
+  if destination_faqs
+    for faq_item in destination_faqs
+      if faq_item.question != blank and faq_item.answer != blank
+        assign valid_faq_count = valid_faq_count | plus: 1
+      endif
+    endfor
+  endif
+
+  comment
+    Similar destinations (Brief S13, Varsha internal linking). Curated
+    cross-region list of other destination metaobjects. Count valid
+    entries (a country to label and a handle to link) so the Compare
+    block renders nothing until Varsha populates it.
+  endcomment
+  assign similar_destinations = metaobject.similar_destinations.value
+  assign valid_similar_count = 0
+  if similar_destinations
+    for sim in similar_destinations
+      if sim.country != blank and sim.system.handle != blank
+        assign valid_similar_count = valid_similar_count | plus: 1
+      endif
+    endfor
+  endif
+-%}
+
+{%- if rendered_in_wrong_context -%}{%- else -%}
+<article class="longeva-destination longeva-page longeva-page--light" aria-labelledby="longeva-destination-heading">
+
+  <nav class="longeva-destination__breadcrumb longeva-container" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="{{ shop.url }}">Home</a></li>
+      <li><a href="/pages/travel-vaccinations">Travel vaccinations</a></li>
+      <li aria-current="page">{{ country_name | escape }}</li>
+    </ol>
+  </nav>
+
+  <header class="longeva-destination__hero longeva-container longeva-section">
+    <div class="longeva-destination__hero-text">
+      <p class="longeva-eyebrow longeva-destination__eyebrow">Travel vaccines</p>
+      <h1 id="longeva-destination-heading" class="longeva-display longeva-destination__heading">
+        Travel Vaccinations for {{ country_name | escape }}
+      </h1>
+      {% if metaobject.summary != blank %}
+        <div class="longeva-destination__summary">{{ metaobject.summary | metafield_tag }}</div>
+      {% endif %}
+      <div class="longeva-destination__hero-cta">
+        <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+        <a class="longeva-btn longeva-btn--ghost" href="#longeva-destination-vaccines">See recommended vaccines</a>
+      </div>
+    </div>
+    {%- if featured_image -%}
+      <figure class="longeva-destination__hero-image">
+        <img
+          src="{{ featured_image | image_url: width: 960 }}"
+          srcset="{{ featured_image | image_url: width: 480 }} 480w, {{ featured_image | image_url: width: 720 }} 720w, {{ featured_image | image_url: width: 960 }} 960w, {{ featured_image | image_url: width: 1280 }} 1280w"
+          sizes="(min-width: 1024px) 480px, 100vw"
+          alt="{{ featured_image.alt | default: country_name | escape }}"
+          loading="lazy"
+          width="960"
+          height="640"
+        />
+      </figure>
+    {%- endif -%}
+  </header>
+
+  {%- comment -%}
+    Entry requirements card removed 31 May 2026 per Anthony. Entry
+    requirements are immigration border controls, distinct from the
+    travel health recommendations these pages exist to deliver. The
+    FCDO and NaTHNaC links lower down already route travellers to the
+    official entry guidance, so it is not duplicated here. The page now
+    leads with recommended vaccines, travel health risks, the
+    consultation path and clinical advice. The required_vs_recommended_note
+    metaobject field is retained as data (not deleted) but no longer
+    rendered, so nothing is lost if the decision is revisited.
+  {%- endcomment -%}
+
+  <section
+    id="longeva-destination-vaccines"
+    class="longeva-destination__vaccines longeva-container longeva-section"
+    aria-labelledby="longeva-destination-vaccines-heading"
+  >
+    <header class="longeva-destination__vaccines-header">
+      <h2 id="longeva-destination-vaccines-heading" class="longeva-display longeva-destination__h2">
+        Recommended vaccines for {{ country_name | escape }}
+      </h2>
+      <p class="longeva-destination__vaccines-intro">
+        Final cover is confirmed at consultation. Your itinerary, length of stay, medical history and any previous vaccinations affect what we recommend.
+      </p>
+    </header>
+    {%- if vaccines and vaccines.size > 0 -%}
+      <ul class="longeva-destination__vaccine-grid">
+        {%- for vp in vaccines -%}
+          {% render 'longeva-destination-vaccine-card', vaccine_product: vp %}
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <p class="longeva-destination__empty">Vaccine list pending. Please contact us for travel advice.</p>
+    {%- endif -%}
+  </section>
+
+  {%- comment -%}
+    Yellow fever cross-link. Renders only where the destination carries
+    the yellow_fever_category field ("recommended" = in-country risk,
+    "certificate" = entry or transit requirement). Links to the Yellow
+    Fever Vaccination Centre hub, which links back here. Wording differs
+    by category so it stays clinically accurate per destination.
+  {%- endcomment -%}
+  {%- if yf_category == 'recommended' or yf_category == 'certificate' -%}
+    <aside class="longeva-destination__yf-callout longeva-container longeva-section" aria-label="Yellow fever">
+      <div class="longeva-destination__yf-inner">
+        <h2 class="longeva-display longeva-destination__yf-heading">Yellow fever</h2>
+        {%- if yf_category == 'recommended' -%}
+          <p class="longeva-destination__yf-text">
+            Yellow fever is present in parts of {{ country_name | escape }}, so the vaccine is usually recommended. It can only be given, and the certificate issued, at a registered centre.
+          </p>
+        {%- else -%}
+          <p class="longeva-destination__yf-text">
+            {{ country_name | escape }} may ask for proof of yellow fever vaccination if you are arriving from, or have travelled through, a country where yellow fever is present. The certificate can only be issued at a registered centre.
+          </p>
+        {%- endif -%}
+        <a class="longeva-destination__yf-link" href="/pages/yellow-fever-vaccination-centre">
+          Visit our Yellow Fever Vaccination Centre {% render 'longeva-arrow', size: 15 %}
+        </a>
+      </div>
+    </aside>
+  {%- endif -%}
+
+  {%- comment -%}
+    Hajj and Umrah cross-link. Saudi Arabia only, since the dedicated
+    Hajj and Umrah page covers the Meningococcal ACWY entry requirement
+    that applies to pilgrims. Renders only on the Saudi Arabia guide.
+  {%- endcomment -%}
+  {%- if metaobject.system.handle == 'saudi-arabia' -%}
+    <aside class="longeva-destination__yf-callout longeva-container longeva-section" aria-label="Hajj and Umrah">
+      <div class="longeva-destination__yf-inner">
+        <h2 class="longeva-display longeva-destination__yf-heading">Travelling for Hajj or Umrah?</h2>
+        <p class="longeva-destination__yf-text">
+          Pilgrims must hold a valid Meningococcal ACWY certificate to enter Saudi Arabia. Our dedicated page sets out the required and recommended vaccinations for Hajj and Umrah.
+        </p>
+        <a class="longeva-destination__yf-link" href="/pages/hajj-and-umrah-vaccinations">
+          Hajj and Umrah vaccinations {% render 'longeva-arrow', size: 15 %}
+        </a>
+      </div>
+    </aside>
+  {%- endif -%}
+
+  {%- comment -%}
+    What happens at your appointment (chunk 4 / ADR ruling D). Generic
+    process scaffold, not a clinical claim, so it sits in the technical
+    lane. Strengthens the Destination to Vaccines to Consultation
+    journey with a clear next step between the vaccine list and the
+    booking CTA. Three native steps, no JS, no CLS.
+  {%- endcomment -%}
+  <section class="longeva-destination__process longeva-container longeva-section" aria-labelledby="longeva-destination-process-heading">
+    <h2 id="longeva-destination-process-heading" class="longeva-display longeva-destination__h2">What happens at your appointment</h2>
+    <ol class="longeva-destination__process-steps">
+      <li class="longeva-destination__process-step">
+        <span class="longeva-destination__process-num" aria-hidden="true">1</span>
+        <div>
+          <h3 class="longeva-destination__process-step-title">Book your consultation</h3>
+          <p>Choose a time that suits you. Tell us your destination, travel dates and length of stay.</p>
+        </div>
+      </li>
+      <li class="longeva-destination__process-step">
+        <span class="longeva-destination__process-num" aria-hidden="true">2</span>
+        <div>
+          <h3 class="longeva-destination__process-step-title">Talk it through with a pharmacist</h3>
+          <p>We review your itinerary, medical history and any previous vaccinations, then confirm what you need.</p>
+        </div>
+      </li>
+      <li class="longeva-destination__process-step">
+        <span class="longeva-destination__process-num" aria-hidden="true">3</span>
+        <div>
+          <h3 class="longeva-destination__process-step-title">Get vaccinated on the right schedule</h3>
+          <p>We give the doses with the correct lead time before you travel, and any records or certificates you need.</p>
+        </div>
+      </li>
+    </ol>
+    <a class="longeva-btn longeva-btn--ghost longeva-destination__process-cta" href="{{ book_url }}">{{ book_label }}</a>
+  </section>
+
+  {% comment %} {%- if traveller_notes != blank -%}
+    <section class="longeva-destination__advice longeva-container longeva-section" aria-labelledby="longeva-destination-advice-heading">
+      <h2 id="longeva-destination-advice-heading" class="longeva-display longeva-destination__h2">Traveller advice</h2>
+      <div class="longeva-destination__advice-body longeva-prose">{{ traveller_notes | metafield_tag }}</div>
+    </section>
+  {%- endif -%} {% endcomment %}
+   {%- if traveller_notes != blank -%}
+  <section class="longeva-destination__advice longeva-container longeva-section" aria-labelledby="longeva-destination-advice-heading">
+    <h2 id="longeva-destination-advice-heading" class="longeva-display longeva-destination__h2">Traveller advice</h2>
+    <div class="longeva-destination__advice-body longeva-prose" id="longeva-traveller-advice">{{ traveller_notes | metafield_tag }}</div>
+  </section>
+  <script>
+  (function () {
+    const body = document.getElementById('longeva-traveller-advice');
+    if (!body) return;
+
+    // metafield_tag wraps content in an extra div — get inside it
+    const inner = body.querySelector('div') || body;
+    const children = Array.from(inner.children);
+
+    const groups = [];
+    let current = null;
+
+    for (const child of children) {
+      if (child.tagName === 'H3') {
+        current = { heading: child.textContent.trim(), items: [] };
+        groups.push(current);
+      } else if (current) {
+        current.items.push(child);
+      }
+    }
+
+    if (groups.length < 2) return;
+
+    const list = document.createElement('div');
+    list.className = 'longeva-destination__faq-list';
+
+    for (const group of groups) {
+      const details = document.createElement('details');
+      details.className = 'longeva-destination__faq-item';
+      const summary = document.createElement('summary');
+      summary.className = 'longeva-destination__faq-question';
+      summary.textContent = group.heading;
+      details.appendChild(summary);
+      const answer = document.createElement('div');
+      answer.className = 'longeva-destination__faq-answer longeva-prose';
+      group.items.forEach(el => answer.appendChild(el.cloneNode(true)));
+      details.appendChild(answer);
+      list.appendChild(details);
+    }
+
+    inner.innerHTML = '';
+    inner.appendChild(list);
+  })();
+</script>
+{%- endif -%}
+
+  {%- comment -%}
+    FAQ accordion (Varsha SEO review). Same native details/summary
+    pattern as the vaccine hub and service pages, so it matches house
+    style with no JS and no CLS. Renders only when at least one valid
+    faq_item (question and answer both set) exists. Each open/close
+    marker is the +/minus glyph driven by [open] in the stylesheet.
+  {%- endcomment -%}
+  {%- if valid_faq_count > 0 -%}
+    <section class="longeva-destination__faq longeva-container longeva-section" aria-labelledby="longeva-destination-faq-heading">
+      <h2 id="longeva-destination-faq-heading" class="longeva-display longeva-destination__h2">Frequently asked questions</h2>
+      <div class="longeva-destination__faq-list">
+        {%- for faq_item in destination_faqs -%}
+          {%- if faq_item.question != blank and faq_item.answer != blank -%}
+            <details class="longeva-destination__faq-item">
+              <summary class="longeva-destination__faq-question">{{ faq_item.question | escape }}</summary>
+              <div class="longeva-destination__faq-answer longeva-prose">{{ faq_item.answer | metafield_tag }}</div>
+            </details>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%}
+    Booking is the primary action, so the CTA band comes BEFORE the
+    external guidance links (Anthony 31 May 2026). The FCDO and NaTHNaC
+    links were previously above the CTA under an "Authoritative sources"
+    heading with a "we recommend reading this before you travel" intro,
+    which framed the outbound links as the next step. They now sit below
+    the CTA as quiet reference under "Further guidance", with no intro.
+  {%- endcomment -%}
+  <section id="longeva-destination-book" class="longeva-destination__cta-band longeva-container longeva-section" aria-labelledby="longeva-destination-cta-heading">
+    <div class="longeva-destination__cta-inner">
+      <h2 id="longeva-destination-cta-heading" class="longeva-display longeva-destination__cta-heading">
+        Ready to plan your travel vaccinations?
+      </h2>
+      <p class="longeva-destination__cta-sub">
+        Tell us your travel date and length of stay, then choose a time. Your destination is pre-filled, and the pharmacist confirms the vaccines you need and schedules the doses with the right lead time.
+      </p>
+      {%- comment -%}
+        Destination booking (Anthony, 3 June 2026): deliver the page's
+        three steps directly. The Sesami slot picker renders inline with
+        the destination pre-filled as a booking line property, and the
+        travel date and length of stay are collected here as booking line
+        properties so the clinician sees them. No routing to a services
+        menu. Service and variant are the Travel Health Consultation; shop
+        id falls back to the theme setting.
+      {%- endcomment -%}
+      {% render 'longeva-sesami-button',
+         service_id: '15419482145145',
+         variant_id: '56910652342649',
+         label: book_label,
+         prop_name: 'Destination',
+         prop_value: country_name,
+         ask_travel_date: true,
+         ask_length_of_stay: true,
+         fallback_url: '/pages/travel-health-consultation-manchester' %}
+    </div>
+  </section>
+
+  {%- comment -%}
+    Compare destinations (Brief S13, Varsha internal linking). Curated
+    cross-region links to other destination guides, placed above the
+    Further guidance reference links so the internal cross-links sit
+    higher than the outbound ones. Renders nothing until Varsha curates
+    the similar_destinations list on the entry.
+  {%- endcomment -%}
+  {%- if valid_similar_count > 0 -%}
+    <section class="longeva-destination__similar longeva-container longeva-section" aria-labelledby="longeva-destination-similar-heading">
+      <h2 id="longeva-destination-similar-heading" class="longeva-display longeva-destination__h2">Travelling somewhere similar?</h2>
+      <ul class="longeva-destination__similar-list">
+        {%- for sim in similar_destinations -%}
+          {%- if sim.country != blank and sim.system.handle != blank -%}
+            <li class="longeva-destination__similar-item">
+              <a class="longeva-destination__similar-card" href="/pages/destinations/{{ sim.system.handle }}">
+                {%- if sim.region != blank -%}
+                  <span class="longeva-destination__similar-region">{{ sim.region | escape }}</span>
+                {%- endif -%}
+                <span class="longeva-destination__similar-name">
+                  {{ sim.country | escape }} {% render 'longeva-arrow', size: 15 %}
+                </span>
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- if fcdo_url != blank or nathnac_url != blank -%}
+    <section class="longeva-destination__sources longeva-container longeva-section" aria-labelledby="longeva-destination-sources-heading">
+      <h2 id="longeva-destination-sources-heading" class="longeva-display longeva-destination__h2">Further guidance</h2>
+      <ul class="longeva-destination__source-list">
+        {%- if fcdo_url != blank -%}
+          <li>
+            <a class="longeva-destination__source-link" href="{{ fcdo_url }}" rel="noopener external" target="_blank">
+              FCDO travel advice for {{ country_name | escape }}
+              <span class="longeva-destination__source-host">gov.uk</span>
+            </a>
+          </li>
+        {%- endif -%}
+        {%- if nathnac_url != blank -%}
+          <li>
+            <a class="longeva-destination__source-link" href="{{ nathnac_url }}" rel="noopener external" target="_blank">
+              NaTHNaC country guidance for {{ country_name | escape }}
+              <span class="longeva-destination__source-host">travelhealthpro.org.uk</span>
+            </a>
+          </li>
+        {%- endif -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- if related_dest and related_dest.country != blank -%}
+    <section class="longeva-destination__related longeva-container longeva-section" aria-label="Related travel guide">
+      <a class="longeva-destination__related-link" href="/pages/destinations/{{ related_dest.system.handle }}">
+        <span class="longeva-destination__related-label">Related travel guide</span>
+        <span class="longeva-destination__related-name">{{ related_dest.country | escape }} {% render 'longeva-arrow', size: 16 %}</span>
+      </a>
+    </section>
+  {%- endif -%}
+
+  <footer class="longeva-destination__review longeva-container">
+    <p class="longeva-destination__review-text">
+      Last reviewed {{ reviewed_human }} by {{ reviewer | escape }}, GPhC-registered pharmacist team.
+    </p>
+  </footer>
+
+  {%- if all_destinations and all_destinations.size > 1 and region_name != blank -%}
+    {%- assign sibling_count = 0 -%}
+    {%- capture sibling_html -%}
+      <ul class="longeva-destination__sibling-list">
+        {%- for d in all_destinations -%}
+          {%- if d.region == region_name and d.system.handle != metaobject.system.handle -%}
+            {%- assign sibling_count = sibling_count | plus: 1 -%}
+            <li>
+              <a class="longeva-destination__sibling-chip" href="/pages/destinations/{{ d.system.handle }}">
+                {{ d.country | escape }}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- endcapture -%}
+    {%- if sibling_count > 0 -%}
+      <section class="longeva-destination__siblings longeva-container longeva-section" aria-labelledby="longeva-destination-siblings-heading">
+        <h2 id="longeva-destination-siblings-heading" class="longeva-display longeva-destination__h2">
+          Other destinations in {{ region_name | escape }}
+        </h2>
+        {{ sibling_html }}
+      </section>
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- comment -%}
+    Sticky mobile booking bar (chunk 4 / ADR ruling D: highest-leverage
+    conversion add). Mobile only, position sticky at the bottom, height
+    reserved in CSS so it holds CLS at zero. Hidden on desktop where the
+    hero + process + CTA band already carry the booking action.
+  {%- endcomment -%}
+  <div class="longeva-destination__sticky-cta">
+    <a class="longeva-btn longeva-btn--primary-on-light longeva-destination__sticky-cta-btn" href="{{ book_url }}">Book travel consultation</a>
+  </div>
+
+</article>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Longeva destination",
+  "tag": "section",
+  "class": "shopify-section--longeva-destination",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "All visible content comes from the destination metaobject. No section-level overrides; edit the destination entry in Content > Metaobjects > Destination."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Longeva destination",
+      "category": "Longeva"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["metaobject"]
+  }
+}
+{% endschema %}

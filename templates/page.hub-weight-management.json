@@ -1,0 +1,70 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hub": {
+      "type": "longeva-category-hub",
+      "blocks": {
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
+        "badge_2": { "type": "trust_badge", "settings": { "primary": "Pharmacist-led", "secondary": "Confidential" } },
+        "badge_3": { "type": "trust_badge", "settings": { "primary": "No commitment", "secondary": "Eligibility decided first" } },
+        "badge_4": { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "In-clinic consultation" } },
+        "faq_how": {
+          "type": "faq",
+          "settings": {
+            "question": "How does a weight management consultation work?",
+            "answer": "<p>You book an in-clinic appointment with a pharmacist. We review your history, current weight, BMI, lifestyle and any underlying conditions. We explain the options that are clinically appropriate for you, and you decide whether to proceed. No pressure, written summary either way.</p>"
+          }
+        },
+        "faq_eligibility": {
+          "type": "faq",
+          "settings": {
+            "question": "Am I eligible?",
+            "answer": "<p>Eligibility is decided in the consultation against current UK clinical criteria. We assess BMI, comorbidities and previous attempts at weight management. If a service isn't appropriate for you, we explain why and suggest the right next step.</p>"
+          }
+        },
+        "faq_alternatives": {
+          "type": "faq",
+          "settings": {
+            "question": "What if a service isn't right for me?",
+            "answer": "<p>The consultation fee covers the assessment and a written summary regardless of outcome. We'll explain the lifestyle, behavioural and medical pathways available, including NHS referral routes where appropriate.</p>"
+          }
+        },
+        "faq_confidentiality": {
+          "type": "faq",
+          "settings": {
+            "question": "How private is this service?",
+            "answer": "<p>Discreet. Consultations are in private rooms at our Manchester clinic. We'll only share clinical information with your GP if you give written consent. No marketing communications without explicit opt-in.</p>"
+          }
+        },
+        "cta_1": { "type": "cta", "settings": { "heading": "Speak to a pharmacist", "subhead": "Eligibility-first. The consultation fee covers written advice if treatment isn't appropriate." } },
+        "related_alcohol": { "type": "related_category", "settings": { "page": "alcohol-reduction-manchester" } },
+        "related_smoking": { "type": "related_category", "settings": { "page": "smoking-cessation-manchester" } }
+      },
+      "block_order": [
+        "badge_1", "badge_2", "badge_3", "badge_4",
+        "faq_how", "faq_eligibility", "faq_alternatives", "faq_confidentiality",
+        "cta_1",
+        "related_alcohol", "related_smoking"
+      ],
+      "settings": {
+        "eyebrow": "Weight management",
+        "featured_heading": "",
+        "view_all_label": "View weight management services",
+        "faq_heading": "Weight management: frequently asked questions",
+        "related_heading": "Related services",
+        "book_label": "Book a Consultation",
+        "book_url": "/pages/book",
+        "directory_url": "/pages/services-manchester"
+      }
+    }
+  },
+  "order": ["hub"]
+}

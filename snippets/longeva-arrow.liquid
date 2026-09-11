@@ -1,0 +1,52 @@
+{% comment %}
+  Longeva bespoke hairline arrow.
+
+  Replaces default Lucide/Feather arrows and the &rarr; glyph. Single
+  stroke, rounded caps so the endpoints match the logo's pill arms.
+  Uses currentColor so one snippet adapts to any text colour.
+
+  Accepts:
+    direction   'right' (default) | 'down'
+    size        Pixel size for width and height. Defaults to 20.
+    label       Optional accessible label. When omitted the SVG is
+                aria-hidden so it reads as decorative.
+{% endcomment %}
+
+{%- liquid
+  assign dir = direction | default: 'right'
+  assign px = size | default: 20
+-%}
+
+{% if label %}
+  <svg
+    class="longeva-arrow longeva-arrow--{{ dir }}"
+    role="img"
+    aria-label="{{ label | escape }}"
+    width="{{ px }}"
+    height="{{ px }}"
+    viewBox="0 0 24 16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M0 8 H22 M16 2 L22 8 L16 14"/>
+  </svg>
+{% else %}
+  <svg
+    class="longeva-arrow longeva-arrow--{{ dir }}"
+    aria-hidden="true"
+    focusable="false"
+    width="{{ px }}"
+    height="{{ px }}"
+    viewBox="0 0 24 16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M0 8 H22 M16 2 L22 8 L16 14"/>
+  </svg>
+{% endif %}

@@ -1,0 +1,84 @@
+{%- comment -%}
+  Longeva Hajj and Umrah page JSON-LD.
+
+  Emits MedicalWebPage (page wrapper) and a FAQPage. The FAQ questions
+  and answers mirror the visible FAQ in longeva-hajj-umrah.liquid
+  (FAQPage eligibility requires the content to be visible on the page).
+{%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MedicalWebPage",
+  "name": "Hajj and Umrah Vaccinations",
+  "description": "Meningococcal ACWY vaccination and certificate for Hajj and Umrah pilgrims, plus recommended travel vaccines, given as a pharmacist-led clinical service in Rochdale, Greater Manchester.",
+  "about": {
+    "@type": "MedicalCondition",
+    "name": "Meningococcal disease",
+    "relevantSpecialty": "PublicHealth"
+  },
+  "lastReviewed": "2026-05-31",
+  "inLanguage": "en-GB",
+  "publisher": {
+    "@type": "Pharmacy",
+    "name": "Longeva Wellness",
+    "@id": "https://longevawellness.co.uk/#pharmacy"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en-GB",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is the ACWY vaccine mandatory for Umrah as well as Hajj?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Meningococcal ACWY vaccination is a mandatory entry requirement for both Hajj and Umrah pilgrims aged one year and over, and you must hold a valid certificate to enter Saudi Arabia."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long before travel do I need the ACWY vaccine?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It should be given at least 10 days before you arrive in Saudi Arabia, so the certificate is valid and your protection has time to develop. We recommend booking several weeks ahead where possible."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need a yellow fever certificate for Saudi Arabia?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not if you are travelling directly from the United Kingdom. You may need one if you are arriving from, or have travelled through, a country where yellow fever is present. Bring your full travel plans to your consultation and we will check."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which vaccines are required and which are recommended?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Meningococcal ACWY is the mandatory entry requirement for all pilgrims. Polio and yellow fever may be required depending on the countries you have travelled from or through. Others, such as typhoid, hepatitis A, influenza and pneumococcal, are recommended based on your individual circumstances."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can my family be vaccinated together?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. We are happy to see families together and will talk through what each person needs. Please mention any children, older relatives, pregnancy or long-term health conditions when you book."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you provide the certificate I need?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Where a vaccination requires certification, we provide it at your appointment."
+      }
+    }
+  ]
+}
+</script>

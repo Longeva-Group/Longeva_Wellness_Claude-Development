@@ -1,0 +1,254 @@
+{%- comment -%}
+  Longeva travel hub (Brief v4 Section 4: Regional hubs + Travel-pattern hubs).
+
+  One reusable section for every hub page, bound via page templates:
+    page.travel-hub.json  (template_suffix "travel-hub")
+
+  Two modes, chosen by the "mode" setting:
+    1. region   - lists every published destination whose metaobject
+                  `region` field matches section.settings.region_match.
+                  Zero maintenance: add a destination in admin and it
+                  appears on the matching hub automatically.
+    2. curated  - lists the destinations named in curated_handles (a
+                  comma or newline separated list of metaobject handles),
+                  in that order. Used by Africa-Safari and the
+                  travel-pattern hubs (South Asia, South East Asia, East
+                  Africa, West Africa) which are cross-region groupings,
+                  not a single region value.
+
+  Only published destinations render (system.url is blank for drafts).
+  Dominant-theme copy and cross-links are admin-editable; no clinical
+  claim is hardcoded. Reuses the destination card primitives from
+  longeva-destinations.css. British English, no em dashes.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-destinations.css' | asset_url | stylesheet_tag }}
+{{ 'longeva-travel-hub.css' | asset_url | stylesheet_tag }}
+{%- liquid
+  assign h1 = section.settings.h1 | default: page.title
+  assign bc_crumbs = 'Home::/|Travel vaccinations::/pages/travel-vaccinations|'
+  assign bc_crumbs = bc_crumbs | append: h1 | append: '::' | append: page.url
+-%}
+{% render 'longeva-schema-page-breadcrumb', crumbs: bc_crumbs %}
+
+{%- liquid
+  assign eyebrow = section.settings.eyebrow | default: 'Travel vaccinations'
+  assign intro = section.settings.intro
+  assign mode = section.settings.mode | default: 'region'
+  assign region_match = section.settings.region_match | strip
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign book_url = section.settings.book_url | default: settings.longeva_book_cta_url | default: '/pages/book'
+  assign all = shop.metaobjects.destination.values
+
+  comment
+    Build the ordered list of destinations for this hub.
+    region mode: filter by region field, published only, alphabetical.
+    curated mode: follow the handle order given in curated_handles.
+  endcomment
+  assign hub_pairs = ''
+  if mode == 'curated'
+    assign curated = section.settings.curated_handles | newline_to_br | strip_newlines | replace: '<br />', ',' | replace: '<br>', ',' | split: ','
+    for h in curated
+      assign hh = h | strip
+      if hh == blank
+        continue
+      endif
+      for d in all
+        if d.system.handle == hh and d.system.url != blank
+          assign hub_pairs = hub_pairs | append: d.system.url | append: ',' | append: d.country | append: '|'
+        endif
+      endfor
+    endfor
+    assign hub_list = hub_pairs | split: '|'
+  else
+    for d in all
+      if d.system.url == blank
+        continue
+      endif
+      assign d_region = d.region | strip
+      if d_region == region_match
+        assign hub_pairs = hub_pairs | append: d.system.url | append: ',' | append: d.country | append: '|'
+      endif
+    endfor
+    assign hub_list = hub_pairs | split: '|' | sort
+  endif
+
+  assign theme_blocks = section.blocks | where: 'type', 'theme'
+  assign ref_blocks = section.blocks | where: 'type', 'reference'
+  assign cross_blocks = section.blocks | where: 'type', 'cross_link'
+-%}
+
+<article class="longeva-destinations-index longeva-page longeva-page--light longeva-travel-hub" aria-labelledby="longeva-travel-hub-heading">
+
+  <nav class="longeva-travel-hub__breadcrumb longeva-container" aria-label="Breadcrumb">
+    <ol class="longeva-travel-hub__crumbs">
+      <li><a href="/">Home</a></li>
+      <li><a href="/pages/travel-vaccinations">Travel vaccinations</a></li>
+      <li aria-current="page">{{ h1 | escape }}</li>
+    </ol>
+  </nav>
+
+  <header class="longeva-travel-hub__hero longeva-container">
+    <p class="longeva-eyebrow longeva-travel-hub__eyebrow">{{ eyebrow | escape }}</p>
+    <h1 id="longeva-travel-hub-heading" class="longeva-display longeva-travel-hub__heading">{{ h1 | escape }}</h1>
+    {%- if intro != blank -%}
+      <div class="longeva-travel-hub__intro longeva-prose">{{ intro }}</div>
+    {%- endif -%}
+    <div class="longeva-travel-hub__hero-actions">
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </header>
+
+  {%- comment -%} Dominant themes for the region (editorial, admin-set) {%- endcomment -%}
+  {%- if theme_blocks.size > 0 -%}
+    <section class="longeva-travel-hub__themes longeva-container longeva-section" aria-labelledby="longeva-travel-hub-themes">
+      <h2 id="longeva-travel-hub-themes" class="longeva-display longeva-destinations-index__h2">{{ section.settings.themes_heading | default: 'What we commonly discuss for this region' | escape }}</h2>
+      <ul class="longeva-travel-hub__theme-grid">
+        {%- for block in theme_blocks -%}
+          {%- if block.settings.title != blank -%}
+            <li class="longeva-travel-hub__theme" {{ block.shopify_attributes }}>
+              <h3 class="longeva-travel-hub__theme-title">{{ block.settings.title | escape }}</h3>
+              {%- if block.settings.body != blank -%}<p>{{ block.settings.body | escape }}</p>{%- endif -%}
+              {%- if block.settings.url != blank -%}<a class="longeva-travel-hub__theme-link" href="{{ block.settings.url }}">{{ block.settings.link_label | default: 'Learn more' | escape }} {% render 'longeva-arrow', size: 14 %}</a>{%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%} Destinations in this hub {%- endcomment -%}
+  <section class="longeva-travel-hub__destinations longeva-container longeva-section" aria-labelledby="longeva-travel-hub-destinations">
+    <h2 id="longeva-travel-hub-destinations" class="longeva-display longeva-destinations-index__h2">{{ section.settings.destinations_heading | default: 'Destinations in this region' | escape }}</h2>
+    {%- assign shown = 0 -%}
+    <ul class="longeva-travel-hub__dest-grid">
+      {%- for item in hub_list -%}
+        {%- assign parts = item | split: ',' -%}
+        {%- assign dest_url = parts[0] -%}
+        {%- assign name = parts[1] -%}
+        {%- if dest_url != blank and name != blank -%}
+          {%- assign shown = shown | plus: 1 -%}
+          <li>
+            <a class="longeva-travel-hub__dest-card" href="{{ dest_url }}">
+              <span class="longeva-travel-hub__dest-name">{{ name | escape }}</span>
+              <span class="longeva-travel-hub__dest-cta">See vaccines <span aria-hidden="true">{% render 'longeva-arrow', size: 14 %}</span></span>
+            </a>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+    {%- if shown == 0 -%}
+      <p class="longeva-travel-hub__empty">Destination guides for this region are being added. In the meantime, book a consultation and our pharmacist team will plan your vaccinations.</p>
+    {%- endif -%}
+    <p class="longeva-travel-hub__all"><a href="/pages/travel-vaccinations">See all travel destinations {% render 'longeva-arrow', size: 15 %}</a></p>
+  </section>
+
+  {%- comment -%} Cross-links to related hubs / traveller types {%- endcomment -%}
+  {%- if cross_blocks.size > 0 -%}
+    <section class="longeva-travel-hub__cross longeva-container longeva-section" aria-labelledby="longeva-travel-hub-cross">
+      <h2 id="longeva-travel-hub-cross" class="longeva-display longeva-destinations-index__h2">{{ section.settings.cross_heading | default: 'Related travel guides' | escape }}</h2>
+      <ul class="longeva-travel-hub__cross-grid">
+        {%- for block in cross_blocks -%}
+          {%- if block.settings.label != blank and block.settings.url != blank -%}
+            <li><a class="longeva-travel-hub__cross-link" href="{{ block.settings.url }}">{{ block.settings.label | escape }} {% render 'longeva-arrow', size: 15 %}</a></li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%} Booking CTA band (primary action) {%- endcomment -%}
+  <section class="longeva-destination__cta-band longeva-container longeva-section" aria-labelledby="longeva-travel-hub-cta-heading">
+    <div class="longeva-destination__cta-inner">
+      <h2 id="longeva-travel-hub-cta-heading" class="longeva-display longeva-destination__cta-heading">{{ section.settings.cta_heading | default: 'Book your travel vaccination consultation' | escape }}</h2>
+      {%- if section.settings.cta_subhead != blank -%}<p class="longeva-destination__cta-sub">{{ section.settings.cta_subhead | escape }}</p>{%- endif -%}
+      <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+    </div>
+  </section>
+
+  {%- comment -%} Further guidance (quiet reference, below the CTA) {%- endcomment -%}
+  {%- if ref_blocks.size > 0 -%}
+    <section class="longeva-destination__sources longeva-container longeva-section" aria-labelledby="longeva-travel-hub-sources">
+      <h2 id="longeva-travel-hub-sources" class="longeva-display longeva-destination__h2">Further guidance</h2>
+      <ul class="longeva-destination__source-list">
+        {%- for block in ref_blocks -%}
+          {%- if block.settings.label != blank and block.settings.url != blank -%}
+            <li>
+              <a class="longeva-destination__source-link" href="{{ block.settings.url }}" rel="noopener external" target="_blank">
+                {{ block.settings.label | escape }}
+                {%- if block.settings.host != blank -%}<span class="longeva-destination__source-host">{{ block.settings.host | escape }}</span>{%- endif -%}
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%}
+    Sticky mobile booking bar (brief Section 22: every page carries a
+    booking CTA, sticky on mobile). Reuses the shared destination
+    sticky-cta primitive so it matches the destination and vaccine-hub
+    pages; mobile only, height reserved in CSS to hold CLS at zero.
+  {%- endcomment -%}
+  <div class="longeva-destination__sticky-cta">
+    <a class="longeva-btn longeva-btn--primary-on-light longeva-destination__sticky-cta-btn" href="{{ book_url }}">{{ book_label }}</a>
+  </div>
+
+</article>
+
+{% schema %}
+{
+  "name": "Travel hub",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Travel vaccinations" },
+    { "type": "text", "id": "h1", "label": "H1 (falls back to page title)" },
+    { "type": "richtext", "id": "intro", "label": "Hero intro" },
+    { "type": "header", "content": "Destination selection" },
+    { "type": "select", "id": "mode", "label": "Mode", "options": [ { "value": "region", "label": "By region field" }, { "value": "curated", "label": "Curated handle list" } ], "default": "region" },
+    { "type": "text", "id": "region_match", "label": "Region value to match", "info": "Used in region mode. Must match the destination metaobject region exactly, e.g. Africa, Asia, Middle East, Central and South America, Europe, North America." },
+    { "type": "textarea", "id": "curated_handles", "label": "Curated destination handles", "info": "Used in curated mode. One destination handle per line or comma separated, in display order, e.g. tanzania, kenya, south-africa." },
+    { "type": "text", "id": "destinations_heading", "label": "Destinations heading", "default": "Destinations in this region" },
+    { "type": "header", "content": "Dominant themes (add theme blocks)" },
+    { "type": "text", "id": "themes_heading", "label": "Themes heading", "default": "What we commonly discuss for this region" },
+    { "type": "header", "content": "Related guides (add cross_link blocks)" },
+    { "type": "text", "id": "cross_heading", "label": "Related heading", "default": "Related travel guides" },
+    { "type": "header", "content": "Booking CTA" },
+    { "type": "text", "id": "cta_heading", "label": "CTA heading", "default": "Book your travel vaccination consultation" },
+    { "type": "text", "id": "cta_subhead", "label": "CTA subhead" },
+    { "type": "text", "id": "book_label", "label": "Book button label" },
+    { "type": "url", "id": "book_url", "label": "Book link" }
+  ],
+  "blocks": [
+    {
+      "type": "theme",
+      "name": "Dominant theme",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Theme title", "info": "e.g. Yellow fever, Malaria, Rabies" },
+        { "type": "textarea", "id": "body", "label": "Short description" },
+        { "type": "url", "id": "url", "label": "Link (e.g. to the vaccine hub)" },
+        { "type": "text", "id": "link_label", "label": "Link label", "default": "Learn more" }
+      ]
+    },
+    {
+      "type": "cross_link",
+      "name": "Related guide",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "url", "id": "url", "label": "Link" }
+      ]
+    },
+    {
+      "type": "reference",
+      "name": "Further guidance link",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Label" },
+        { "type": "url", "id": "url", "label": "Link" },
+        { "type": "text", "id": "host", "label": "Host label" }
+      ]
+    }
+  ],
+  "enabled_on": { "templates": ["page"] }
+}
+{% endschema %}

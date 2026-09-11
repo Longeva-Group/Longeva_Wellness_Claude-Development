@@ -1,0 +1,62 @@
+{%- comment -%}
+  Longeva content page. Renders a page's body (page.content) with the
+  brand typography, a contained reading measure and controlled heading
+  sizes, so editable page-body content (VFR, children's, consultation,
+  practitioner, FAQ) looks designed rather than raw. The default Horizon
+  main-page section applied no size control, which made headings render
+  gigantic and full width.
+
+  Content stays in the page body, so Varsha can edit it in Online Store
+  > Pages. British English, no em dashes, no priority overrides.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-content-page.css' | asset_url | stylesheet_tag }}
+{% render 'longeva-schema-page-breadcrumb' %}
+
+{%- liquid
+  assign eyebrow = section.settings.eyebrow
+  assign show_cta = section.settings.show_cta
+  assign cta_heading = section.settings.cta_heading | default: 'Plan your travel vaccinations'
+  assign book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+  assign book_url = section.settings.book_url | default: '/pages/travel-health-consultation-manchester'
+-%}
+
+<article class="longeva-content longeva-page longeva-page--light" aria-labelledby="longeva-content-heading">
+  <header class="longeva-content__hero longeva-container longeva-section">
+    {%- if eyebrow != blank -%}
+      <p class="longeva-eyebrow longeva-content__eyebrow">{{ eyebrow | escape }}</p>
+    {%- endif -%}
+    <h1 id="longeva-content-heading" class="longeva-display longeva-content__h1">{{ page.title | escape }}</h1>
+  </header>
+
+  {%- if page.content != blank -%}
+    <div class="longeva-content__body longeva-container">{{ page.content }}</div>
+  {%- endif -%}
+
+  {%- if show_cta -%}
+    <section class="longeva-content__cta longeva-container longeva-section" aria-labelledby="longeva-content-cta-heading">
+      <div class="longeva-content__cta-inner">
+        <h2 id="longeva-content-cta-heading" class="longeva-display longeva-content__cta-heading">{{ cta_heading | escape }}</h2>
+        <a class="longeva-btn longeva-btn--primary-on-light" href="{{ book_url }}">{{ book_label }}</a>
+      </div>
+    </section>
+  {%- endif -%}
+</article>
+
+{% schema %}
+{
+  "name": "Content page",
+  "tag": "section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+    { "type": "header", "content": "Booking CTA" },
+    { "type": "checkbox", "id": "show_cta", "label": "Show booking CTA", "default": true },
+    { "type": "text", "id": "cta_heading", "label": "CTA heading", "default": "Plan your travel vaccinations" },
+    { "type": "text", "id": "book_label", "label": "Book button label" },
+    { "type": "url", "id": "book_url", "label": "Book link" }
+  ],
+  "enabled_on": { "templates": ["page"] },
+  "presets": [{ "name": "Content page" }]
+}
+{% endschema %}

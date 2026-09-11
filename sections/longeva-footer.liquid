@@ -1,0 +1,819 @@
+{% comment %}
+  Longeva footer.
+
+  Structure:
+    1. Top trust strip (4 cells, brand-on-brass): icon + heading + sub.
+    2. Main grid (3 cols on >=900px):
+        a. Brand block: wordmark, trading-as line, company numbers, socials.
+        b. Useful Links column.
+        c. Sign-up form.
+    3. Bottom baseline: © + regulatory disclosure + legal links row.
+
+  Mobile (<900px): stack everything; Useful Links becomes a <details>
+  accordion to reclaim fold; signup full width; baseline links wrap.
+  No search widget (Anthony 2026-04-28: not needed on phone).
+{% endcomment %}
+
+{% render 'longeva-brand-fonts' %}
+
+{%- liquid
+  assign main_menu = linklists['main-menu']
+  assign legal_menu = linklists['footer-menu-legal']
+  assign address = settings.longeva_address | default: 'Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG'
+  assign phone = settings.longeva_phone
+  assign signup_heading = section.settings.signup_heading | default: 'Newsletter'
+  assign signup_body = section.settings.signup_body | default: 'Quarterly clinical updates from our pharmacist team.'
+  # Social URLs intentionally blank by default. Until Longeva has its
+  # own verified social presence, the icons stay hidden. Anthony, paste
+  # the Longeva-branded URLs in Theme settings to switch them back on.
+  assign linkedin_url = settings.longeva_linkedin_url
+  assign facebook_url = settings.longeva_facebook_url
+  assign instagram_url = settings.longeva_instagram_url
+  # Superintendent name + GPhC must come from admin settings (PROJECT_RULES §7.4
+  # forbids guessing GPhC numbers). No fallback default to avoid shipping
+  # placeholder credentials on a regulated pharmacy site.
+  assign superintendent_name = settings.longeva_superintendent_name
+  assign superintendent_gphc = settings.longeva_superintendent_gphc
+-%}
+
+<footer class="longeva-footer-v2" role="contentinfo" aria-label="Site footer">
+  {%- comment -%} 1. Top trust strip {%- endcomment -%}
+  <div class="longeva-footer-v2__strip">
+    <button
+      type="button"
+      class="longeva-footer-v2__strip-arrow longeva-footer-v2__strip-arrow--prev"
+      aria-label="Previous"
+      data-longeva-strip-prev
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button
+      type="button"
+      class="longeva-footer-v2__strip-arrow longeva-footer-v2__strip-arrow--next"
+      aria-label="Next"
+      data-longeva-strip-next
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <div class="longeva-container longeva-footer-v2__strip-grid" data-longeva-strip-grid>
+      <a class="longeva-footer-v2__strip-item" href="/pages/book">
+        <span class="longeva-footer-v2__strip-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+        </span>
+        <span class="longeva-footer-v2__strip-text">
+          <span class="longeva-footer-v2__strip-heading">Book a consultation</span>
+          <span class="longeva-footer-v2__strip-sub">Same-day, where appropriate</span>
+        </span>
+      </a>
+      <a class="longeva-footer-v2__strip-item" href="/pages/clinicians">
+        <span class="longeva-footer-v2__strip-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+        </span>
+        <span class="longeva-footer-v2__strip-text">
+          <span class="longeva-footer-v2__strip-heading">Meet the clinicians</span>
+          <span class="longeva-footer-v2__strip-sub">Pharmacist-led</span>
+        </span>
+      </a>
+      <a class="longeva-footer-v2__strip-item" href="/pages/about">
+        <span class="longeva-footer-v2__strip-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </span>
+        <span class="longeva-footer-v2__strip-text">
+          <span class="longeva-footer-v2__strip-heading">Why Longeva</span>
+          <span class="longeva-footer-v2__strip-sub">Conservative, evidence-led</span>
+        </span>
+      </a>
+      <a class="longeva-footer-v2__strip-item" href="/pages/contact">
+        <span class="longeva-footer-v2__strip-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <span class="longeva-footer-v2__strip-text">
+          <span class="longeva-footer-v2__strip-heading">Visit the clinic</span>
+          <span class="longeva-footer-v2__strip-sub">Rochdale, Manchester</span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  {%- comment -%} 2. Main grid {%- endcomment -%}
+  <div class="longeva-container longeva-footer-v2__main" data-longeva-stagger="70">
+    <div class="longeva-footer-v2__brand" data-longeva-reveal>
+      <a class="longeva-footer-v2__wordmark" href="{{ routes.root_url }}" aria-label="Longeva home">
+        <img src="{{ 'longeva-wordmark.svg' | asset_url }}" alt="Longeva" width="140" height="32">
+      </a>
+      <p class="longeva-footer-v2__brand-line">
+        {{ section.settings.legal_strap | default: 'Pharmacy-led clinical services in Rochdale, Greater Manchester.' | escape }}
+      </p>
+      {%- comment -%}
+        Compressed regnums: collapsed from 2x2 dl to a single inline run.
+        GPhC + MHRA numbers hyperlink to public registers (route-to-verify
+        per GPhC online-pharmacy guidance, 2025). Company No carries the
+        country of registration inline per Companies (Names and Trading
+        Disclosures) Regs 2015 reg 25.
+      {%- endcomment -%}
+      {%- comment -%}
+        GPhC + MHRA links resolve to the Longeva-specific register entries
+        (not the register homepages) so a regulator click verifies this
+        pharmacy directly. Both the registration NUMBERS and the full
+        register-entry URLS are admin-editable via Theme Settings:
+          settings.longeva_gphc_number
+          settings.longeva_gphc_register_url
+          settings.longeva_mhra_wdah
+          settings.longeva_mhra_register_url
+        If the URL setting is blank the link falls back to a constructed
+        URL using the public deeplink pattern. Anthony can override at
+        any time without a code change (the GPhC and MHRA URL formats
+        are not documented stable contracts).
+      {%- endcomment -%}
+      {%- comment -%}
+        Pharmacy GPhC number is a placeholder until Two Face Aesthetics
+        Limited's existing pharmacy registration is transferred to the
+        Longeva trading name (Anthony confirmed 2026-05-27). Display
+        shows a placeholder; the link routes to the GPhC pharmacy
+        register search page so a regulator click reaches a working
+        page (not a 404 against a fake number). Anthony can override
+        both via Theme Settings when the real number lands.
+      {%- endcomment -%}
+      {%- assign gphc_num = settings.longeva_gphc_number | default: '9012378' -%}
+      {%- assign mhra_num = settings.longeva_mhra_wdah | default: '59619' -%}
+      {%- comment -%}
+        GPhC and MHRA numbers render as plain text, not links, while
+        the pharmacy registration transfer from Two Face Aesthetics to
+        Longeva is in flight (Anthony confirmed 2026-05-27). Once the
+        real numbers and register URLs are in via Theme Settings the
+        links can be reinstated.
+      {%- endcomment -%}
+
+
+
+      {% comment %} <p class="longeva-footer-v2__regnums-line">
+        <span>GPhC {{ gphc_num }}</span>
+        <span aria-hidden="true">·</span>
+        <span>MHRA WDA(H) {{ mhra_num }}</span>
+        <span aria-hidden="true">·</span>
+        <span>Co. {{ settings.longeva_company_number | default: '12643186' | escape }} <span class="longeva-footer-v2__regnum-muted">E&amp;W</span></span>
+        <span aria-hidden="true">·</span>
+        <span>VAT {{ settings.longeva_vat_number | default: 'GB358493064' }}</span>
+      </p> {% endcomment %}
+
+  <dl class="longeva-footer-v2__regnums">
+  <div>
+    <dt>GPhC Registration</dt>
+      {% comment %} <dd><a href="https://www.pharmacyregulation.org/registers/pharmacist/2241860" rel="noopener" target="_blank">{{ gphc_num }}</a></dd> {% endcomment %}
+       <dd>{{ gphc_num }}</dd>
+  </div>
+  {% comment %} <div>
+    <dt>MHRA WDA(H)</dt>
+    <dd><a href="https://cms.mhra.gov.uk/mhra/wda/uk-wdah-59619" rel="noopener" target="_blank">{{ mhra_num }}</a></dd>
+  </div> {% endcomment %}
+  <div>
+    <dt>Company</dt>
+    {% comment %} <dd>{{ settings.longeva_company_number | default: '12643186' | escape }} <span class="longeva-footer-v2__regnum-muted">E&W</span></dd> {% endcomment %}
+    <dd>{{ settings.longeva_company_number | default: '12643186' | escape }} </dd>
+  </div>
+  <div>
+    <dt>VAT</dt>
+    <dd>{{ settings.longeva_vat_number | default: 'GB358493064' }}</dd>
+  </div>
+  {%- if superintendent_name != blank -%}
+  <div>
+    <dt>Superintendent Pharmacist</dt>
+    <dd>{{ superintendent_name | escape }}{%- if superintendent_gphc != blank %} (GPhC {{ superintendent_gphc | escape }}){%- endif -%}</dd>
+  </div>
+  {%- endif -%}
+  <div>
+    <dt>Phone</dt>
+    <dd><a href="tel:+441524963063">+44 1524 963063</a></dd>
+  </div>
+  <div>
+    <dt>Clinic</dt>
+    <dd>Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG</dd>
+  </div>
+</dl>
+
+      {% comment %} {%- if superintendent_name != blank -%}
+        <p class="longeva-footer-v2__compliance-line">
+          Superintendent Pharmacist:
+          <strong>{{ superintendent_name | escape }}</strong>
+          {%- if superintendent_gphc != blank %} (GPhC {{ superintendent_gphc | escape }}){%- endif -%}
+        </p>
+      {%- endif -%} {% endcomment %}
+      {% if facebook_url != blank or instagram_url != blank or linkedin_url != blank %}
+        <ul class="longeva-footer-v2__socials" role="list">
+          {% if linkedin_url != blank %}<li><a href="{{ linkedin_url }}" aria-label="Longeva on LinkedIn" rel="noopener" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.13 1 2.5 1s2.48 1.13 2.48 2.5zM.22 8h4.56v14H.22V8zm7.74 0h4.37v1.92h.06c.61-1.15 2.1-2.36 4.32-2.36 4.62 0 5.47 3.04 5.47 6.99V22h-4.56v-6.14c0-1.46-.03-3.34-2.04-3.34-2.05 0-2.36 1.6-2.36 3.24V22H7.96V8z"/></svg></a></li>{% endif %}
+          {% if facebook_url != blank %}<li><a href="{{ facebook_url }}" aria-label="Longeva on Facebook" rel="noopener" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg></a></li>{% endif %}
+          {% if instagram_url != blank %}<li><a href="{{ instagram_url }}" aria-label="Longeva on Instagram" rel="noopener" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a></li>{% endif %}
+        </ul>
+      {% endif %}
+    </div>
+
+    {%- comment -%} Useful Links column. Mobile: closed accordion. Desktop: forced open via JS. {%- endcomment -%}
+    <details class="longeva-footer-v2__links" data-longeva-footer-links data-longeva-reveal>
+      <summary class="longeva-footer-v2__col-heading">
+        <span>Useful links</span>
+        <svg class="longeva-footer-v2__chev" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      {%- comment -%}
+        Service categories (Aesthetics, Skin Health, Weight Management,
+        Vaccinations, Minor Ailments) removed 28 May 2026 per Varsha:
+        they already live in the main mega menu, so duplicating them in
+        the footer adds no wayfinding value. Footer keeps the links that
+        are NOT in the top nav.
+      {%- endcomment -%}
+      <ul class="longeva-footer-v2__links-list" role="list">
+        <li><a href="/pages/clinicians">Clinicians</a></li>
+        <li><a href="/pages/book">Book a consultation</a></li>
+        <li><a href="/pages/about">About us</a></li>
+        <li><a href="/pages/contact">Contact</a></li>
+        <li><a href="/blogs/journal">Journal</a></li>
+        <li><a href="/pages/complaints-procedure">Complaints procedure</a></li>
+      </ul>
+    </details>
+
+    {%- comment -%}
+      Newsletter + contact column wrapped in a <details> accordion to
+      cut mobile footer height (Anthony 2026-04-29 + PR #118 research:
+      mobile selective-accordion is the proven pattern, no peer uses
+      horizontal swipe). Closed on mobile, force-open on desktop via
+      the same JS as Useful Links (data-longeva-footer-links). Brand,
+      regnums, Superintendent, complaints, copyright stay always
+      visible (regulatory must never sit behind an interaction).
+    {%- endcomment -%}
+    <details class="longeva-footer-v2__signup" data-longeva-footer-links data-longeva-reveal>
+      <summary class="longeva-footer-v2__col-heading">
+        <span>{{ signup_heading | escape }}</span>
+        <svg class="longeva-footer-v2__chev" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <p class="longeva-footer-v2__signup-body">{{ signup_body | escape }}</p>
+      {% form 'customer', class: 'longeva-footer-v2__signup-form' %}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <label class="longeva-footer-v2__signup-field" for="LongevaFooterEmail">
+          <span class="longeva-sr-only">Email address</span>
+          <input type="email" id="LongevaFooterEmail" name="contact[email]" placeholder="Your email" required autocomplete="email">
+          <button type="submit" aria-label="Subscribe">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </button>
+        </label>
+        {%- comment -%}
+          UK GDPR / PECR Reg 22: consent must be specific, informed and
+          link the privacy notice. Plain-text consent line shown above
+          the submit signal so the user reads it before subscribing.
+        {%- endcomment -%}
+        <p class="longeva-footer-v2__signup-consent">
+          By subscribing you agree to receive clinical updates from Longeva. See our
+          <a href="/policies/privacy-policy">privacy notice</a>. Unsubscribe anytime.
+        </p>
+        {% if form.errors %}
+          <p class="longeva-footer-v2__signup-msg longeva-footer-v2__signup-msg--error">
+            {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+          </p>
+        {% elsif form.posted_successfully? %}
+          <p class="longeva-footer-v2__signup-msg longeva-footer-v2__signup-msg--ok">Thank you for subscribing.</p>
+        {% endif %}
+      {% endform %}
+      {%- if address != blank or phone != blank -%}
+        <ul class="longeva-footer-v2__contact" role="list">
+          {% if phone != blank %}
+            <li>
+              <span class="longeva-footer-v2__contact-label">Phone</span>
+              <a href="tel:{{ phone | replace: ' ', '' | replace: '(', '' | replace: ')', '' | replace: '-', '' }}">{{ phone | escape }}</a>
+            </li>
+          {% endif %}
+          <li>
+            <span class="longeva-footer-v2__contact-label">Clinic</span>
+            <span>{{ address | escape }}</span>
+          </li>
+        </ul>
+      {%- endif -%}
+    </details>
+  </div>
+
+  {%- comment -%}
+    3. Bottom baseline. Splits the legal links into a primary row
+    (Privacy, Terms, Refund, Cookie) and a smaller compliance microstrip
+    (Modern Slavery, Accessibility, Sitemap) below the copyright. Pattern
+    from PR #115 research: 7/11 peer pharmacy footers separate compliance
+    items from primary legal so the primary row stays scannable. Filter
+    is keyword-based on link titles since the legal-menu linklist is
+    admin-managed.
+  {%- endcomment -%}
+  <div class="longeva-footer-v2__baseline">
+    <div class="longeva-container longeva-footer-v2__baseline-inner">
+      <p class="longeva-footer-v2__copy">&copy; {{ 'now' | date: '%Y' }} Longeva. All rights reserved.</p>
+      {% if legal_menu and legal_menu.links.size > 0 %}
+        <ul class="longeva-footer-v2__legal" role="list">
+          {% for link in legal_menu.links %}
+            {%- assign legal_lower = link.title | downcase -%}
+            {%- assign is_compliance = false -%}
+            {%- if legal_lower contains 'modern slavery' or legal_lower contains 'accessibility' or legal_lower contains 'sitemap' -%}
+              {%- assign is_compliance = true -%}
+            {%- endif -%}
+            {% unless is_compliance %}
+              <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+            {% endunless %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+    {%- if legal_menu and legal_menu.links.size > 0 -%}
+      {%- assign has_microstrip = false -%}
+      {%- for link in legal_menu.links -%}
+        {%- assign legal_lower = link.title | downcase -%}
+        {%- if legal_lower contains 'modern slavery' or legal_lower contains 'accessibility' or legal_lower contains 'sitemap' -%}
+          {%- assign has_microstrip = true -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {% if has_microstrip %}
+        <div class="longeva-container longeva-footer-v2__microstrip">
+          <ul class="longeva-footer-v2__microstrip-list" role="list">
+            {% for link in legal_menu.links %}
+              {%- assign legal_lower = link.title | downcase -%}
+              {%- if legal_lower contains 'modern slavery' or legal_lower contains 'accessibility' or legal_lower contains 'sitemap' -%}
+                <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+              {%- endif -%}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    {%- endif -%}
+  </div>
+</footer>
+
+{% stylesheet %}
+  .longeva-footer-v2 {
+    background: #2D190E;
+    color: rgba(245, 241, 234, 0.9);
+    font-family: var(--longeva-font-body);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .longeva-footer-v2 a { color: inherit; text-decoration: none; }
+
+  /* 1. Top trust strip: brass card on dark, hairline-divided cells */
+  .longeva-footer-v2__strip {
+    background: linear-gradient(180deg, #B99157 0%, #A6783C 100%);
+    color: #2D190E;
+    border-block-end: 1px solid rgba(45, 25, 14, 0.25);
+    position: relative;
+  }
+  /* Mobile prev/next arrows. Hidden on desktop (all 4 cells visible). */
+  .longeva-footer-v2__strip-arrow {
+    display: none;
+    background: none;
+    border: 0;
+    color: #2D190E;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+  }
+  .longeva-footer-v2__strip-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+  }
+  .longeva-footer-v2__strip-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 28px;
+    color: #2D190E;
+    transition: background 0.18s ease;
+    position: relative;
+  }
+  .longeva-footer-v2__strip-item + .longeva-footer-v2__strip-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: 18px;
+    width: 1px;
+    background: rgba(45, 25, 14, 0.25);
+  }
+  .longeva-footer-v2__strip-item:hover,
+  .longeva-footer-v2__strip-item:focus-visible {
+    background: rgba(45, 25, 14, 0.06);
+    outline: none;
+  }
+  .longeva-footer-v2__strip-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #2D190E;
+  }
+  .longeva-footer-v2__strip-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .longeva-footer-v2__strip-heading {
+    font-family: var(--longeva-font-display);
+    font-size: 16px;
+    line-height: 1.1;
+    color: #2D190E;
+    letter-spacing: -0.005em;
+  }
+  .longeva-footer-v2__strip-sub {
+    font-size: 12px;
+    color: rgba(45, 25, 14, 0.72);
+  }
+
+  /* 2. Main grid */
+  .longeva-footer-v2__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(32px, 5vw, 72px);
+    padding-block: clamp(40px, 6vw, 64px);
+    align-items: start;
+  }
+  .longeva-footer-v2__wordmark img {
+    display: block;
+    height: 28px;
+    width: auto;
+    shape-rendering: geometricPrecision;
+    filter: brightness(0) invert(0.96) sepia(0.05) hue-rotate(330deg);
+  }
+  .longeva-footer-v2__brand-line {
+    margin: 18px 0 0;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgba(245, 241, 234, 0.72);
+    max-width: 32ch;
+  }
+  .longeva-footer-v2__regnums {
+    margin: 22px 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 28px;
+  }
+  .longeva-footer-v2__regnums div { min-width: 0; }
+  .longeva-footer-v2__regnums dt {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.85);
+    margin-block-end: 4px;
+  }
+  .longeva-footer-v2__regnums dd {
+    margin: 0;
+    font-family: var(--longeva-font-display);
+    font-size: 16px;
+    color: #F2E6DC;
+    letter-spacing: 0.005em;
+  }
+  .longeva-footer-v2__socials {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0 0;
+    display: flex;
+    gap: 14px;
+  }
+  .longeva-footer-v2__socials a {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(245, 241, 234, 0.18);
+    border-radius: 50%;
+    color: rgba(245, 241, 234, 0.78);
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .longeva-footer-v2__socials a:hover,
+  .longeva-footer-v2__socials a:focus-visible {
+    color: #B99157;
+    border-color: rgba(185, 145, 87, 0.6);
+    outline: none;
+  }
+
+  /* Useful links column */
+  .longeva-footer-v2__links { min-width: 0; }
+  .longeva-footer-v2__col-heading {
+    margin: 0 0 16px;
+    font-family: var(--longeva-font-display);
+    font-size: 18px;
+    line-height: 1.2;
+    color: #F2E6DC;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  /* Beat Horizon's global summary:hover { color: var(--color-primary-hover) } */
+  summary.longeva-footer-v2__col-heading:hover,
+  summary.longeva-footer-v2__col-heading:focus,
+  summary.longeva-footer-v2__col-heading:focus-visible,
+  summary.longeva-footer-v2__col-heading:active {
+    color: #F2E6DC;
+    outline: none;
+  }
+  .longeva-footer-v2__col-heading::-webkit-details-marker { display: none; }
+  .longeva-footer-v2__col-heading--static { cursor: default; }
+  .longeva-footer-v2__chev {
+    color: rgba(245, 241, 234, 0.65);
+    transition: transform 0.2s ease;
+  }
+  details[open] > .longeva-footer-v2__col-heading > .longeva-footer-v2__chev { transform: rotate(180deg); }
+  .longeva-footer-v2__links-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .longeva-footer-v2__links-list a {
+    color: rgba(245, 241, 234, 0.78);
+    font-size: 14px;
+    transition: color 0.15s ease, padding-inline-start 0.15s ease;
+    display: inline-block;
+  }
+  .longeva-footer-v2__links-list a:hover,
+  .longeva-footer-v2__links-list a:focus-visible {
+    color: #F2E6DC;
+    padding-inline-start: 4px;
+    outline: none;
+  }
+
+  /* Signup column */
+  .longeva-footer-v2__signup-body {
+    margin: 0 0 16px;
+    color: rgba(245, 241, 234, 0.72);
+    font-size: 13.5px;
+    line-height: 1.55;
+    max-width: 36ch;
+  }
+  .longeva-footer-v2__signup-field {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(245, 241, 234, 0.22);
+    border-radius: 999px;
+    background: rgba(245, 241, 234, 0.04);
+    padding: 4px 4px 4px 20px;
+    gap: 8px;
+    transition: border-color 0.15s ease;
+  }
+  .longeva-footer-v2__signup-field:focus-within {
+    border-color: rgba(185, 145, 87, 0.65);
+  }
+  .longeva-footer-v2__signup-field input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: #F2E6DC;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 12px 0;
+    min-width: 0;
+  }
+  .longeva-footer-v2__signup-field input::placeholder { color: rgba(245, 241, 234, 0.45); }
+  .longeva-footer-v2__signup-field input:focus { outline: none; }
+  .longeva-footer-v2__signup-field button {
+    background: #F2E6DC;
+    color: #2D190E;
+    border: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .longeva-footer-v2__signup-field button:hover,
+  .longeva-footer-v2__signup-field button:focus-visible {
+    background: #B99157;
+    transform: translateX(3px);
+  }
+  .longeva-footer-v2__signup-field button:focus-visible {
+    outline: 2px solid var(--longeva-focus-ring);
+    outline-offset: 3px;
+  }
+  .longeva-footer-v2__signup-msg {
+    margin: 12px 0 0;
+    font-size: 12px;
+    color: rgba(245, 241, 234, 0.72);
+  }
+  .longeva-footer-v2__signup-msg--error { color: #E2A07F; }
+  .longeva-footer-v2__signup-msg--ok { color: #B99157; }
+  .longeva-footer-v2__contact {
+    list-style: none;
+    padding: 0;
+    margin: 22px 0 0;
+    display: grid;
+    gap: 12px;
+    border-block-start: 1px solid rgba(245, 241, 234, 0.1);
+    padding-block-start: 22px;
+  }
+  .longeva-footer-v2__contact li {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: baseline;
+    font-size: 13px;
+    color: rgba(245, 241, 234, 0.78);
+  }
+  .longeva-footer-v2__contact-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(185, 145, 87, 0.85);
+  }
+  .longeva-footer-v2__contact a:hover { color: #F2E6DC; }
+
+  /* 3. Baseline */
+  .longeva-footer-v2__baseline {
+    border-block-start: 1px solid rgba(245, 241, 234, 0.1);
+  }
+  .longeva-footer-v2__baseline-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-block: 20px;
+    flex-wrap: wrap;
+  }
+  .longeva-footer-v2__copy {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(245, 241, 234, 0.55);
+    letter-spacing: 0.005em;
+  }
+  .longeva-footer-v2__legal {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    font-size: 12px;
+  }
+  .longeva-footer-v2__legal a { color: rgba(245, 241, 234, 0.65); transition: color 0.15s ease; }
+  .longeva-footer-v2__legal a:hover { color: #F2E6DC; }
+
+  /* Mobile (<900px) */
+  @media (max-width: 899px) {
+    /* Trust strip: horizontal swipe carousel, one cell fills the whole strip */
+    .longeva-footer-v2__strip-grid {
+      display: flex;
+      grid-template-columns: none;
+      flex-wrap: nowrap;
+      gap: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+      padding-inline: 0;
+      scroll-padding-inline: 0;
+    }
+    .longeva-footer-v2__strip-grid::-webkit-scrollbar { display: none; }
+    .longeva-footer-v2__strip-item {
+      flex: 0 0 100%;
+      min-width: 100%;
+      padding: 18px 56px;
+      justify-content: center;
+      scroll-snap-align: start;
+    }
+    /* No vertical dividers when one cell fills the view */
+    .longeva-footer-v2__strip-item + .longeva-footer-v2__strip-item::before { display: none; }
+    /* Edge arrows. Overlay both ends of the strip. */
+    .longeva-footer-v2__strip-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      inset-block: 0;
+      width: 36px;
+      z-index: 2;
+      transition: background 0.18s ease, opacity 0.18s ease;
+    }
+    .longeva-footer-v2__strip-arrow--prev {
+      inset-inline-start: 0;
+      background: linear-gradient(90deg, rgba(166, 120, 60, 0.95) 0%, rgba(166, 120, 60, 0) 100%);
+    }
+    .longeva-footer-v2__strip-arrow--next {
+      inset-inline-end: 0;
+      background: linear-gradient(270deg, rgba(166, 120, 60, 0.95) 0%, rgba(166, 120, 60, 0) 100%);
+    }
+    .longeva-footer-v2__strip-arrow:hover,
+    .longeva-footer-v2__strip-arrow:focus-visible {
+      outline: none;
+      color: #1a0e07;
+    }
+    .longeva-footer-v2__strip-arrow:focus-visible {
+      box-shadow: inset 0 0 0 2px rgba(45, 25, 14, 0.4);
+    }
+    .longeva-footer-v2__strip-arrow:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+    .longeva-footer-v2__main {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      padding-block: 36px;
+    }
+    .longeva-footer-v2__regnums {
+      gap: 14px 24px;
+    }
+    .longeva-footer-v2__col-heading {
+      padding-block: 4px;
+    }
+    .longeva-footer-v2__baseline-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .longeva-footer-v2__strip-heading { font-size: 14px; }
+    .longeva-footer-v2__regnums dd { font-size: 14px; }
+    .longeva-footer-v2__contact li { grid-template-columns: 64px 1fr; }
+  }
+
+
+  .longeva-footer-v2__regnums a {
+  color: #F2E6DC;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(185, 145, 87, 0.6);
+  transition: text-decoration-color 0.15s ease;
+}
+.longeva-footer-v2__regnums a:hover {
+  text-decoration-color: #B99157;
+}
+{% endstylesheet %}
+
+<script>
+  (function () {
+    var DESKTOP_MQ = window.matchMedia('(min-width: 900px)');
+    function sync() {
+      document.querySelectorAll('[data-longeva-footer-links]').forEach(function (el) {
+        if (DESKTOP_MQ.matches) {
+          el.setAttribute('open', '');
+        } else if (!el.dataset.userToggled) {
+          el.removeAttribute('open');
+        }
+      });
+    }
+    document.querySelectorAll('[data-longeva-footer-links]').forEach(function (el) {
+      el.addEventListener('toggle', function () {
+        if (!DESKTOP_MQ.matches) el.dataset.userToggled = '1';
+      });
+    });
+    if (DESKTOP_MQ.addEventListener) {
+      DESKTOP_MQ.addEventListener('change', sync);
+    } else if (DESKTOP_MQ.addListener) {
+      DESKTOP_MQ.addListener(sync);
+    }
+    sync();
+  })();
+
+  (function () {
+    var grid = document.querySelector('[data-longeva-strip-grid]');
+    var prev = document.querySelector('[data-longeva-strip-prev]');
+    var next = document.querySelector('[data-longeva-strip-next]');
+    if (!grid || !prev || !next) return;
+
+    function step(dir) {
+      var item = grid.children[0];
+      if (!item) return;
+      var cs = getComputedStyle(grid);
+      var gap = parseFloat(cs.columnGap || cs.gap || 0) || 0;
+      var stepLen = item.getBoundingClientRect().width + gap;
+      var max = grid.scrollWidth - grid.clientWidth - 4;
+      if (dir > 0 && grid.scrollLeft >= max) {
+        grid.scrollTo({ left: 0, behavior: 'smooth' });
+      } else if (dir < 0 && grid.scrollLeft <= 4) {
+        grid.scrollTo({ left: max, behavior: 'smooth' });
+      } else {
+        grid.scrollBy({ left: stepLen * dir, behavior: 'smooth' });
+      }
+    }
+    prev.addEventListener('click', function () { step(-1); });
+    next.addEventListener('click', function () { step(1); });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Longeva footer",
+  "tag": "section",
+  "class": "longeva-footer-v2-section",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    { "type": "header", "content": "Brand block" },
+    { "type": "textarea", "id": "legal_strap", "label": "Legal strap line", "default": "Pharmacy-led clinical services in Rochdale, Greater Manchester.", "info": "Renders beneath the footer wordmark. Keep brand-only wording; the registered company number lives in the regulatory column." },
+    { "type": "header", "content": "Newsletter sign-up" },
+    { "type": "text", "id": "signup_heading", "label": "Heading", "default": "Sign up to our newsletter" },
+    { "type": "textarea", "id": "signup_body", "label": "Body", "default": "Quarterly clinical updates from our pharmacist team." }
+  ],
+  "presets": [
+    { "name": "Longeva footer" }
+  ]
+}
+{% endschema %}

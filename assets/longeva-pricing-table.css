@@ -1,0 +1,61 @@
+/* ===================================================================
+   Travel vaccination pricing table. Scoped to .longeva-pricing.
+   Brand tokens, no priority overrides, specificity by scope per
+   PROJECT_RULES.md section 3.4.
+   =================================================================== */
+
+.longeva-pricing { color: #2D190E; }
+
+.longeva-pricing__hero { padding-top: clamp(16px, 3vw, 28px); }
+.longeva-pricing__h1 {
+  font-size: clamp(30px, 4.5vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 18px;
+}
+.longeva-pricing__intro {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  max-width: 64ch;
+  margin: 0;
+}
+
+/* Table */
+.longeva-pricing__table-wrap { overflow-x: auto; }
+.longeva-pricing__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  max-width: 720px;
+}
+.longeva-pricing__table th,
+.longeva-pricing__table td {
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(45, 25, 14, 0.12);
+}
+.longeva-pricing__table thead th {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a5f2a;
+  border-bottom: 2px solid rgba(45, 25, 14, 0.18);
+}
+.longeva-pricing__vaccine { font-weight: 500; color: #2D190E; }
+.longeva-pricing__price { white-space: nowrap; color: rgba(45, 25, 14, 0.9); }
+.longeva-pricing__table tbody tr:hover { background: #F4ECDE; }
+
+/* Notes */
+.longeva-pricing__notes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  border-top: 1px solid rgba(45, 25, 14, 0.1);
+}
+@media (min-width: 760px) { .longeva-pricing__notes { grid-template-columns: repeat(2, 1fr); gap: 32px; } }
+.longeva-pricing__h2 {
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.2;
+  margin: 0 0 12px;
+}

@@ -1,0 +1,230 @@
+{%- comment -%}
+  Longeva destinations index.
+
+  Renders /pages/travel-vaccinations from a regular Shopify page with
+  template_suffix = "destinations". Iterates all published destination
+  metaobjects, groups by region, sorts alphabetically per group, and
+  emits an A-Z fallback list at the bottom for accessibility and
+  crawlability. Per destination-metaobject-spec.md §5.
+
+  Zero manual maintenance: Varsha adds a destination in admin, it
+  appears here on the next request.
+{%- endcomment -%}
+
+{% render 'longeva-brand-fonts' %}
+{{ 'longeva-destinations.css' | asset_url | stylesheet_tag }}
+{% render 'longeva-schema-page-breadcrumb' %}
+
+{%- liquid
+  assign eyebrow = section.settings.eyebrow | default: 'Travel'
+  assign heading = section.settings.heading | default: page.title
+  assign intro = section.settings.intro
+
+  assign region_order = 'Africa|Asia|Caribbean|Central and South America|Europe|Middle East|North America|Oceania' | split: '|'
+  assign all = shop.metaobjects.destination.values
+  assign total = 0
+  if all
+    assign total = all | size
+  endif
+-%}
+
+<article class="longeva-destinations-index longeva-page longeva-page--light" aria-labelledby="longeva-destinations-index-heading">
+
+  <header class="longeva-destinations-index__hero longeva-container">
+    {% if eyebrow != blank %}
+      <p class="longeva-eyebrow longeva-destinations-index__eyebrow">{{ eyebrow | escape }}</p>
+    {% endif %}
+    <h1 id="longeva-destinations-index-heading" class="longeva-display longeva-destinations-index__heading">{{ heading | escape }}</h1>
+    {% if intro != blank %}
+      <div class="longeva-destinations-index__intro">{{ intro }}</div>
+    {% else %}
+      <p class="longeva-destinations-index__intro">
+        Find recommended vaccines by destination. Click your country to see the vaccines our pharmacist team would discuss with you at a travel consultation.
+      </p>
+    {% endif %}
+  </header>
+
+  {%- if total == 0 -%}
+    <section class="longeva-destinations-index__empty-state longeva-container longeva-section">
+      <p class="longeva-destinations-index__empty">
+        Destination guides are being added. In the meantime, please contact us to plan vaccinations for your trip.
+      </p>
+    </section>
+  {%- else -%}
+    {%- comment -%}
+      Popular destinations strip (ADR chunk 2). Reads the is_popular
+      boolean + display_order integer added to the destination
+      metaobject in chunk 1. Sorted by display_order (Liquid sorts
+      blanks last), capped at 8 so the strip stays a strip. Degrades
+      silently to nothing when no destination is flagged, so it is safe
+      to ship before Varsha flags any. Cards link to the destination
+      page (Destination to Vaccines journey, ADR ruling D).
+    {%- endcomment -%}
+    {%- assign popular = all | where: 'is_popular', true | sort_natural: 'display_order' -%}
+    {%- comment -%}
+      Special card (Hajj and Umrah): a non-destination card injected into
+      the strip at a fixed slot, since the Hajj and Umrah service lives on
+      its own page rather than as a destination metaobject. Controlled by
+      section settings so it can be moved or turned off without code.
+    {%- endcomment -%}
+    {%- assign special_on = section.settings.special_card_enabled -%}
+    {%- assign special_slot = section.settings.special_card_order | default: 2 -%}
+    {%- capture special_card -%}
+            <li>
+              <a class="longeva-destinations-index__popular-card" href="{{ section.settings.special_card_url | default: '/pages/hajj-and-umrah-vaccinations' }}">
+                <span>
+                  {%- assign special_region = section.settings.special_card_region | default: 'Saudi Arabia' -%}
+                  {%- if special_region != blank -%}
+                    <span class="longeva-destinations-index__popular-region">{{ special_region | escape }}</span>
+                  {%- endif -%}
+                  <span class="longeva-destinations-index__popular-name">{{ section.settings.special_card_title | default: 'Hajj and Umrah' | escape }}</span>
+                </span>
+                <span class="longeva-destinations-index__popular-cta">
+                  See vaccines <span aria-hidden="true">{% render 'longeva-arrow', size: 14 %}</span>
+                </span>
+              </a>
+            </li>
+    {%- endcapture -%}
+    {%- if popular.size > 0 or special_on -%}
+      <section class="longeva-destinations-index__popular longeva-container longeva-section" aria-label="Popular destinations">
+        <h2 class="longeva-destinations-index__popular-heading">{{ section.settings.popular_heading | default: 'Popular travel destinations' | escape }}</h2>
+        <ul class="longeva-destinations-index__popular-grid">
+          {%- assign popular_shown = 0 -%}
+          {%- assign special_done = false -%}
+          {%- for d in popular -%}
+            {%- if popular_shown >= 8 -%}{%- break -%}{%- endif -%}
+            {%- comment -%} Inject the special card once, before the card that reaches its slot. {%- endcomment -%}
+            {%- assign next_pos = popular_shown | plus: 1 -%}
+            {%- if special_on and special_done == false and next_pos >= special_slot -%}
+              {{ special_card }}
+              {%- assign special_done = true -%}
+              {%- assign popular_shown = popular_shown | plus: 1 -%}
+              {%- if popular_shown >= 8 -%}{%- break -%}{%- endif -%}
+            {%- endif -%}
+            {%- assign popular_shown = popular_shown | plus: 1 -%}
+            <li>
+              <a class="longeva-destinations-index__popular-card" href="/pages/destinations/{{ d.system.handle }}">
+                <span>
+                  {%- if d.region != blank -%}
+                    <span class="longeva-destinations-index__popular-region">{{ d.region | escape }}</span>
+                  {%- endif -%}
+                  <span class="longeva-destinations-index__popular-name">{{ d.country | escape }}</span>
+                </span>
+                <span class="longeva-destinations-index__popular-cta">
+                  See vaccines <span aria-hidden="true">{% render 'longeva-arrow', size: 14 %}</span>
+                </span>
+              </a>
+            </li>
+          {%- endfor -%}
+          {%- comment -%} If the slot was past the end of the list, append it. {%- endcomment -%}
+          {%- if special_on and special_done == false and popular_shown < 8 -%}
+            {{ special_card }}
+          {%- endif -%}
+        </ul>
+      </section>
+    {%- endif -%}
+
+    {%- comment -%}
+      Region groups. Wrapped in native details/summary so they collapse
+      on mobile (zero JS, zero CLS). Open by default so first paint and
+      no-JS both show content; on desktop the summary is made
+      non-interactive and the chevron hidden via CSS, so it reads as a
+      static heading. A-Z list below is kept as the crawl + WCAG floor
+      per ADR ruling C.
+    {%- endcomment -%}
+    <section class="longeva-destinations-index__regions longeva-container longeva-section" aria-label="Destinations by region">
+      {%- for region in region_order -%}
+        {%- assign region_destinations = all | where: 'region', region | sort: 'country' -%}
+        {%- if region_destinations.size > 0 -%}
+          <details class="longeva-destinations-index__region" open>
+            <summary>
+              <h2 class="longeva-destinations-index__region-heading">{{ region | escape }}</h2>
+              <svg class="longeva-destinations-index__region-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <ul class="longeva-destinations-index__country-list">
+              {%- for d in region_destinations -%}
+                <li>
+                  <a class="longeva-destinations-index__country-link" href="/pages/destinations/{{ d.system.handle }}">
+                    <span>{{ d.country | escape }}</span>
+                    <span aria-hidden="true">{% render 'longeva-arrow', size: 16 %}</span>
+                  </a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </details>
+        {%- endif -%}
+      {%- endfor -%}
+    </section>
+
+    <section class="longeva-destinations-index__alphabetical longeva-container longeva-section" aria-label="All destinations alphabetically">
+      <h2 class="longeva-destinations-index__alpha-heading">All destinations A to Z</h2>
+      {%- assign sorted_all = all | sort: 'country' -%}
+      <ul class="longeva-destinations-index__alpha-list">
+        {%- for d in sorted_all -%}
+          <li><a href="/pages/destinations/{{ d.system.handle }}">{{ d.country | escape }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%}
+    Local relevance content slot (Varsha SEO review). An editable
+    Rochdale / Greater Manchester copy area for the SEO lead. Renders
+    only when the body field is set, so no empty container ships and no
+    clinical claim is invented here. The heading has a sensible default
+    but the body stays blank until Varsha writes it.
+  {%- endcomment -%}
+  {%- if section.settings.local_seo_body != blank -%}
+    <section class="longeva-destinations-index__local longeva-container longeva-section" aria-labelledby="longeva-destinations-index-local-heading">
+      {%- assign local_seo_heading = section.settings.local_seo_heading | default: 'Travel vaccinations in Rochdale and Greater Manchester' -%}
+      <h2 id="longeva-destinations-index-local-heading" class="longeva-destinations-index__local-heading">{{ local_seo_heading | escape }}</h2>
+      <div class="longeva-destinations-index__local-body longeva-prose">{{ section.settings.local_seo_body }}</div>
+    </section>
+  {%- endif -%}
+
+  {%- comment -%}
+    Sticky mobile booking bar (Brief v4 Section 22): every travel page
+    carries a Book consultation CTA, sticky on mobile, as the last
+    prominent element.
+  {%- endcomment -%}
+  {%- liquid
+    assign idx_book_label = section.settings.book_label | default: settings.longeva_book_cta_label | default: 'Book a consultation'
+    assign idx_book_url = section.settings.book_url | default: settings.longeva_book_cta_url | default: '/pages/book'
+  -%}
+  <div class="longeva-destination__sticky-cta">
+    <a class="longeva-btn longeva-btn--primary-on-light longeva-destination__sticky-cta-btn" href="{{ idx_book_url }}">{{ idx_book_label }}</a>
+  </div>
+
+</article>
+
+{% schema %}
+{
+  "name": "Longeva destinations",
+  "tag": "section",
+  "class": "shopify-section--longeva-destinations-index",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Travel" },
+    { "type": "text", "id": "heading", "label": "Heading (falls back to page title)" },
+    { "type": "richtext", "id": "intro", "label": "Intro copy (optional, overrides default)" },
+    { "type": "text", "id": "popular_heading", "label": "Popular strip heading", "default": "Popular travel destinations" },
+    { "type": "header", "content": "Popular strip special card" },
+    { "type": "checkbox", "id": "special_card_enabled", "label": "Show Hajj and Umrah card in popular strip", "default": true },
+    { "type": "number", "id": "special_card_order", "label": "Special card position (1 = first)", "default": 2 },
+    { "type": "text", "id": "special_card_title", "label": "Special card title", "default": "Hajj and Umrah" },
+    { "type": "text", "id": "special_card_region", "label": "Special card region label", "default": "Saudi Arabia" },
+    { "type": "text", "id": "special_card_url", "label": "Special card link", "default": "/pages/hajj-and-umrah-vaccinations" },
+    { "type": "header", "content": "Local relevance (Varsha SEO review)" },
+    { "type": "text", "id": "local_seo_heading", "label": "Local section heading", "default": "Travel vaccinations in Rochdale and Greater Manchester" },
+    { "type": "richtext", "id": "local_seo_body", "label": "Local section body", "info": "Editable Rochdale / Greater Manchester copy for SEO. The section stays hidden until this is set. Every clinical claim needs a citation." },
+    { "type": "header", "content": "Sticky mobile booking bar" },
+    { "type": "text", "id": "book_label", "label": "Book button label" },
+    { "type": "url", "id": "book_url", "label": "Book link" }
+  ],
+  "presets": [
+    { "name": "Longeva destinations", "category": "Longeva" }
+  ],
+  "enabled_on": {
+    "templates": ["page"]
+  }
+}
+{% endschema %}

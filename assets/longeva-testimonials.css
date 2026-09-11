@@ -1,0 +1,61 @@
+/* ===================================================================
+   Testimonials. Scoped to .longeva-testimonials. Brand tokens, shared
+   layout primitives. No priority overrides, specificity by scope, per
+   PROJECT_RULES.md section 3.4.
+   =================================================================== */
+
+.longeva-testimonials { color: #2D190E; }
+
+.longeva-testimonials__head { max-width: 60ch; margin: 0 0 28px; }
+.longeva-testimonials__heading {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.15;
+  margin: 0 0 12px;
+}
+.longeva-testimonials__intro {
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: rgba(45, 25, 14, 0.85);
+  margin: 0;
+}
+
+.longeva-testimonials__grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 640px) { .longeva-testimonials__grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
+@media (min-width: 1000px) { .longeva-testimonials__grid { grid-template-columns: repeat(3, 1fr); } }
+
+.longeva-testimonials__item { display: flex; }
+.longeva-testimonials__figure {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: clamp(20px, 3vw, 28px);
+  background: #fff;
+  border: 1px solid rgba(45, 25, 14, 0.14);
+  border-radius: 14px;
+  width: 100%;
+}
+.longeva-testimonials__quote {
+  margin: 0;
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.6;
+  color: #2D190E;
+}
+.longeva-testimonials__quote::before { content: "\201C"; }
+.longeva-testimonials__quote::after { content: "\201D"; }
+.longeva-testimonials__cite {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-style: normal;
+}
+.longeva-testimonials__name { font-weight: 600; font-size: 15px; color: #2D190E; }
+.longeva-testimonials__context { font-size: 14px; color: #8a5f2a; }

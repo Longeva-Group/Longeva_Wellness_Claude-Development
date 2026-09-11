@@ -1,0 +1,53 @@
+{%- comment -%}
+  JSON-LD for a Longeva traveller-type / service page. Emits a Service
+  node, plus FAQPage when FAQ blocks exist. reviewedBy / lastReviewed
+  are NOT part of Service; clinical review attribution lives in the
+  visible page and (for vaccine hubs) in MedicalWebPage. British English.
+{%- endcomment -%}
+{%- liquid
+  assign h1 = section.settings.h1 | default: page.title
+  assign faq_blocks = section.blocks | where: 'type', 'faq'
+  assign page_url = shop.url | append: page.url
+  assign desc = section.settings.intro | default: page.title | strip_html | strip_newlines | truncate: 300
+  assign valid_faqs = 0
+  for block in faq_blocks
+    if block.settings.question != blank and block.settings.answer != blank
+      assign valid_faqs = valid_faqs | plus: 1
+    endif
+  endfor
+-%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": {{ h1 | json }},
+  "url": {{ page_url | json }},
+  "serviceType": "Travel health service",
+  "provider": { "@type": "Pharmacy", "name": "Longeva Wellness", "@id": "{{ shop.url }}/#pharmacy" },
+  "areaServed": "Greater Manchester",
+  "description": {{ desc | json }}
+}
+</script>
+{%- if valid_faqs > 0 -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "en-GB",
+  "mainEntity": [
+    {%- assign first = true -%}
+    {%- for block in faq_blocks -%}
+      {%- if block.settings.question != blank and block.settings.answer != blank -%}
+        {%- unless first %},{% endunless -%}
+        {%- assign first = false -%}
+        {
+          "@type": "Question",
+          "name": {{ block.settings.question | json }},
+          "acceptedAnswer": { "@type": "Answer", "text": {{ block.settings.answer | strip_html | strip_newlines | json }} }
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  ]
+}
+</script>
+{%- endif -%}

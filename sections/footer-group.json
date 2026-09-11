@@ -1,0 +1,59 @@
+{
+  "type": "footer",
+  "name": "Footer",
+  "sections": {
+    "longeva_footer_main": {
+      "type": "longeva-footer",
+      "blocks": {
+        "col_contact": {
+          "type": "longeva-footer-column",
+          "settings": {
+            "heading": "Longeva",
+            "content_type": "contact",
+            "pitch": "Longeva is a trading style of Two Face Aesthetics Limited, a GPhC-registered pharmacy in Rochdale delivering private clinical services across Manchester and the UK.",
+            "phone": "",
+            "email": ""
+          }
+        },
+        "col_services": {
+          "type": "longeva-footer-column",
+          "settings": {
+            "heading": "Services",
+            "content_type": "link_list",
+            "menu": "footer-menu-services"
+          }
+        },
+        "col_regulatory": {
+          "type": "longeva-footer-column",
+          "settings": {
+            "heading": "Trust and regulation",
+            "content_type": "regulatory"
+          }
+        },
+        "col_legal": {
+          "type": "longeva-footer-column",
+          "settings": {
+            "heading": "Legal",
+            "content_type": "link_list",
+            "menu": "footer-menu-legal"
+          }
+        }
+      },
+      "block_order": [
+        "col_contact",
+        "col_services",
+        "col_regulatory",
+        "col_legal"
+      ],
+      "settings": {
+        "section_width": "page-width",
+        "color_scheme": "scheme-1",
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      }
+    }
+  },
+  "order": [
+    "longeva_footer_main"
+  ]
+}
