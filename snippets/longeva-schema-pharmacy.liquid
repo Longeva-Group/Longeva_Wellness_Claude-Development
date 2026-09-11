@@ -35,11 +35,12 @@
   endunless
   assign telephone = settings.longeva_phone | default: shop.phone | default: ''
   assign email = settings.longeva_email | default: ''
-  assign company_number = settings.longeva_company_number | default: '12643186'
-  # Regulator + Companies House register URLs are held under Two Face
-  # Aesthetics Limited (the entries live on the public registers). The
+  assign company_number = settings.longeva_company_number | default: '17217141'
+  # Regulator + Companies House register URLs for Longeva Wellness. The
   # registration numbers render in the identifier[] block below and stay
-  # admin-editable via Theme Settings.
+  # admin-editable via Theme Settings. Longeva Wellness does not hold and
+  # does not require an MHRA WDA(H) wholesale dealer's licence — do not
+  # add one back here.
   assign linkedin_url = settings.longeva_linkedin_url | default: ''
   assign facebook_url = settings.longeva_facebook_url | default: ''
   assign instagram_url = settings.longeva_instagram_url | default: ''
@@ -168,9 +169,8 @@
   {%- endif -%}
   "identifier": [
     { "@type": "PropertyValue", "name": "GPhC pharmacy registration", "value": "{{ settings.longeva_gphc_number | default: '9012378' }}" },
-    { "@type": "PropertyValue", "name": "MHRA WDA(H) licence", "value": "{{ settings.longeva_mhra_wdah | default: '59619' }}" },
     { "@type": "PropertyValue", "name": "Companies House", "value": "{{ company_number }}" },
-    { "@type": "PropertyValue", "name": "VAT", "value": "{{ settings.longeva_vat_number | default: 'GB358493064' }}" }
+    { "@type": "PropertyValue", "name": "VAT", "value": "{{ settings.longeva_vat_number | default: 'TBC' }}" }
   ]
   {%- assign has_social = false -%}
   {%- if linkedin_url != blank or facebook_url != blank or instagram_url != blank -%}

@@ -2389,25 +2389,19 @@
         "type": "text",
         "id": "longeva_company_number",
         "label": "Company number",
-        "default": "12643186"
+        "default": "17217141"
       },
       {
         "type": "text",
         "id": "longeva_vat_number",
         "label": "VAT number",
-        "default": "GB358493064"
-      },
-      {
-        "type": "text",
-        "id": "longeva_mhra_wdah",
-        "label": "MHRA WDA(H) number",
-        "default": "59619"
+        "default": "TBC"
       },
       {
         "type": "text",
         "id": "longeva_gphc_number",
         "label": "GPhC pharmacy registration number",
-        "info": "GPhC pharmacy registration number, held under Two Face Aesthetics Limited. Keep this number and the register URL below in step.",
+        "info": "GPhC pharmacy registration number for Longeva Wellness. Keep this number and the register URL below in step.",
         "default": "9012378"
       },
       {
@@ -2449,19 +2443,13 @@
       },
       {
         "type": "paragraph",
-        "content": "Direct links to the Longeva-specific register entries. Used in: (1) the footer regulator line (GPhC and MHRA links), (2) the About page Regulation and Governance block, (3) Pharmacy JSON-LD sameAs for SEO. Paste the verified URL. Leave blank and the link falls back to a constructed URL using the registration number above."
+        "content": "Direct link to the Longeva-specific GPhC register entry. Used in: (1) the footer regulator line, (2) the About page Regulation and Governance block, (3) Pharmacy JSON-LD sameAs for SEO. Paste the verified URL. Leave blank and the link falls back to a constructed URL using the registration number above. Longeva Wellness does not hold an MHRA WDA(H) wholesale licence, so no MHRA register URL setting is offered here."
       },
       {
         "type": "url",
         "id": "longeva_gphc_register_url",
         "label": "GPhC pharmacy register entry URL",
         "info": "Anthony, paste the verified Longeva-specific GPhC register entry URL here. Falls back to https://www.pharmacyregulation.org/registers/pharmacy/{GPhC number} when blank."
-      },
-      {
-        "type": "url",
-        "id": "longeva_mhra_register_url",
-        "label": "MHRA WDA(H) register entry URL",
-        "info": "Anthony, paste the verified Longeva-specific MHRA wholesale-licence register entry URL here. Falls back to https://cms.mhra.gov.uk/mhra/wda/uk-wdah-{MHRA number} when blank."
       },
       {
         "type": "url",

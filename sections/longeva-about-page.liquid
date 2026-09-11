@@ -18,10 +18,11 @@
   assign super_name = settings.longeva_superintendent_name | default: 'Alicia Barker'
   assign super_gphc = settings.longeva_superintendent_gphc | default: '2241860'
   assign book_url = settings.longeva_book_cta_url | default: '/pages/book'
+  # Longeva Wellness does not hold and does not require an MHRA WDA(H)
+  # wholesale dealer's licence — do not reintroduce an mhra_wdah assign here.
   assign gphc_number = settings.longeva_gphc_number | default: '9012378'
-  assign mhra_wdah = settings.longeva_mhra_wdah | default: '59619'
-  assign company_no = settings.longeva_company_number | default: '12643186'
-  assign vat_no = settings.longeva_vat_number | default: 'GB358493064'
+  assign company_no = settings.longeva_company_number | default: '17217141'
+  assign vat_no = settings.longeva_vat_number | default: 'TBC'
 
   assign founder_name = section.settings.founder_name | default: 'Anthony Higgins'
   assign founder_bio = section.settings.founder_bio | default: 'Anthony Higgins founded Longeva to bring pharmacy-grade clinical governance to private wellness and aesthetic care in Greater Manchester.'
@@ -81,10 +82,6 @@
           <dd>{{ super_name | escape }}{% if super_gphc != blank %}, GPhC {{ super_gphc | escape }}{% endif %}</dd>
         </div>
         {% endif %}
-        <div class="longeva-about__reg">
-          <dt>MHRA WDA(H) licence</dt>
-          <dd>{{ mhra_wdah }}</dd>
-        </div>
         <div class="longeva-about__reg">
           <dt>Registered premises</dt>
           <dd>{{ address | escape }}</dd>

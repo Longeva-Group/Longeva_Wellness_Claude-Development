@@ -12,8 +12,7 @@
     "hub": {
       "type": "longeva-category-hub",
       "blocks": {
-        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
-        "badge_2": { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 123456" } },
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "9012378" } },
         "badge_3": { "type": "trust_badge", "settings": { "primary": "Same-week appointments", "secondary": "No GP referral needed" } },
         "badge_4": { "type": "trust_badge", "settings": { "primary": "UK-licensed medicines", "secondary": "From licensed wholesalers" } },
         "faq_referral": {
@@ -27,7 +26,7 @@
           "type": "faq",
           "settings": {
             "question": "Will my prescription be UK-licensed?",
-            "answer": "<p>Yes. We only prescribe UK-licensed medicines, dispensed from a wholesaler holding an MHRA WDA(H) authorisation. We do not supply unlicensed imports for skin-health conditions.</p>"
+            "answer": "<p>Yes. We only prescribe UK-licensed medicines, sourced through properly regulated UK supply chains. We do not supply unlicensed imports for skin-health conditions.</p>"
           }
         },
         "faq_gp_communication": {
@@ -47,7 +46,7 @@
         "cta_1": { "type": "cta", "settings": { "heading": "Speak to a pharmacist", "subhead": "Same-week appointments. Written aftercare with every consultation." } }
       },
       "block_order": [
-        "badge_1", "badge_2", "badge_3", "badge_4",
+        "badge_1", "badge_3", "badge_4",
         "faq_referral", "faq_prescription", "faq_gp_communication", "faq_chronic",
         "cta_1"
       ],

@@ -15,7 +15,6 @@
 
 {%- liquid
   assign cell_1_sub = section.settings.cell_1_sub | default: 'Registered pharmacy'
-  assign cell_2_sub = section.settings.cell_2_sub | default: 'MHRA wholesale-licensed'
   assign cell_3_primary = section.settings.cell_3_primary | default: 'UK-licensed medicines'
   assign cell_3_sub = section.settings.cell_3_sub | default: 'Sourced from MHRA-licensed wholesalers'
   assign cell_4_primary = section.settings.cell_4_primary | default: 'Pharmacist-led'
@@ -27,11 +26,6 @@
     <div class="longeva-trust-strip__item" data-longeva-reveal>
       <span class="longeva-trust-strip__primary">GPhC {{ settings.longeva_gphc_number | default: '9012378' }}</span>
       <span class="longeva-trust-strip__sub">{{ cell_1_sub | escape }}</span>
-    </div>
-    <div class="longeva-trust-strip__divider" aria-hidden="true"></div>
-    <div class="longeva-trust-strip__item" data-longeva-reveal>
-      <span class="longeva-trust-strip__primary">WDA(H) {{ settings.longeva_mhra_wdah | default: '59619' }}</span>
-      <span class="longeva-trust-strip__sub">{{ cell_2_sub | escape }}</span>
     </div>
     <div class="longeva-trust-strip__divider" aria-hidden="true"></div>
     <div class="longeva-trust-strip__item" data-longeva-reveal>
@@ -123,11 +117,9 @@
   "tag": "section",
   "class": "longeva-trust-strip-section",
   "settings": [
-    { "type": "paragraph", "content": "Primary numbers in cells 1-2 are bound to GPhC and MHRA WDA(H) settings (Theme Settings → Longeva). Sub-labels and cells 3-4 are editable below." },
+    { "type": "paragraph", "content": "Primary number in cell 1 is bound to the GPhC setting (Theme Settings → Longeva). Longeva Wellness does not hold an MHRA WDA(H) wholesale licence, so the strip now shows 3 cells, not 4. Sub-label and cells 3-4 are editable below." },
     { "type": "header", "content": "Cell 1 (GPhC)" },
     { "type": "text", "id": "cell_1_sub", "label": "Cell 1 sub", "default": "Registered pharmacy" },
-    { "type": "header", "content": "Cell 2 (MHRA)" },
-    { "type": "text", "id": "cell_2_sub", "label": "Cell 2 sub", "default": "MHRA wholesale-licensed" },
     { "type": "header", "content": "Cell 3" },
     { "type": "text", "id": "cell_3_primary", "label": "Cell 3 primary", "default": "Same-day" },
     { "type": "text", "id": "cell_3_sub", "label": "Cell 3 sub", "default": "Appointments available" },

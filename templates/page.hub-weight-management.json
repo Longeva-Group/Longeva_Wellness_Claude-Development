@@ -12,7 +12,7 @@
     "hub": {
       "type": "longeva-category-hub",
       "blocks": {
-        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "9012378" } },
         "badge_2": { "type": "trust_badge", "settings": { "primary": "Pharmacist-led", "secondary": "Confidential" } },
         "badge_3": { "type": "trust_badge", "settings": { "primary": "No commitment", "secondary": "Eligibility decided first" } },
         "badge_4": { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "In-clinic consultation" } },

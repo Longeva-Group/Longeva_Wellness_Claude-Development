@@ -112,68 +112,31 @@
         Disclosures) Regs 2015 reg 25.
       {%- endcomment -%}
       {%- comment -%}
-        GPhC + MHRA links resolve to the Longeva-specific register entries
-        (not the register homepages) so a regulator click verifies this
-        pharmacy directly. Both the registration NUMBERS and the full
-        register-entry URLS are admin-editable via Theme Settings:
+        GPhC register link is admin-editable via Theme Settings:
           settings.longeva_gphc_number
           settings.longeva_gphc_register_url
-          settings.longeva_mhra_wdah
-          settings.longeva_mhra_register_url
         If the URL setting is blank the link falls back to a constructed
-        URL using the public deeplink pattern. Anthony can override at
-        any time without a code change (the GPhC and MHRA URL formats
-        are not documented stable contracts).
-      {%- endcomment -%}
-      {%- comment -%}
-        Pharmacy GPhC number is a placeholder until Two Face Aesthetics
-        Limited's existing pharmacy registration is transferred to the
-        Longeva trading name (Anthony confirmed 2026-05-27). Display
-        shows a placeholder; the link routes to the GPhC pharmacy
-        register search page so a regulator click reaches a working
-        page (not a 404 against a fake number). Anthony can override
-        both via Theme Settings when the real number lands.
+        URL using the public deeplink pattern.
+
+        Longeva Wellness does not hold and does not require an MHRA
+        WDA(H) wholesale dealer's licence — do not add an MHRA/WDA(H)
+        row back into this footer. (Confirmed as part of the regulatory
+        clean-up correcting the earlier draft-theme placeholder data.)
       {%- endcomment -%}
       {%- assign gphc_num = settings.longeva_gphc_number | default: '9012378' -%}
-      {%- assign mhra_num = settings.longeva_mhra_wdah | default: '59619' -%}
-      {%- comment -%}
-        GPhC and MHRA numbers render as plain text, not links, while
-        the pharmacy registration transfer from Two Face Aesthetics to
-        Longeva is in flight (Anthony confirmed 2026-05-27). Once the
-        real numbers and register URLs are in via Theme Settings the
-        links can be reinstated.
-      {%- endcomment -%}
-
-
-
-      {% comment %} <p class="longeva-footer-v2__regnums-line">
-        <span>GPhC {{ gphc_num }}</span>
-        <span aria-hidden="true">·</span>
-        <span>MHRA WDA(H) {{ mhra_num }}</span>
-        <span aria-hidden="true">·</span>
-        <span>Co. {{ settings.longeva_company_number | default: '12643186' | escape }} <span class="longeva-footer-v2__regnum-muted">E&amp;W</span></span>
-        <span aria-hidden="true">·</span>
-        <span>VAT {{ settings.longeva_vat_number | default: 'GB358493064' }}</span>
-      </p> {% endcomment %}
 
   <dl class="longeva-footer-v2__regnums">
   <div>
     <dt>GPhC Registration</dt>
-      {% comment %} <dd><a href="https://www.pharmacyregulation.org/registers/pharmacist/2241860" rel="noopener" target="_blank">{{ gphc_num }}</a></dd> {% endcomment %}
        <dd>{{ gphc_num }}</dd>
   </div>
-  {% comment %} <div>
-    <dt>MHRA WDA(H)</dt>
-    <dd><a href="https://cms.mhra.gov.uk/mhra/wda/uk-wdah-59619" rel="noopener" target="_blank">{{ mhra_num }}</a></dd>
-  </div> {% endcomment %}
   <div>
     <dt>Company</dt>
-    {% comment %} <dd>{{ settings.longeva_company_number | default: '12643186' | escape }} <span class="longeva-footer-v2__regnum-muted">E&W</span></dd> {% endcomment %}
-    <dd>{{ settings.longeva_company_number | default: '12643186' | escape }} </dd>
+    <dd>{{ settings.longeva_company_number | default: '17217141' | escape }} </dd>
   </div>
   <div>
     <dt>VAT</dt>
-    <dd>{{ settings.longeva_vat_number | default: 'GB358493064' }}</dd>
+    <dd>{{ settings.longeva_vat_number | default: 'TBC' }}</dd>
   </div>
   {%- if superintendent_name != blank -%}
   <div>

@@ -1,8 +1,9 @@
 {% layout none %}{%- liquid
-  assign gphc = settings.longeva_gphc_number | default: '123456'
-  assign mhra = settings.longeva_mhra_wdah | default: '123456'
-  assign company = settings.longeva_company_number | default: '123456'
-  assign vat = settings.longeva_vat_number | default: '123456'
+  # Longeva Wellness does not hold and does not require an MHRA WDA(H)
+  # wholesale dealer's licence — do not reintroduce an mhra/wda assign here.
+  assign gphc = settings.longeva_gphc_number | default: '9012378'
+  assign company = settings.longeva_company_number | default: '17217141'
+  assign vat = settings.longeva_vat_number | default: 'TBC'
   assign tel = settings.longeva_phone | default: shop.phone | default: ''
   assign email = settings.longeva_email | default: ''
 -%}# Longeva
@@ -16,7 +17,6 @@
 - Website: {{ shop.url }}
 - Registered address: Unit 1, Chichester Court, Milnrow Road, Rochdale, OL16 1UG, Greater Manchester, United Kingdom
 - GPhC pharmacy registration: {{ gphc }}
-- MHRA WDA(H) wholesale dealer licence: {{ mhra }}
 - Companies House number: {{ company }}
 - VAT number: {{ vat }}
 {% if tel != blank %}- Telephone: {{ tel }}{% endif %}
@@ -47,7 +47,6 @@ Longeva offers clinical services across the following categories. Each service i
 Longeva operates under UK pharmacy regulation:
 
 - Registered pharmacy with the General Pharmaceutical Council ({{ gphc }})
-- MHRA wholesale dealer licence WDA(H) {{ mhra }}
 - Complies with the MHRA/GPhC/ASA 2025 enforcement guidance on advertising prescription-only medicines
 - Complaints procedure: {{ shop.url }}/policies/complaints-policy
 

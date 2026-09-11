@@ -12,8 +12,7 @@
     "hub": {
       "type": "longeva-category-hub",
       "blocks": {
-        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
-        "badge_2": { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 123456" } },
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "9012378" } },
         "badge_3": { "type": "trust_badge", "settings": { "primary": "Pharmacist-led", "secondary": "Conservatively dosed" } },
         "badge_4": { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "Same-day where appropriate" } },
         "faq_safety": {
@@ -47,7 +46,7 @@
         "cta_1": { "type": "cta", "settings": { "heading": "Ready to book?", "subhead": "Same-day appointments available. A pharmacist sees every patient." } }
       },
       "block_order": [
-        "badge_1", "badge_2", "badge_3", "badge_4",
+        "badge_1", "badge_3", "badge_4",
         "faq_safety", "faq_reversibility", "faq_skincare", "faq_results",
         "cta_1"
       ],

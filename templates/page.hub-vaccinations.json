@@ -12,8 +12,7 @@
     "hub": {
       "type": "longeva-category-hub",
       "blocks": {
-        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "123456" } },
-        "badge_2": { "type": "trust_badge", "settings": { "primary": "MHRA wholesale-licensed", "secondary": "WDA(H) 123456" } },
+        "badge_1": { "type": "trust_badge", "settings": { "primary": "GPhC Registered", "secondary": "9012378" } },
         "badge_3": { "type": "trust_badge", "settings": { "primary": "Travel + routine", "secondary": "All ages where licensed" } },
         "badge_4": { "type": "trust_badge", "settings": { "primary": "Manchester", "secondary": "Same-week appointments" } },
         "faq_yellow_fever": {
@@ -47,7 +46,7 @@
         "cta_1": { "type": "cta", "settings": { "heading": "Book your travel clinic appointment", "subhead": "Same-week appointments. Yellow Fever certificate issued in clinic." } }
       },
       "block_order": [
-        "badge_1", "badge_2", "badge_3", "badge_4",
+        "badge_1", "badge_3", "badge_4",
         "faq_yellow_fever", "faq_combined", "faq_lead_time", "faq_nhs",
         "cta_1"
       ],
