@@ -17,24 +17,33 @@
   Opt a page IN to indexing only once it carries genuinely unique local
   content: set its page metafield custom.allow_index (boolean) to true.
 
-  Service/vaccine PRODUCTS (page/product duplication clean-up): these
-  products are Sesami booking objects, not SEO surfaces — the paired
-  Shopify PAGE (e.g. page.service-page.json / longeva-service-layout.liquid)
-  is the intended indexable landing content for the same treatment.
-  longeva-service-layout-product.liquid and longeva-service-page.liquid
-  render near-identical H1/body/FAQ/CTA structure to their page
-  counterpart, so leaving both indexable is duplicate-content exposure.
-  noindex by default on the service/vaccine product templates; follow is
-  kept so Sesami's own scripts and any internal links stay fully
-  crawlable — only indexing is blocked, nothing about the booking flow.
+  Service/vaccine PRODUCTS (page/product duplication clean-up):
 
-  A few products (Adrenaline Nasal Spray, Jet Lag, Thrush, per the
-  service-layout-product.liquid comment) have NO sibling page and are
-  the only indexable surface for that service. Opt those IN via product
-  metafield custom.allow_index (boolean) = true — this has NOT been set
-  for you here, since which products are page-less is an Admin content
-  question, not something theme code can determine. Until that metafield
-  is set, those specific products will be noindexed along with the rest.
+  - VACCINE products (product.vaccine.json) always pair with a real
+    indexable page in this theme's architecture (the vaccine hub /
+    individual vaccine pages) — longeva-service-layout-product.liquid
+    is a confirmed structural fork of longeva-service-layout.liquid,
+    same H1/body/FAQ/CTA. Kept noindex by default here; follow is kept
+    so Sesami's own scripts and any internal links stay fully
+    crawlable — only indexing is blocked, nothing about booking.
+    Genuine exceptions can opt back in via product metafield
+    custom.allow_index (boolean) = true.
+
+  - SERVICE products (product.service.json) are NOT blanket-noindexed.
+    Checked directly in Shopify Admin (11 Sep 2026): active service
+    products including Adrenaline Nasal Spray, Jet Lag Consultation
+    and Thrush Treatment have NO dedicated SEO landing page at all —
+    the product IS their only indexable surface, so noindexing them by
+    template suffix would have silently removed valid, standalone
+    services from organic search. Service products index by default;
+    noindex only when a specific product is confirmed (by whoever
+    manages the catalogue) to have an approved, published, dedicated
+    page equivalent, flagged explicitly via product metafield
+    custom.noindex (boolean) = true — the same opt-out convention
+    already used for structural-shell pages above, applied per-product
+    rather than guessed from the template suffix. custom.allow_index on
+    a service product overrides custom.noindex back to indexable, for
+    the same reason it overrides the local-area/vaccine defaults.
 {%- endcomment -%}
 {%- liquid
   assign noindex = false
@@ -61,12 +70,26 @@
   endif
 
   comment
-    Service/vaccine booking products: noindex by default (template), opt
-    IN via product metafield custom.allow_index for page-less services.
-    See above.
+    Vaccine booking products: noindex by default (template), opt IN via
+    product metafield custom.allow_index. See above.
   endcomment
-  if template.suffix == 'service' or template.suffix == 'vaccine'
+  if template.suffix == 'vaccine'
     assign noindex = true
+    if product.metafields.custom.allow_index.value == true
+      assign noindex = false
+    endif
+  endif
+
+  comment
+    Service booking products: indexable by default (many have no page
+    equivalent at all). noindex only when explicitly flagged per-product
+    via custom.noindex once a page equivalent is confirmed; allow_index
+    always wins if both are set. See above.
+  endcomment
+  if template.suffix == 'service'
+    if product.metafields.custom.noindex.value == true
+      assign noindex = true
+    endif
     if product.metafields.custom.allow_index.value == true
       assign noindex = false
     endif

@@ -24,6 +24,22 @@
       assign has_swatches_only = true
     endif
   endif
+
+  # Longeva booking-deposit disclosure: same detection as snippets/price.liquid
+  # and sections/longeva-cart-page.liquid, applied here too since the
+  # price_varies branch below renders its own price markup instead of
+  # going through the shared 'price' snippet.
+  assign longeva_is_deposit = false
+  if product.template_suffix == 'service' or product.template_suffix == 'vaccine' or product.metafields.custom.is_service.value == true
+    assign longeva_is_deposit = true
+  elsif product.tags contains 'sesami-service' or product.tags contains 'booking' or product.tags contains 'consultation'
+    assign longeva_is_deposit = true
+  else
+    assign longeva_product_type = product.type | downcase
+    if longeva_product_type contains 'consult' or longeva_product_type contains 'service' or longeva_product_type contains 'appointment' or longeva_product_type contains 'vaccine' or longeva_product_type contains 'aesthetic'
+      assign longeva_is_deposit = true
+    endif
+  endif
 %}
 
 <product-price
@@ -38,6 +54,9 @@
 >
   {% if product.price_varies and has_swatches_only == false and price_min != blank %}
     <span class="price">{{ display_price }}</span>
+    {%- if longeva_is_deposit -%}
+      <span class="longeva-price__deposit-note" style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.65; margin-inline-start: 0.35em;">deposit</span>
+    {%- endif -%}
   {% else %}
     {% render 'price',
       show_unit_price: true,
