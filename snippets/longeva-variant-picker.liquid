@@ -66,11 +66,11 @@
               value="{{ variant.id }}"
               {% if is_checked %}checked{% endif %}
               {% unless variant.available %}disabled{% endunless %}
-              aria-label="{{ variant.title | escape }}, {{ variant.price | money_without_trailing_zeros | escape }}{% unless variant.available %} (unavailable){% endunless %}"
+              aria-label="{{ variant.title | escape }}, deposit {{ variant.price | money_without_trailing_zeros | escape }}{% unless variant.available %} (unavailable){% endunless %}"
             >
             <span class="longeva-variant-picker__dot" aria-hidden="true"></span>
             <span class="longeva-variant-picker__label">{{ variant.title | escape }}</span>
-            <span class="longeva-variant-picker__price">{{ variant.price | money_without_trailing_zeros }}</span>
+            <span class="longeva-variant-picker__price">{{ variant.price | money_without_trailing_zeros }} <span class="longeva-variant-picker__price-note">deposit</span></span>
           </label>
         {%- endfor -%}
       </div>
@@ -197,6 +197,13 @@
     white-space: nowrap;
     margin-inline-start: auto;
     flex: 0 0 auto;
+  }
+  .longeva-variant-picker__price-note {
+    font-weight: 400;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.65;
   }
   @media (max-width: 749px) {
     .longeva-variant-picker__card {

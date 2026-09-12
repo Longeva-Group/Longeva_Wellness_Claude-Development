@@ -6,7 +6,7 @@
         "eyebrow": "Travel vaccinations",
         "h1": "Travel Vaccinations for North America and Oceania",
         "mode": "region",
-        "region_match": "North America"
+        "region_match": "North America,Oceania"
       }
     }
   },

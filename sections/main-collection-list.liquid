@@ -33,13 +33,23 @@
     {% assign section_collections = section_collections | split: ',' %}
   {% endif %}
 
+  {%- comment -%}
+    Skip empty collections (0 products) so a legacy/unused collection
+    doesn't show up on /collections as a dead-end tile with a title and
+    nothing behind it. products_count is 0 for a collection with no
+    products currently in it, regardless of publish status.
+  {%- endcomment -%}
   {% capture list_items %}
+    {% assign longeva_rendered_count = 0 %}
     {% for collection in section_collections limit: max_items %}
-      <div class="resource-list__item">
-        {% content_for 'block', type: '_collection-card', id: 'static-collection-card', closest.collection: collection %}
-      </div>
-      {% unless forloop.last %}
-        <!--@list/split-->
+      {% unless collection.products_count == 0 %}
+        {% unless longeva_rendered_count == 0 %}
+          <!--@list/split-->
+        {% endunless %}
+        <div class="resource-list__item">
+          {% content_for 'block', type: '_collection-card', id: 'static-collection-card', closest.collection: collection %}
+        </div>
+        {% assign longeva_rendered_count = longeva_rendered_count | plus: 1 %}
       {% endunless %}
     {% endfor %}
   {% endcapture %}

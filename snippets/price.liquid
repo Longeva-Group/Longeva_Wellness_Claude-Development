@@ -48,6 +48,25 @@
     endif
   endif
 
+  # Longeva booking-deposit disclosure: for bookable service/vaccine
+  # products, product_resource.price is a 25% deposit, not the full fee.
+  # Same detection already shipped and reviewed on the cart page
+  # (sections/longeva-cart-page.liquid) — reused here so a bare price
+  # shown on a collection grid, search result or recommendation card
+  # doesn't read as the full price. Genuine retail products/gift cards
+  # never match this and render exactly as before.
+  assign longeva_is_deposit = false
+  if product_resource.template_suffix == 'service' or product_resource.template_suffix == 'vaccine' or product_resource.metafields.custom.is_service.value == true
+    assign longeva_is_deposit = true
+  elsif product_resource.tags contains 'sesami-service' or product_resource.tags contains 'booking' or product_resource.tags contains 'consultation'
+    assign longeva_is_deposit = true
+  else
+    assign longeva_product_type = product_resource.type | downcase
+    if longeva_product_type contains 'consult' or longeva_product_type contains 'service' or longeva_product_type contains 'appointment' or longeva_product_type contains 'vaccine' or longeva_product_type contains 'aesthetic'
+      assign longeva_is_deposit = true
+    endif
+  endif
+
   # Determine if currency code should be shown
   assign use_currency = false
   if product.handle == product_resource.handle
@@ -96,6 +115,9 @@
       "
     >
       <span class="price">{{ price | default: '&nbsp;' }}</span>
+      {%- if longeva_is_deposit -%}
+        <span class="longeva-price__deposit-note" style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.65; margin-inline-start: 0.35em;">deposit</span>
+      {%- endif -%}
     </div>
     <div
       class="

@@ -103,7 +103,11 @@
   if linked_product and linked_product.variants.size > 1
     assign linked_first_variant = linked_product.selected_or_first_available_variant
     if linked_first_variant
-      assign linked_variant_price = linked_first_variant.price | money_without_trailing_zeros
+      # Linked product price is the 25% booking deposit, same convention as
+      # every other "Fees from" figure sitewide (blocks/longeva-service-hero.liquid)
+      # — multiply by 4 so this matches sibling price displays instead of
+      # silently showing the deposit as if it were the full fee.
+      assign linked_variant_price = linked_first_variant.price | times: 4 | money_without_trailing_zeros
       assign effective_variant_id = linked_first_variant.id
     endif
   endif

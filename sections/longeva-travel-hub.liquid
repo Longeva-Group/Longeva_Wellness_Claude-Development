@@ -62,12 +62,28 @@
     endfor
     assign hub_list = hub_pairs | split: '|'
   else
+    comment
+      region_match may name more than one region, comma-separated (e.g.
+      "North America, Oceania"), so a hub page can cover a grouping that
+      spans the destination taxonomy's separate region values without
+      needing curated mode. Single-region pages (the common case) keep
+      working exactly as before, since a one-item list behaves the same
+      as a plain equality check.
+    endcomment
+    assign region_match_list = region_match | split: ','
     for d in all
       if d.system.url == blank
         continue
       endif
       assign d_region = d.region | strip
-      if d_region == region_match
+      assign region_matched = false
+      for rm in region_match_list
+        assign rm_stripped = rm | strip
+        if d_region == rm_stripped
+          assign region_matched = true
+        endif
+      endfor
+      if region_matched
         assign hub_pairs = hub_pairs | append: d.system.url | append: ',' | append: d.country | append: '|'
       endif
     endfor

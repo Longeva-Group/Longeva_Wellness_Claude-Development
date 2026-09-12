@@ -13,13 +13,23 @@
   assign service = product.metafields.custom.service_ref.value
   assign heading = product.title
   assign short_description = ''
-  assign regulatory_line = ''
+  comment
+    Default fallback so a product with no linked service_ref metaobject
+    (e.g. Adrenaline Nasal Spray, Jet Lag, Thrush — see
+    sections/longeva-service-layout-product.liquid's own note that these
+    stay on this older layout) never renders with zero consultation/
+    safety framing. A linked service_ref's own regulatory_line still
+    takes priority when set.
+  endcomment
+  assign regulatory_line = 'This is a consultation-led service. A pharmacist assesses suitability before anything is supplied or treated.'
   if service
     if service.name != blank
       assign heading = service.name
     endif
     assign short_description = service.short_description
-    assign regulatory_line = service.regulatory_line
+    if service.regulatory_line != blank
+      assign regulatory_line = service.regulatory_line
+    endif
   endif
   comment
     CTA label by product type. Vaccines book a "vaccination"; every other

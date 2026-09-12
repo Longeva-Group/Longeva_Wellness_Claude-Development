@@ -46,7 +46,7 @@
     {%- endif -%}
     <p class="longeva-destination__vaccine-meta">
       {%- if has_real_price -%}
-        <span class="longeva-destination__vaccine-price">From {{ p.price | money_without_trailing_zeros }}</span>
+        <span class="longeva-destination__vaccine-price">From {{ p.price | times: 4 | money_without_trailing_zeros }}</span>
       {%- else -%}
         <span class="longeva-destination__vaccine-price longeva-destination__vaccine-price--placeholder">Pharmacist consultation</span>
       {%- endif -%}

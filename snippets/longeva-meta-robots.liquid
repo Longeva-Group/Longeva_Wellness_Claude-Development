@@ -16,6 +16,25 @@
 
   Opt a page IN to indexing only once it carries genuinely unique local
   content: set its page metafield custom.allow_index (boolean) to true.
+
+  Service/vaccine PRODUCTS (page/product duplication clean-up): these
+  products are Sesami booking objects, not SEO surfaces — the paired
+  Shopify PAGE (e.g. page.service-page.json / longeva-service-layout.liquid)
+  is the intended indexable landing content for the same treatment.
+  longeva-service-layout-product.liquid and longeva-service-page.liquid
+  render near-identical H1/body/FAQ/CTA structure to their page
+  counterpart, so leaving both indexable is duplicate-content exposure.
+  noindex by default on the service/vaccine product templates; follow is
+  kept so Sesami's own scripts and any internal links stay fully
+  crawlable — only indexing is blocked, nothing about the booking flow.
+
+  A few products (Adrenaline Nasal Spray, Jet Lag, Thrush, per the
+  service-layout-product.liquid comment) have NO sibling page and are
+  the only indexable surface for that service. Opt those IN via product
+  metafield custom.allow_index (boolean) = true — this has NOT been set
+  for you here, since which products are page-less is an Admin content
+  question, not something theme code can determine. Until that metafield
+  is set, those specific products will be noindexed along with the rest.
 {%- endcomment -%}
 {%- liquid
   assign noindex = false
@@ -39,6 +58,18 @@
   endcomment
   if page.metafields.custom.noindex.value == true
     assign noindex = true
+  endif
+
+  comment
+    Service/vaccine booking products: noindex by default (template), opt
+    IN via product metafield custom.allow_index for page-less services.
+    See above.
+  endcomment
+  if template.suffix == 'service' or template.suffix == 'vaccine'
+    assign noindex = true
+    if product.metafields.custom.allow_index.value == true
+      assign noindex = false
+    endif
   endif
 -%}
 {%- if noindex -%}

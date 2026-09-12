@@ -107,7 +107,28 @@
   assign og_type = 'website'
   assign og_description = cascade_description | default: shop.name
 
+  comment
+    Booking/consultation products (deposit-model vaccines, minor
+    ailments such as Adrenaline Nasal Spray) are Sesami booking
+    objects, not retail goods — og:type "product" plus a price reads
+    as merchandising a treatment/medicine for sale. Same detection
+    already shipped on the cart page and in snippets/price.liquid.
+  endcomment
+  assign longeva_is_booking_product = false
   if request.page_type == 'product'
+    if product.template_suffix == 'service' or product.template_suffix == 'vaccine' or product.metafields.custom.is_service.value == true
+      assign longeva_is_booking_product = true
+    elsif product.tags contains 'sesami-service' or product.tags contains 'booking' or product.tags contains 'consultation'
+      assign longeva_is_booking_product = true
+    else
+      assign longeva_ptype = product.type | downcase
+      if longeva_ptype contains 'consult' or longeva_ptype contains 'service' or longeva_ptype contains 'appointment' or longeva_ptype contains 'vaccine' or longeva_ptype contains 'aesthetic'
+        assign longeva_is_booking_product = true
+      endif
+    endif
+  endif
+
+  if request.page_type == 'product' and longeva_is_booking_product == false
     assign og_type = 'product'
   elsif request.page_type == 'article'
     assign og_type = 'article'
@@ -160,7 +181,7 @@
   >
 {%- endif -%}
 
-{%- if request.page_type == 'product' -%}
+{%- if request.page_type == 'product' and longeva_is_booking_product == false -%}
   <meta
     property="og:price:amount"
     content="{{ product.price | money_without_currency | strip_html }}"
@@ -226,9 +247,29 @@
 </title>
 {%- endif -%}
 
+{%- comment -%}
+  Travel-vaccinations regional pages: africa-safari, east-africa and
+  west-africa are curated destination subsets wholly contained within
+  the broader "Africa" region page; south-asia and south-east-asia are
+  subsets of "Asia". Canonicalise the subset pages to their parent
+  region page instead of noindexing them outright, so each keeps its
+  own URL/content for direct/campaign traffic while search engines
+  consolidate ranking signal onto the broader page. Assumes the parent
+  page's handle follows this theme's template-suffix naming convention
+  (page.travel-vaccinations-africa.json / -asia.json); confirm the
+  actual Shopify Page handle in Admin if it was ever set differently.
+{%- endcomment -%}
+{%- liquid
+  assign longeva_canonical = canonical_url
+  if template.suffix == 'travel-vaccinations-africa-safari' or template.suffix == 'travel-vaccinations-east-africa' or template.suffix == 'travel-vaccinations-west-africa'
+    assign longeva_canonical = shop.url | append: '/pages/travel-vaccinations-africa'
+  elsif template.suffix == 'travel-vaccinations-south-asia' or template.suffix == 'travel-vaccinations-south-east-asia'
+    assign longeva_canonical = shop.url | append: '/pages/travel-vaccinations-asia'
+  endif
+-%}
 <link
   rel="canonical"
-  href="{{ canonical_url }}"
+  href="{{ longeva_canonical }}"
 >
 
 {% if cascade_description != blank %}
