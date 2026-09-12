@@ -2395,7 +2395,7 @@
         "type": "text",
         "id": "longeva_vat_number",
         "label": "VAT number",
-        "default": "TBC"
+        "default": "GB525545586"
       },
       {
         "type": "text",

@@ -100,11 +100,15 @@
   @media (max-width: 749px) {
     .longeva-trust-strip { min-height: 0; }
     .longeva-trust-strip__inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      row-gap: 20px;
+      column-gap: 28px;
       padding-block: 20px;
     }
+    .longeva-trust-strip__item { flex: 0 1 auto; min-width: 88px; }
     .longeva-trust-strip__divider { display: none; }
     .longeva-trust-strip__primary { font-size: 12px; }
     .longeva-trust-strip__sub { font-size: 11px; }
