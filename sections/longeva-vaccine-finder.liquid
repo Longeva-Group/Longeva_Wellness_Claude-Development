@@ -81,7 +81,17 @@
             {%- for vp in d.recommended_vaccines.value -%}
               {%- if vp.title != blank -%}
                 {%- unless vfirst %},{% endunless -%}{%- assign vfirst = false -%}
-                { "name": {{ vp.title | json }}, "url": {{ vp.url | json }} }
+                {%- comment -%}
+                  Consultation/service-led display name: prefer a linked
+                  service_ref metaobject's name (same convention as
+                  blocks/longeva-service-hero.liquid) over the raw Shopify
+                  product title, so a non-vaccine item recommended here
+                  (e.g. an anaphylaxis rescue treatment) doesn't surface as
+                  bare retail medicine wording. Falls back to product title
+                  when no service_ref is linked.
+                {%- endcomment -%}
+                {%- assign vp_display_name = vp.metafields.custom.service_ref.value.name | default: vp.title -%}
+                { "name": {{ vp_display_name | json }}, "url": {{ vp.url | json }} }
               {%- endif -%}
             {%- endfor -%}
           ]

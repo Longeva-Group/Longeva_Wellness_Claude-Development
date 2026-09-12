@@ -17,7 +17,18 @@
 {% endcomment %}
 
 {%- liquid
-  assign display_name = product.title | remove: ' Vaccination' | remove: ' vaccination'
+  # Consultation/service-led display name: prefer a linked service_ref
+  # metaobject's name (same convention as blocks/longeva-service-hero.liquid)
+  # over the raw Shopify product title, so ailment products like the
+  # anaphylaxis rescue treatment don't surface as bare retail medicine
+  # wording on this card. Falls back to the title-stripping behaviour
+  # below when no service_ref is linked.
+  assign service = product.metafields.custom.service_ref.value
+  if service and service.name != blank
+    assign display_name = service.name
+  else
+    assign display_name = product.title | remove: ' Vaccination' | remove: ' vaccination'
+  endif
   assign lede = product.metafields.custom.lede | default: ''
   if lede == blank
     assign lede = product.description | strip_html | strip | truncate: 130

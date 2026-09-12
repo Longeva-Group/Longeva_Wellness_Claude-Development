@@ -41,7 +41,7 @@
           "type": "faq",
           "settings": {
             "question": "How private is this service?",
-            "answer": "<p>Discreet. Consultations are in private rooms at our Manchester clinic. We'll only share clinical information with your GP if you give written consent. No marketing communications without explicit opt-in.</p>"
+            "answer": "<p>Discreet. Consultations are in private rooms at our Rochdale clinic. We'll only share clinical information with your GP if you give written consent. No marketing communications without explicit opt-in.</p>"
           }
         },
         "cta_1": { "type": "cta", "settings": { "heading": "Speak to a pharmacist", "subhead": "Eligibility-first. The consultation fee covers written advice if treatment isn't appropriate." } },

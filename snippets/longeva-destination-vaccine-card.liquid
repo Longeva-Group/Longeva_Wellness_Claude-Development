@@ -12,7 +12,12 @@
 {%- liquid
   assign p = vaccine_product
   assign label = cta_label | default: 'Book Vaccination'
-  assign clean_title = p.title | strip
+  # Consultation/service-led display name: prefer a linked service_ref
+  # metaobject's name (same convention as blocks/longeva-service-hero.liquid)
+  # over the raw Shopify product title, in case a non-vaccine item (e.g.
+  # an anaphylaxis rescue treatment) is ever added to a destination's
+  # recommended-products list.
+  assign clean_title = p.metafields.custom.service_ref.value.name | default: p.title | strip
   assign desc_plain = p.description | strip_html | strip_newlines | strip
   comment
     Product descriptions often open with an FAQ-style heading, e.g.

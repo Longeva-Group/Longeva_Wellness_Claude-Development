@@ -13,7 +13,7 @@
       "type": "longeva-hero",
       "settings": {
         "eyebrow": "GPhC REGISTERED · MANCHESTER",
-        "heading": "Clinical services in Manchester, delivered with precision.",
+        "heading": "Clinical services in Rochdale, delivered with precision.",
         "subhead": "Every treatment starts with a clinical assessment. Pharmacist-led. Evidence-based. Same-day appointments in Rochdale.",
         "cta_primary_label": "Browse treatments",
         "cta_primary_link": "shopify://pages/services-manchester",
@@ -138,7 +138,7 @@
           "type": "step",
           "settings": {
             "title": "Book online or walk in",
-            "body": "Choose your service, pick a time, or visit our Manchester clinic for same-day appointments where clinically appropriate."
+            "body": "Choose your service, pick a time, or visit our Rochdale clinic for same-day appointments where clinically appropriate."
           }
         },
         "step_2": {

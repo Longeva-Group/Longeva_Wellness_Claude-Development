@@ -67,6 +67,14 @@
     endif
   endif
 
+  # A deposit is not a "sale price" — never show the compare-at/sale pair
+  # for these products, so only the single deposit-labelled line below can
+  # ever render (was a real duplicate-price bug on cards where the sale
+  # block rendered alongside the regular block).
+  if longeva_is_deposit
+    assign show_compare_price = false
+  endif
+
   # Determine if currency code should be shown
   assign use_currency = false
   if product.handle == product_resource.handle
@@ -127,7 +135,9 @@
         {% endunless %}
       "
     >
-      {% if show_sale_price_first %}
+      {% if longeva_is_deposit %}
+        {%- comment -%} Deposit products never show the sale/compare-at pair — see show_compare_price override above. Left empty so nothing can render here even if price__hidden fails to apply in some card context. {%- endcomment -%}
+      {% elsif show_sale_price_first %}
         <span class="price-item__group">
           <span class="visually-hidden">{{ 'content.price_sale' | t }}&nbsp;</span>
           <span class="price-item--sale price">{{ price | default: '&nbsp;' }}</span>
