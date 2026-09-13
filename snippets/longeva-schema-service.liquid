@@ -46,6 +46,14 @@
     assign hub_handle = 'skin-health-manchester'
   endif
   assign hub_page = pages[hub_handle]
+  # Google Breadcrumbs requires a non-empty name on every itemListElement.
+  # hub_page.title runs through 'remove' filters below; guard the result
+  # so a hub whose title strips down to nothing can't emit a blank-name
+  # ListItem -- fall back to the 2-level breadcrumb instead.
+  assign hub_crumb_name = ''
+  if hub_page
+    assign hub_crumb_name = hub_page.title | remove: ' in Manchester' | remove: ' Manchester' | strip
+  endif
 
   assign clinicians_list = page.metafields.custom.clinicians.value
   assign clinician_name_fallback = page.metafields.custom.clinician_name | strip
@@ -72,9 +80,9 @@
   "@type": "BreadcrumbList",
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Home", "item": "{{ shop.url }}" }
-    {%- if hub_page -%}
+    {%- if hub_page and hub_crumb_name != blank -%}
     ,
-    { "@type": "ListItem", "position": 2, "name": "{{ hub_page.title | remove: ' in Manchester' | remove: ' Manchester' | escape }}", "item": "{{ shop.url }}{{ hub_page.url }}" },
+    { "@type": "ListItem", "position": 2, "name": {{ hub_crumb_name | json }}, "item": "{{ shop.url }}{{ hub_page.url }}" },
     { "@type": "ListItem", "position": 3, "name": "{{ display_title | escape }}", "item": "{{ shop.url }}{{ page.url }}" }
     {%- else -%}
     ,

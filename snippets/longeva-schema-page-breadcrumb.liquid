@@ -19,7 +19,25 @@
 
 {%- if request.page_type == 'page' and page.handle != blank -%}
   {%- if crumbs != blank -%}
+    {%- comment -%}
+      Pre-validate before opening the script tag: only a pair with both
+      a non-blank name and a non-blank path becomes a ListItem (Google
+      Breadcrumbs requirement -- every itemListElement needs a non-empty
+      name). Counted first so a crumbs string that resolves to zero
+      valid pairs emits no BreadcrumbList at all, rather than an empty
+      or malformed one.
+    {%- endcomment -%}
     {%- assign crumb_pairs = crumbs | split: '|' -%}
+    {%- assign valid_crumb_count = 0 -%}
+    {%- for pair in crumb_pairs -%}
+      {%- assign bits = pair | split: '::' -%}
+      {%- assign precheck_name = bits[0] | strip -%}
+      {%- assign precheck_path = bits[1] | strip -%}
+      {%- if precheck_name != blank and precheck_path != blank -%}
+        {%- assign valid_crumb_count = valid_crumb_count | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if valid_crumb_count > 0 -%}
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -44,7 +62,15 @@
   ]
 }
     </script>
-  {%- else -%}
+    {%- endif -%}
+  {%- elsif page.title != blank -%}
+    {%- comment -%}
+      Google Breadcrumbs requires a non-empty name on every
+      itemListElement. "Home" is a hardcoded literal (always valid);
+      page.title is the only variable value here, so the whole
+      BreadcrumbList is withheld rather than emitting a ListItem with
+      a blank name if a page ever has no title set.
+    {%- endcomment -%}
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
