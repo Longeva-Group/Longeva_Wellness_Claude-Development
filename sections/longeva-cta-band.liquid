@@ -31,11 +31,7 @@
     {% endif %}
     {% if cta_label != blank %}
       <div class="longeva-cta-band__cta-wrap" data-longeva-reveal>
-        {% render 'longeva-sesami-button',
-           label: cta_label,
-           variant: 'primary-on-dark',
-           fallback_url: cta_link | default: '/pages/contact',
-           classes: 'longeva-cta-band__cta' %}
+        {% render 'longeva-sesami-button', label: cta_label, variant: 'primary-on-dark', fallback_url: cta_link, default: '/pages/contact', classes: 'longeva-cta-band__cta' %}
       </div>
     {% endif %}
   </div>
@@ -93,3 +89,20 @@
   ]
 }
 {% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {% render 'longeva-sesami-button',
+               label: cta_label,
+               variant: 'primary-on-dark',
+               fallback_url: cta_link | default: '/pages/contact',
+               classes: 'longeva-cta-band__cta' %}
+  to: "{% render 'longeva-sesami-button', label: cta_label, variant: 'primary-on-dark',
+    fallback_url: cta_link, default: '/pages/contact', classes: 'longeva-cta-band__cta'
+    %}"
+  position: 1437..1604
+{% endcomment %}
