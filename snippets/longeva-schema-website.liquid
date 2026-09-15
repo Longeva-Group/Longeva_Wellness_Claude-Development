@@ -9,33 +9,37 @@
   checkout, account, or customer-area templates.
 {%- endcomment -%}
 
-{%- if request.page_type == 'index'
-   or request.page_type == 'page'
-   or request.page_type == 'article'
-   or request.page_type == 'blog'
-   or request.page_type == 'list-collections'
--%}
 {%- comment -%}
-  Default OG image fallback. Horizon's shipped meta-tags snippet
-  only emits og:image when a Shopify-level page_image is set. If
-  Anthony has not uploaded a brand cover in Settings > Brand, our
-  own default asset steps in so social previews never render the
-  Shopify placeholder bag. Open Graph consumers use the first
-  og:image they encounter in the document; we render AFTER
-  meta-tags (this snippet is included later in theme.liquid), so
-  an admin-uploaded image still wins because it appears first.
+  Default OG image fallback. Horizon's shipped meta-tags snippet only
+  emits og:image when a Shopify-level page_image is set -- destination
+  metaobject pages, products and collections without a set image
+  previously got no og:image at all, because this block used to be
+  scoped to the same narrow page-type list as the WebSite JSON-LD below
+  (which is a separate, unrelated concern). Broadened to every indexable
+  canonical page type, and explicitly gated on page_image being blank
+  so this can never render alongside meta-tags.liquid's own og:image tag
+  -- exactly one og:image tag reaches the page either way.
 {%- endcomment -%}
+{%- if page_image == blank and request.page_type != 'cart' and request.page_type != 'search' and request.page_type != 'password' and request.page_type != '404' -%}
 <meta property="og:image" content="{{ 'longeva-og-default.png' | asset_url | prepend: 'https:' }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Longeva Wellness · GPhC-registered pharmacy in Manchester">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{{ 'longeva-og-default.png' | asset_url | prepend: 'https:' }}">
+{%- endif -%}
 
+{%- if request.page_type == 'index'
+   or request.page_type == 'page'
+   or request.page_type == 'article'
+   or request.page_type == 'blog'
+   or request.page_type == 'list-collections'
+-%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": "{{ shop.url }}/#website",
   "name": "Longeva",
   "alternateName": "Longeva Wellness",
   "url": "{{ shop.url }}",

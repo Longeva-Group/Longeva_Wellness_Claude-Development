@@ -7,6 +7,7 @@
   the visible FAQ in longeva-yellow-fever.liquid (FAQPage eligibility
   requires the content to be visible on the page).
 {%- endcomment -%}
+{%- capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture -%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -21,9 +22,9 @@
   "lastReviewed": "2026-05-30",
   "inLanguage": "en-GB",
   "publisher": {
-    "@type": "Pharmacy",
-    "name": "Longeva Wellness",
-    "@id": "https://longevawellness.co.uk/#pharmacy"
+    "@type": ["Pharmacy", "MedicalClinic", "MedicalBusiness"],
+    "name": "Longeva",
+    "@id": {{ longeva_pharmacy_id | json }}
   }
 }
 </script>

@@ -158,7 +158,14 @@
   ],
   "medicalSpecialty": [
     "Pharmacy",
-    "Dermatology",
+    "Dermatology"
+  ],
+  {%- comment -%}
+    "Aesthetic Medicine" and "Travel medicine" are not members of
+    schema.org's fixed MedicalSpecialty enumeration, so a strict
+    validator would reject them there. knowsAbout accepts free text.
+  {%- endcomment -%}
+  "knowsAbout": [
     "Aesthetic Medicine",
     "Travel medicine"
   ],

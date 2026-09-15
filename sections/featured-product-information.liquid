@@ -1,8 +1,27 @@
-
-
+{%- comment -%}
+  Same booking-deposit guard as sections/product-information.liquid --
+  see that file's comment for the full explanation. Skips the Offer
+  price being published for a deposit-model product when this section
+  is used to feature one; unaffected for a genuine retail product.
+{%- endcomment -%}
+{%- liquid
+  assign longeva_is_booking_product = false
+  if section.settings.product.template_suffix == 'service' or section.settings.product.template_suffix == 'vaccine' or section.settings.product.metafields.custom.is_service.value == true
+    assign longeva_is_booking_product = true
+  elsif section.settings.product.tags contains 'sesami-service' or section.settings.product.tags contains 'booking' or section.settings.product.tags contains 'consultation'
+    assign longeva_is_booking_product = true
+  else
+    assign longeva_ptype = section.settings.product.type | downcase
+    if longeva_ptype contains 'consult' or longeva_ptype contains 'service' or longeva_ptype contains 'appointment' or longeva_ptype contains 'vaccine' or longeva_ptype contains 'aesthetic'
+      assign longeva_is_booking_product = true
+    endif
+  endif
+-%}
+{%- unless longeva_is_booking_product -%}
 <script type="application/ld+json">
   {{ section.settings.product | structured_data }}
 </script>
+{%- endunless -%}
 
 {% capture media_gallery %}
   {% content_for 'block',

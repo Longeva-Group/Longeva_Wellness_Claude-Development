@@ -66,6 +66,7 @@
     assign reviewer_gphc = reviewer.gphc_number
   endif
 -%}
+{%- capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture -%}
 
 {%- comment -%}
   FAQPage JSON-LD intentionally NOT emitted here. It lives in
@@ -102,8 +103,8 @@
   {% if lede != blank %}"description": {{ lede | strip | strip_newlines | json }},{% endif %}
   {% if category != blank %}"serviceType": {{ category | json }},{% endif %}
   "provider": {
-    "@type": ["Pharmacy", "MedicalBusiness"],
-    "@id": "{{ shop.url }}/#pharmacy",
+    "@type": ["Pharmacy", "MedicalClinic", "MedicalBusiness"],
+    "@id": {{ longeva_pharmacy_id | json }},
     "name": "Longeva",
     "url": "{{ shop.url }}",
     "address": {
@@ -168,15 +169,33 @@
   {%- endif -%}
   {%- if price_is_placeholder == false and price_from != blank -%}
   {%- assign price_numeric = price_from | replace: '£', '' | replace: ',', '' | replace: 'From ', '' | replace: 'from ', '' | strip -%}
+  {%- comment -%}
+    price_from is free-text admin content (e.g. "£150 to £300" or a
+    range) -- only emit AggregateOffer when what's left after stripping
+    currency/prefix text is a clean number schema.org's lowPrice (a
+    Number) actually accepts. Also piped through | json rather than
+    interpolated raw, so an admin-entered quote/backslash can't produce
+    malformed JSON (same class of bug as the breadcrumb name fix).
+  {%- endcomment -%}
+  {%- assign price_digits_only = price_numeric | remove: '.' -%}
+  {%- assign price_is_valid_number = true -%}
+  {%- if price_numeric == blank or price_digits_only == blank -%}
+    {%- assign price_is_valid_number = false -%}
+  {%- endif -%}
+  {%- if price_numeric contains ' ' or price_numeric contains '-' or price_numeric contains '–' or price_numeric contains '—' or price_numeric contains '/' or price_numeric contains 'to' or price_numeric contains 'To' -%}
+    {%- assign price_is_valid_number = false -%}
+  {%- endif -%}
+  {%- if price_is_valid_number -%}
   ,
   "offers": {
     "@type": "AggregateOffer",
-    "lowPrice": "{{ price_numeric }}",
+    "lowPrice": {{ price_numeric | json }},
     "priceCurrency": "GBP",
     "offerCount": "1",
     "availability": "https://schema.org/InStock",
     "url": "{{ shop.url }}{{ page.url }}"
   }
+  {%- endif -%}
   {%- endif -%}
 }
 </script>

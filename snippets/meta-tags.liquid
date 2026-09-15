@@ -39,6 +39,16 @@
       assign cascade_description = lede_text
     endif
   endif
+  if cascade_description == blank and request.page_type == 'metaobject' and metaobject
+    # Destination metaobject pages (/pages/destinations/{handle}) have no
+    # `page` object and so never hit the branch above; their SEO summary
+    # lives on the metaobject itself (same field longeva-destination-jsonld.liquid
+    # reads for its own description).
+    assign metaobject_summary_text = metaobject.summary | metafield_tag | strip_html | strip_newlines | strip
+    if metaobject_summary_text != blank
+      assign cascade_description = metaobject_summary_text
+    endif
+  endif
   if cascade_description == blank
     assign cascade_description = shop.description
   endif
@@ -76,9 +86,16 @@
     assign _is_cart_route = true
   endif
 
+  # Brand-duplication guard: saved SEO titles in this store are commonly
+  # authored ending in the short brand "Longeva" alone (not the full
+  # shop.name "Longeva Wellness"), so the original `contains shop.name`
+  # check missed them and appended the full brand suffix again, producing
+  # "... | Longeva | Longeva Wellness". Checking for the shorter "Longeva"
+  # token catches both forms without stripping or rewriting the saved
+  # title itself.
   if _is_cart_route
     assign cascade_title = 'Bookings' | append: brand_suffix
-  elsif page_title contains shop.name
+  elsif page_title contains 'Longeva'
     assign cascade_title = page_title
   elsif page_title != blank
     if geo_append

@@ -1,0 +1,21 @@
+{%- comment -%}
+  Single source of truth for the sitewide Pharmacy entity's JSON-LD @id.
+  Every schema node that describes Longeva as provider/publisher/about
+  should reference this exact string via a bare { "@id": "..." } pointer
+  rather than re-declaring the organization inline -- Google only merges
+  JSON-LD nodes that share an identical @id string.
+
+  Mirrors the canonical_origin computation in
+  snippets/longeva-schema-pharmacy.liquid (the file that owns the full
+  Pharmacy node this @id points at) so both always agree byte-for-byte.
+
+  Usage (produces the bare "https://.../#pharmacy" string, no quotes):
+    {% capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture %}
+    "@id": {{ longeva_pharmacy_id | json }}
+{%- endcomment -%}
+{%- liquid
+  assign canonical_origin = shop.url | replace: 'http://', 'https://'
+  unless canonical_origin contains 'https://'
+    assign canonical_origin = canonical_origin | prepend: 'https:'
+  endunless
+-%}{{ canonical_origin }}/#pharmacy

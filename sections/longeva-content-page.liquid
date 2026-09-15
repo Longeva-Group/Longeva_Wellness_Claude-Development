@@ -31,7 +31,19 @@
   </header>
 
   {%- if page.content != blank -%}
-    <div class="longeva-content__body longeva-container">{{ page.content }}</div>
+    {%- comment -%}
+      Ahrefs flagged pages rendering two H1s. The h1 above (id
+      longeva-content-heading) is the theme's one title heading; page.content
+      occasionally carries its own leading <h1> pasted in from an external
+      editor. Downgrade a leading H1 in the body to H2 so the page renders
+      exactly one H1 without touching the saved page content or any other
+      heading in the body.
+    {%- endcomment -%}
+    {%- assign body_html = page.content -%}
+    {%- if body_html contains '<h1' -%}
+      {%- assign body_html = body_html | replace_first: '<h1', '<h2' | replace_first: '</h1>', '</h2>' -%}
+    {%- endif -%}
+    <div class="longeva-content__body longeva-container">{{ body_html }}</div>
   {%- endif -%}
 
   {%- if show_cta -%}

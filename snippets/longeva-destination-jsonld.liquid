@@ -31,6 +31,9 @@
     assign iso2 = metaobject.iso_code | strip | upcase
     assign page_url = shop.url | append: '/pages/destinations/' | append: metaobject.system.handle
     assign gphc_num = settings.longeva_gphc_number | default: '9012378'
+  -%}
+  {%- capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture -%}
+  {%- liquid
     comment
       Count valid FAQ entries (question and answer both set), mirroring
       the section gating, so FAQPage structured data is emitted only when
@@ -76,15 +79,11 @@
     }
     {%- endif -%}
   },
-  "isPartOf": {
-    "@type": "WebSite",
-    "name": "Longeva Wellness",
-    "url": {{ shop.url | json }}
-  },
+  "isPartOf": { "@id": {{ shop.url | append: '/#website' | json }} },
   "provider": {
-    "@type": ["Pharmacy", "MedicalBusiness"],
-    "@id": "{{ shop.url }}/#pharmacy",
-    "name": "Longeva Wellness",
+    "@type": ["Pharmacy", "MedicalClinic", "MedicalBusiness"],
+    "@id": {{ longeva_pharmacy_id | json }},
+    "name": "Longeva",
     "url": {{ shop.url | json }},
     "identifier": [
       {

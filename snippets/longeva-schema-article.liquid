@@ -26,6 +26,7 @@
     assign hero_image = article.image
     assign canonical = shop.url | append: article.url
   -%}
+  {%- capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture -%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -63,7 +64,8 @@
   "datePublished": "{{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
   "dateModified": "{{ article.updated_at | default: article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' }}",
   "publisher": {
-    "@type": ["Pharmacy", "MedicalBusiness", "Organization"],
+    "@type": ["Pharmacy", "MedicalClinic", "MedicalBusiness"],
+    "@id": {{ longeva_pharmacy_id | json }},
     "name": "Longeva",
     "url": "{{ shop.url }}",
     "logo": {
@@ -73,7 +75,7 @@
   },
   "inLanguage": "en-GB",
   "isFamilyFriendly": true,
-  "medicalAudience": ["Patient", "General Public"]
+  "medicalAudience": { "@type": "MedicalAudience", "audienceType": "Patient" }
 }
 </script>
 {%- endif -%}

@@ -1,8 +1,21 @@
-
+{%- comment -%}
+  Ahrefs flagged 55 indexable URLs rendering two H1s. Theme code renders
+  exactly one (the title block in templates/article.json); the article
+  body itself sometimes carries its own leading <h1> pasted in from an
+  external editor, duplicating the title. Downgrade a leading H1 in the
+  body to H2 so the rendered page has exactly one H1 without touching
+  the saved article content or any other heading in the body.
+{%- endcomment -%}
+{%- liquid
+  assign body_html = article.content
+  if body_html contains '<h1'
+    assign body_html = body_html | replace_first: '<h1', '<h2' | replace_first: '</h1>', '</h2>'
+  endif
+-%}
 
 <div class="blog-post-content rte">
   <rte-formatter>
-    {{ article.content }}
+    {{ body_html }}
   </rte-formatter>
 </div>
 

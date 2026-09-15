@@ -16,6 +16,7 @@
     endif
   endfor
 -%}
+{%- capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture -%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -23,7 +24,7 @@
   "name": {{ h1 | json }},
   "url": {{ page_url | json }},
   "serviceType": "Travel health service",
-  "provider": { "@type": "Pharmacy", "name": "Longeva Wellness", "@id": "{{ shop.url }}/#pharmacy" },
+  "provider": { "@type": ["Pharmacy", "MedicalClinic", "MedicalBusiness"], "name": "Longeva", "@id": {{ longeva_pharmacy_id | json }} },
   "areaServed": "Greater Manchester",
   "description": {{ desc | json }}
 }

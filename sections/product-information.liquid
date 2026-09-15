@@ -1,8 +1,34 @@
-
-
+{%- comment -%}
+  Shopify's `structured_data` filter auto-emits a Product node whose
+  `offers.price` is `product.price`. For booking/consultation products
+  (deposit-model vaccines/services) that price is a 25% booking deposit,
+  not the real treatment price -- publishing it as the Offer price is
+  inaccurate structured data (same underlying issue already fixed for
+  the visible "£X deposit" UI elsewhere in this theme). This is the
+  default/generic product template, so a genuine retail product here
+  still gets its normal Product schema unchanged; only detected booking
+  products skip it, matching the established pattern on
+  sections/longeva-service-layout-product.liquid (which deliberately
+  emits no Product schema for the same reason).
+{%- endcomment -%}
+{%- liquid
+  assign longeva_is_booking_product = false
+  if closest.product.template_suffix == 'service' or closest.product.template_suffix == 'vaccine' or closest.product.metafields.custom.is_service.value == true
+    assign longeva_is_booking_product = true
+  elsif closest.product.tags contains 'sesami-service' or closest.product.tags contains 'booking' or closest.product.tags contains 'consultation'
+    assign longeva_is_booking_product = true
+  else
+    assign longeva_ptype = closest.product.type | downcase
+    if longeva_ptype contains 'consult' or longeva_ptype contains 'service' or longeva_ptype contains 'appointment' or longeva_ptype contains 'vaccine' or longeva_ptype contains 'aesthetic'
+      assign longeva_is_booking_product = true
+    endif
+  endif
+-%}
+{%- unless longeva_is_booking_product -%}
 <script type="application/ld+json">
   {{ closest.product | structured_data }}
 </script>
+{%- endunless -%}
 
 {% capture media_gallery %}
   {%- content_for 'block',

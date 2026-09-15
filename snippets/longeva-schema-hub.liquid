@@ -17,6 +17,7 @@
   assign hub_desc = page.metafields.custom.hub_intro_body | default: page.metafields.global.description_tag
   assign mf_featured = page.metafields.custom.hub_featured_services.value
 -%}
+{%- capture longeva_pharmacy_id %}{% render 'longeva-pharmacy-id' %}{% endcapture -%}
 
 {%- if hub_title != blank and request.page_type == 'page' -%}
 <script type="application/ld+json">
@@ -37,16 +38,8 @@
   "name": {{ hub_title | json }},
   "url": {{ hub_url | json }},
   {% if hub_desc != blank %}"description": {{ hub_desc | strip_html | strip_newlines | strip | json }},{% endif %}
-  "isPartOf": {
-    "@type": "WebSite",
-    "name": "Longeva",
-    "url": {{ shop.url | json }}
-  },
-  "about": {
-    "@type": ["Pharmacy", "MedicalBusiness"],
-    "name": "Longeva",
-    "url": {{ shop.url | json }}
-  }
+  "isPartOf": { "@id": {{ shop.url | append: '/#website' | json }} },
+  "about": { "@id": {{ longeva_pharmacy_id | json }} }
 }
 </script>
 
